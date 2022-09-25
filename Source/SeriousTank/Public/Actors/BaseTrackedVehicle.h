@@ -6,15 +6,6 @@
 class UBoxComponent;
 class UCameraComponent;
 
-enum class EDirection : uint8
-{
-	NONE,
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
-};
-
 UCLASS()
 class SERIOUSTANK_API ABaseTrackedVehicle : public APawn
 {
