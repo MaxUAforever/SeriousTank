@@ -5,6 +5,7 @@
 
 class UBoxComponent;
 class UCameraComponent;
+class UST_TrackMovementComponent;
 
 UCLASS()
 class SERIOUSTANK_API ABaseTrackedVehicle : public APawn
@@ -33,50 +34,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UCameraComponent* CameraComponent;
 
-protected:
 	UPROPERTY(EditAnywhere)
-	int32 MaxRotationRadius;
-
-	UPROPERTY(EditAnywhere)
-	int32 MaxSpeed;
-
-	UPROPERTY(EditAnywhere)
-	int32 MaxBackwardSpeed;
-
-	UPROPERTY(EditAnywhere)
-	float AcselerationValue;
-
-	UPROPERTY(EditAnywhere)
-	float InertiaValue;
-
-	UPROPERTY(EditAnywhere)
-	float BreakAcselerationValue;
-
-private:
-	// Filled with non-zero values if user initiate moving.
-	// X-Axis is used for forward(+1) / backward(-1) moving,
-	// Y-Axis is used for right(+1) / left(-1) rotation. 
-	FVector RequestedDirections;
-	
-	float CurrentSpeed;
-
-protected:
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
+	UST_TrackMovementComponent* TrackMovementComponent;
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-protected:
-	virtual void CalculatePosition(float DeltaTime);
-
-	virtual float CalculateAcceleration();
 	
 private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void RotateCamera(float Value);
-
-	void CalculateCurrentSpeed(float DeltaTime);
 };
