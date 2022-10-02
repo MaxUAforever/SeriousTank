@@ -8,19 +8,14 @@ UST_TrackMovementComponent::UST_TrackMovementComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	CurrentSpeed = 0;
-
 	MaxRotationRadius = 350;
 	MaxSpeed = 140;
 	MaxBackwardSpeed = 40;
 	AcselerationValue = 30;
 	InertiaValue = 30;
 	BreakAcselerationValue = 100;
-}
 
-void UST_TrackMovementComponent::BeginPlay()
-{
-	Super::BeginPlay();
+	CurrentSpeed = 0;
 }
 
 void UST_TrackMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

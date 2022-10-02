@@ -28,20 +28,21 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BreakAcselerationValue;
 
-	UPROPERTY(VisibleAnywhere)
-	float CurrentSpeed;
-
 private:
 	// Filled with non-zero values if user initiate moving.
 	// X-Axis is used for forward(+1) / backward(-1) moving,
 	// Y-Axis is used for right(+1) / left(-1) rotation. 
 	FVector RequestedDirections;
 
+	float CurrentSpeed;
+
 public:	
 	UST_TrackMovementComponent();
 
-protected:
-	virtual void BeginPlay() override;
+	float GetCurrentSpeed() const
+	{
+		return CurrentSpeed;
+	}
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
