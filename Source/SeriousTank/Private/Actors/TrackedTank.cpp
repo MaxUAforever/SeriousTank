@@ -3,6 +3,8 @@
 #include "Components/ArrowComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/ST_WeaponSocketComponent.h"
+#include "Components/ST_WeaponsManagerComponent.h"
 
 ATrackedTank::ATrackedTank()
 {
@@ -14,11 +16,13 @@ ATrackedTank::ATrackedTank()
 	TurretMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("TurretMeshComponent");
 	TurretMeshComponent->SetupAttachment(TurretSceneComponent);
 
-	MainWeaponArrowComponent = CreateDefaultSubobject<UArrowComponent>("MainWeaponArrowComponent");
-	MainWeaponArrowComponent->SetupAttachment(TurretSceneComponent);
+	MainWeaponSocketComponent = CreateDefaultSubobject<UST_WeaponSocketComponent>("MainWeaponSocketComponent");
+	MainWeaponSocketComponent->SetupAttachment(TurretSceneComponent);
 
-	SecondWeaponArrowComponent = CreateDefaultSubobject<UArrowComponent>("ShootingArrowComponent");
-	SecondWeaponArrowComponent->SetupAttachment(TurretSceneComponent);
+	SecondWeaponSocketComponent = CreateDefaultSubobject<UST_WeaponSocketComponent>("SecondWeaponSocketComponent");
+	SecondWeaponSocketComponent->SetupAttachment(TurretSceneComponent);
+
+	WeaponsManagerComponent = CreateDefaultSubobject<UST_WeaponsManagerComponent>("WeaponsManagerComponent");
 }
 
 void ATrackedTank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -32,25 +36,6 @@ void ATrackedTank::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void ATrackedTank::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-
-	if (MainWeaponClass)
-	{
-		MainWeapon = World->SpawnActor<ABaseWeapon>(MainWeaponClass, MainWeaponArrowComponent->GetComponentTransform());
-		MainWeapon->AttachToComponent(TurretSceneComponent, FAttachmentTransformRules::KeepWorldTransform);
-		CurrentWeapon = MainWeapon;
-	}
-
-	if (SecondWeaponClass)
-	{
-		SecondWeapon = World->SpawnActor<ABaseWeapon>(SecondWeaponClass, SecondWeaponArrowComponent->GetComponentTransform());
-		SecondWeapon->AttachToComponent(TurretSceneComponent, FAttachmentTransformRules::KeepWorldTransform);
-	}
 }
 
 void ATrackedTank::Tick(float DeltaTime)
@@ -77,16 +62,10 @@ void ATrackedTank::RotateTurretToCamera(float DeltaTime)
 
 void ATrackedTank::StartFire()
 {
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->StartFire();
-	}
+	WeaponsManagerComponent->StartFire();
 }
 
 void ATrackedTank::StopFire()
 {
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->StopFire();
-	}
+	WeaponsManagerComponent->StopFire();
 }

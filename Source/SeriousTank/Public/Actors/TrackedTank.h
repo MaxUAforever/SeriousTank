@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Actors/BaseTrackedVehicle.h"
-
-#include "Actors/Weapons/BaseWeapon.h"
-
 #include "TrackedTank.generated.h"
 
 class UArrowComponent;
+class UST_WeaponSocketComponent;
+class UST_WeaponsManagerComponent;
 
 UCLASS()
 class SERIOUSTANK_API ATrackedTank : public ABaseTrackedVehicle
@@ -21,22 +20,13 @@ protected:
 	UStaticMeshComponent* TurretMeshComponent;
 
 	UPROPERTY(EditAnywhere)
-	UArrowComponent* MainWeaponArrowComponent;
+	UST_WeaponSocketComponent* MainWeaponSocketComponent;
 
 	UPROPERTY(EditAnywhere)
-	UArrowComponent* SecondWeaponArrowComponent;
+	UST_WeaponSocketComponent* SecondWeaponSocketComponent;
 
-	UPROPERTY(EditAnywhere, Category="Weapons")
-	TSubclassOf<ABaseWeapon> MainWeaponClass;
-
-	UPROPERTY(EditAnywhere, Category = "Weapons")
-	TSubclassOf<ABaseWeapon> SecondWeaponClass;
-
-private:
-	ABaseWeapon* MainWeapon;
-	ABaseWeapon* SecondWeapon;
-
-	ABaseWeapon* CurrentWeapon;
+	UPROPERTY(VisibleAnywhere)
+	UST_WeaponsManagerComponent* WeaponsManagerComponent;
 
 protected:
 	UPROPERTY(EditAnywhere)
