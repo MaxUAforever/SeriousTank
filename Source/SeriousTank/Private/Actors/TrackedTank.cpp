@@ -1,7 +1,6 @@
 #include "Actors/TrackedTank.h"
 
 #include "Components/ArrowComponent.h"
-#include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ST_WeaponSocketComponent.h"
 #include "Components/ST_WeaponsManagerComponent.h"
@@ -23,16 +22,6 @@ ATrackedTank::ATrackedTank()
 	SecondWeaponSocketComponent->SetupAttachment(TurretSceneComponent);
 
 	WeaponsManagerComponent = CreateDefaultSubobject<UST_WeaponsManagerComponent>("WeaponsManagerComponent");
-}
-
-void ATrackedTank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAction("StartFire", EInputEvent::IE_Pressed, this, &ThisClass::StartFire);
-	PlayerInputComponent->BindAction("StopFire", EInputEvent::IE_Released, this, &ThisClass::StopFire);
-	PlayerInputComponent->BindAction("FirstWeapon", EInputEvent::IE_Pressed, this, &ThisClass::SwitchWeapon<0>);
-	PlayerInputComponent->BindAction("SecondWeapon", EInputEvent::IE_Pressed, this, &ThisClass::SwitchWeapon<1>);
 }
 
 void ATrackedTank::BeginPlay()
@@ -70,4 +59,14 @@ void ATrackedTank::StartFire()
 void ATrackedTank::StopFire()
 {
 	WeaponsManagerComponent->StopFire();
+}
+
+void ATrackedTank::SwitchToFirstWeapon() 
+{
+	WeaponsManagerComponent->SwitchWeapon(0);
+}
+
+void ATrackedTank::SwitchToSecondWeapon() 
+{
+	WeaponsManagerComponent->SwitchWeapon(1);
 }

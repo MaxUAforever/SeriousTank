@@ -2,7 +2,6 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
-#include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ST_TrackMovementComponent.h"
 
@@ -35,15 +34,6 @@ ABaseTrackedVehicle::ABaseTrackedVehicle()
 	CameraComponent->SetupAttachment(CameraSceneComponent);
 
 	TrackMovementComponent = CreateDefaultSubobject<UST_TrackMovementComponent>("MovementComponent");
-}
-
-void ABaseTrackedVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ThisClass::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &ThisClass::MoveRight);
-	PlayerInputComponent->BindAxis(TEXT("RotateCamera"), this, &ThisClass::RotateCamera);
 }
 
 void ABaseTrackedVehicle::MoveForward(const float Value)

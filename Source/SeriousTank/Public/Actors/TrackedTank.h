@@ -35,8 +35,6 @@ protected:
 public:
 	ATrackedTank();
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -45,12 +43,9 @@ protected:
 private:
 	void RotateTurretToCamera(float DeltaTime);
 
-	void StartFire();
-	void StopFire();
+	virtual void StartFire() override;
+	virtual void StopFire() override;
 
-	template<int32 WeaponIndex>
-	void SwitchWeapon()
-	{
-		WeaponsManagerComponent->SwitchWeapon(WeaponIndex);
-	}
+	virtual void SwitchToFirstWeapon() override;
+	virtual void SwitchToSecondWeapon() override;
 };

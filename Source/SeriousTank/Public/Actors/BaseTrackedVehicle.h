@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameFramework/Pawn.h"
+#include "Actors/BaseVehicle.h"
 #include "BaseTrackedVehicle.generated.h"
 
 class UBoxComponent;
@@ -8,7 +8,7 @@ class UCameraComponent;
 class UST_TrackMovementComponent;
 
 UCLASS()
-class SERIOUSTANK_API ABaseTrackedVehicle : public APawn
+class SERIOUSTANK_API ABaseTrackedVehicle : public ABaseVehicle
 {
 	GENERATED_BODY()
 
@@ -37,11 +37,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UST_TrackMovementComponent* TrackMovementComponent;
 
-public:
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
 private:
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-	void RotateCamera(float Value);
+	virtual void MoveForward(float Value) override;
+	virtual void MoveRight(float Value) override;
+	virtual void RotateCamera(float Value) override;
 };
