@@ -1,19 +1,16 @@
 #pragma once
 
-#include "Actors/BaseVehicle.h"
-#include "BaseTrackedVehicle.generated.h"
+#include "Actors/Pawns/ST_BaseVehicle.h"
+#include "ST_BaseTrackedVehicle.generated.h"
 
 class UBoxComponent;
 class UCameraComponent;
 class UST_TrackMovementComponent;
 
 UCLASS()
-class SERIOUSTANK_API ABaseTrackedVehicle : public ABaseVehicle
+class SERIOUSTANK_API AST_BaseTrackedVehicle : public AST_BaseVehicle
 {
 	GENERATED_BODY()
-
-public:
-	ABaseTrackedVehicle();
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -36,6 +33,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UST_TrackMovementComponent* TrackMovementComponent;
+
+public:
+	AST_BaseTrackedVehicle();
 
 private:
 	virtual void MoveForward(float Value) override;

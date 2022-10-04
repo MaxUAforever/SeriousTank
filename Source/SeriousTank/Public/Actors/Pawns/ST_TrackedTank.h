@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Actors/BaseTrackedVehicle.h"
-#include "TrackedTank.generated.h"
+#include "Actors/Pawns/ST_BaseTrackedVehicle.h"
+#include "ST_TrackedTank.generated.h"
 
 class UArrowComponent;
 class UST_WeaponSocketComponent;
 class UST_WeaponsManagerComponent;
 
 UCLASS()
-class SERIOUSTANK_API ATrackedTank : public ABaseTrackedVehicle
+class SERIOUSTANK_API AST_TrackedTank : public AST_BaseTrackedVehicle
 {
 	GENERATED_BODY()
 
@@ -33,11 +33,9 @@ protected:
 	float TurretRotationSpeed;
 
 public:
-	ATrackedTank();
+	AST_TrackedTank();
 
 protected:
-	virtual void BeginPlay() override;
-
 	virtual void Tick(float DeltaTime) override;
 
 private:

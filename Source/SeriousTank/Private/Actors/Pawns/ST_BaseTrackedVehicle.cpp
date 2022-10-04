@@ -1,20 +1,17 @@
-#include "Actors/BaseTrackedVehicle.h"
+#include "Actors/Pawns/ST_BaseTrackedVehicle.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ST_TrackMovementComponent.h"
 
-#include "Math/UnrealMathUtility.h"
-#include "Math/Vector.h"
-
 DEFINE_LOG_CATEGORY_STATIC(BaseTrackLog, Display, All);
 
-ABaseTrackedVehicle::ABaseTrackedVehicle()
+AST_BaseTrackedVehicle::AST_BaseTrackedVehicle()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
- 	SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
+	SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
 	SetRootComponent(SceneComponent);
 
 	VehicleSceneComponent = CreateDefaultSubobject<USceneComponent>("VehicleSceneComponent");
@@ -36,7 +33,7 @@ ABaseTrackedVehicle::ABaseTrackedVehicle()
 	TrackMovementComponent = CreateDefaultSubobject<UST_TrackMovementComponent>("MovementComponent");
 }
 
-void ABaseTrackedVehicle::MoveForward(const float Value)
+void AST_BaseTrackedVehicle::MoveForward(const float Value)
 {
 	if (Controller != nullptr)
 	{
@@ -44,7 +41,7 @@ void ABaseTrackedVehicle::MoveForward(const float Value)
 	}
 }
 
-void ABaseTrackedVehicle::MoveRight(const float Value)
+void AST_BaseTrackedVehicle::MoveRight(const float Value)
 {
 	if (Controller != nullptr)
 	{
@@ -52,12 +49,10 @@ void ABaseTrackedVehicle::MoveRight(const float Value)
 	}
 }
 
-void ABaseTrackedVehicle::RotateCamera(float Value)
+void AST_BaseTrackedVehicle::RotateCamera(float Value)
 {
 	if (Controller != nullptr)
 	{
 		CameraSceneComponent->AddLocalRotation(FRotator{ 0, Value, 0 });
 	}
 }
-
-
