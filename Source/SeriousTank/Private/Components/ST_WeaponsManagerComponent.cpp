@@ -47,6 +47,8 @@ bool UST_WeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
 		return false;
 	}
 
+	StopFire();
 	CurrentWeaponIndex = WeaponIndex;
+	
 	return true;
 }

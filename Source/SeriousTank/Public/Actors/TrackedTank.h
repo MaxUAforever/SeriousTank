@@ -47,4 +47,10 @@ private:
 
 	void StartFire();
 	void StopFire();
+
+	template<int32 WeaponIndex>
+	void SwitchWeapon()
+	{
+		WeaponsManagerComponent->SwitchWeapon(WeaponIndex);
+	}
 };
