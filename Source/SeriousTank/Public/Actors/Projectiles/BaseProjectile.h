@@ -16,7 +16,7 @@ protected:
 	USceneComponent* SceneComponent;
 
 	UPROPERTY(EditAnywhere)
-	USphereComponent* CollisionCompnent;
+	USphereComponent* CollisionComponent;
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* MeshComponent;
@@ -26,4 +26,10 @@ protected:
 
 public:	
 	ABaseProjectile();
+
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+protected:
+	virtual void BeginPlay() override;
 };
