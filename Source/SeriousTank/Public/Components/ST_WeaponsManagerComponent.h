@@ -22,6 +22,8 @@ public:
 
 	bool SwitchWeapon(int32 WeaponIndex);
 
+	ABaseWeapon* GetWeapon(int32 WeaponIndex) const;
+
 protected:
 	virtual void BeginPlay() override;
 };

@@ -14,6 +14,8 @@ void UST_WeaponSocketComponent::BeginPlay()
 	{
 		Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass, GetComponentTransform());
 		Weapon->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+		
+		OnWeaponAdded.Execute(Weapon);
 	}
 }
 

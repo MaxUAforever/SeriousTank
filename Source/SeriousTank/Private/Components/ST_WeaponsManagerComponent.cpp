@@ -12,7 +12,9 @@ void UST_WeaponsManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<UActorComponent*> WeaponSocketActors = GetOwner()->GetComponentsByClass(UST_WeaponSocketComponent::StaticClass());
+	TArray<UActorComponent*> WeaponSocketActors;
+	GetOwner()->GetComponents(UST_WeaponSocketComponent::StaticClass(), WeaponSocketActors);
+
 	Weapons.Reserve(WeaponSocketActors.Num());
 	for (UActorComponent* WeaponSocketActor : WeaponSocketActors)
 	{
@@ -51,4 +53,9 @@ bool UST_WeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
 	CurrentWeaponIndex = WeaponIndex;
 	
 	return true;
+}
+
+ABaseWeapon* UST_WeaponsManagerComponent::GetWeapon(int32 WeaponIndex) const
+{
+	return (WeaponIndex >= 0 && WeaponIndex < Weapons.Num()) ? Weapons[CurrentWeaponIndex] : nullptr;
 }

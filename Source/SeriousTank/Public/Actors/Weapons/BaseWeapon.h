@@ -20,9 +20,18 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* ShootingArrowComponent;
 
+	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
+	FTimerHandle ReloadTimerHandler;
+
 public:
 	ABaseWeapon();
 
 	virtual void StartFire() {};
 	virtual void StopFire() {};
+
+	virtual bool IsReloading() const { return false; };
+	virtual float GetReloadingRemainingTime() const { return 0.f; };
+
+	DECLARE_DELEGATE(FReloadingStarted)
+	FReloadingStarted OnReloadingStarted;
 };

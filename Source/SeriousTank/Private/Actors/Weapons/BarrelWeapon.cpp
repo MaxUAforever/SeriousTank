@@ -9,7 +9,7 @@ ABarrelWeapon::ABarrelWeapon()
 	ReloadingTime = 5.f;
 
 	IsFireForced = false;
-	IsReloading = false;
+	IsWeaponReloading = false;
 }
 
 void ABarrelWeapon::StartFire()
@@ -23,9 +23,19 @@ void ABarrelWeapon::StopFire()
 	IsFireForced = false;
 }
 
+bool ABarrelWeapon::IsReloading() const
+{
+	return IsWeaponReloading;
+}
+
+float ABarrelWeapon::GetReloadingRemainingTime() const
+{
+	return GetWorldTimerManager().GetTimerRemaining(ReloadTimerHandler);
+}
+
 void ABarrelWeapon::Shoot()
 {
-	if (IsReloading)
+	if (IsWeaponReloading)
 	{
 		return;
 	}
@@ -40,17 +50,19 @@ void ABarrelWeapon::Shoot()
 
 void ABarrelWeapon::StartReloading()
 {
-	IsReloading = true;
+	IsWeaponReloading = true;
 
 	FTimerDelegate FireTimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::StopReloading);
 	GetWorldTimerManager().SetTimer(ReloadTimerHandler, FireTimerDelegate, ReloadingTime, false);
+
+	OnReloadingStarted.ExecuteIfBound();
 }
 
 void ABarrelWeapon::StopReloading()
 {
-	IsReloading = false;
+	IsWeaponReloading = false;
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandler);
-
+	
 	if (IsFireForced)
 	{
 		Shoot();

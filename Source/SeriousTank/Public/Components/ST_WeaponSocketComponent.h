@@ -12,6 +12,10 @@ class SERIOUSTANK_API UST_WeaponSocketComponent : public UArrowComponent
 {
 	GENERATED_BODY()
 
+public:
+	DECLARE_DELEGATE_OneParam(FWeaponAdded, ABaseWeapon*)
+	FWeaponAdded OnWeaponAdded;
+
 protected:
 	UPROPERTY(EditAnywhere, Category="Weapon")
 	TSubclassOf<ABaseWeapon> WeaponClass;
