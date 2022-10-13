@@ -9,7 +9,7 @@ UCLASS()
 class SERIOUSTANK_API AST_ShootTarget : public AActor
 {
 	GENERATED_BODY()
-	
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneComponent;
