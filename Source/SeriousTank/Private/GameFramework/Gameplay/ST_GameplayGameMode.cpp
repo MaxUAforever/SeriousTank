@@ -20,12 +20,29 @@ void AST_GameplayGameMode::InitGameState()
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
 		GameplayGameState->SetRemainingTime(GameData.StartTime);
+		GameplayGameState->SetActorTickEnabled(true);
 	}
 }
 
 void AST_GameplayGameMode::OnTargetDestroyed(AActor* DestroyedActor)
 {
+	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
+	{
+		GameplayGameState->OnTimeHasEnded.BindUObject(this, &ThisClass::OnGameOver);
+
+		GameplayGameState->AddScore(GameData.AddedScoreForTarget);
+		GameplayGameState->AddTime(GameData.AddedTimeForTarget);
+	}
+
 	SpawnTarget();
+}
+
+void AST_GameplayGameMode::OnGameOver()
+{
+	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
+	{
+		GameplayGameState->SetActorTickEnabled(false);
+	}
 }
 
 void AST_GameplayGameMode::SpawnTarget()
