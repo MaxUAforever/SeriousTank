@@ -37,6 +37,8 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void InitGameState() override;
+
 private:
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);
