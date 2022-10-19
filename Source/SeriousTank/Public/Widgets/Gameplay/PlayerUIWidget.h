@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerUIWidget.generated.h"
 
+class UTextBlock;
 class UST_WeaponReloadingWidget;
 
 UCLASS()
@@ -19,4 +20,26 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UST_WeaponReloadingWidget* ThirdWeaponReloadingWidget;
+
+	UPROPERTY(EditAnyWhere, meta = (BindWidget))
+	UTextBlock* RemainingTimeBlock;
+
+	UPROPERTY(EditAnyWhere, meta = (BindWidget))
+	UTextBlock* ScoreBlock;
+
+	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
+	FTimerHandle TimeRefreshHandler;
+
+	UPROPERTY(EditAnywhere, Category = "TimerHandler")
+	float TimeRefreshRate;
+
+public:
+	virtual void NativeConstruct() override;
+
+private:
+	UFUNCTION()
+	void UpdateScore(int32 NewScore);
+
+	UFUNCTION()
+	void UpdateTime();
 };

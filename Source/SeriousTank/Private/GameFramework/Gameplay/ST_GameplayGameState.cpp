@@ -22,7 +22,7 @@ void AST_GameplayGameState::AddScore(const int32 DeltaScore)
 {
 	Score = FMath::Max(Score + DeltaScore, 0);
 
-	UE_LOG(GameStateLog, Warning, TEXT("Score: %d"), Score);
+	OnScoreHasChanged.ExecuteIfBound(Score);
 }
 
 float AST_GameplayGameState::GetRemainingTime() const

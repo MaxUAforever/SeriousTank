@@ -14,6 +14,9 @@ public:
 	DECLARE_DELEGATE(FTimeHasEnded)
 	FTimeHasEnded OnTimeHasEnded;
 
+	DECLARE_DELEGATE_OneParam(FScoreHasChanged, int32)
+	FScoreHasChanged OnScoreHasChanged;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	int32 Score = 0;
