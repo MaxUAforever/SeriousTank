@@ -16,19 +16,10 @@ public:
 	DECLARE_DELEGATE_OneParam(FWeaponAdded, ABaseWeapon*)
 	FWeaponAdded OnWeaponAdded;
 
-protected:
-	UPROPERTY(EditAnywhere, Category="Weapon")
-	TSubclassOf<ABaseWeapon> WeaponClass;
-
 private:
 	ABaseWeapon* Weapon;
 
 public:
-	ABaseWeapon* GetWeapon()
-	{
-		return Weapon;
-	}
-
-protected:
-	virtual void BeginPlay() override;
+	ABaseWeapon* GetWeapon() const { return Weapon; }
+	ABaseWeapon* SetWeapon(TSubclassOf<ABaseWeapon> WeaponClass);
 };

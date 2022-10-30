@@ -1,21 +1,23 @@
 #include "Components/ST_WeaponSocketComponent.h"
 
-void UST_WeaponSocketComponent::BeginPlay()
+ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> WeaponClass)
 {
-	Super::BeginPlay();
-
 	UWorld* World = GetWorld();
-	if (!World)
+	if (!World || !WeaponClass)
 	{
-		return;
+		return nullptr;
 	}
 
-	if (WeaponClass)
+	if (Weapon)
 	{
-		Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass, GetComponentTransform());
-		Weapon->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
-		
-		OnWeaponAdded.Execute(Weapon);
+		Weapon->Destroy();
 	}
+
+	Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass, GetComponentTransform());
+	Weapon->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+		
+	OnWeaponAdded.ExecuteIfBound(Weapon);
+	
+	return Weapon;
 }
 

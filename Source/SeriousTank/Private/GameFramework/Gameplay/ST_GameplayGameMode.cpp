@@ -4,6 +4,21 @@
 #include "Actors/Pawns/ST_BaseTrackedVehicle.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "GameFramework/Gameplay/Utils/ST_TargetRespawnManager.h"
+#include "GameFramework/ST_GameInstance.h"
+
+UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	UST_GameInstance* GameInstance = GetGameInstance<UST_GameInstance>();
+	if (GameInstance)
+	{
+		return GameInstance->GetVehicleClass();
+	}
+	else
+	{
+		return Super::GetDefaultPawnClassForController_Implementation(InController);
+	}
+}
+
 
 void AST_GameplayGameMode::BeginPlay()
 {

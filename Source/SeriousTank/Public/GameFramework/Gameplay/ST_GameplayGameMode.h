@@ -37,6 +37,9 @@ private:
 	UPROPERTY()
 	UST_TargetRespawnManager* TargetRespawnManager;
 
+public:
+	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+
 protected:
 	virtual void BeginPlay() override;
 
