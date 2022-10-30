@@ -27,6 +27,9 @@ protected:
 	UPROPERTY(EditAnyWhere, meta = (BindWidget))
 	UTextBlock* ScoreBlock;
 
+	UPROPERTY(EditAnyWhere, meta = (BindWidget))
+	UTextBlock* PreStartTimeBlock;
+
 	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
 	FTimerHandle TimeRefreshHandler;
 
@@ -42,4 +45,10 @@ private:
 
 	UFUNCTION()
 	void UpdateTime();
+
+	UFUNCTION()
+	void UpdatePreStartTime(int32 NewTime);
+
+	UFUNCTION()
+	void HidePreStartTimeBlock();
 };

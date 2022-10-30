@@ -11,6 +11,12 @@ class SERIOUSTANK_API AST_GameplayGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+	DECLARE_DELEGATE_OneParam(FCountdownChanged, int32)
+	FCountdownChanged OnPreStartCountdownChanged;
+
+	DECLARE_DELEGATE(FCountdownEnded)
+	FCountdownEnded OnPreStartCountdownEnded;
+
 	DECLARE_DELEGATE(FTimeHasEnded)
 	FTimeHasEnded OnTimeHasEnded;
 
@@ -19,10 +25,16 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere)
+	int32 RemainingCountdownTime = 0;
+
+	UPROPERTY(VisibleAnywhere)
 	int32 Score = 0;
 
 	UPROPERTY(VisibleAnywhere)
 	float RemainingTime = 0.f;
+
+	UPROPERTY(VisibleAnywhere, Category = "Timers")
+	FTimerHandle PreStartCountdownTimer;
 
 public:
 	AST_GameplayGameState();
@@ -35,6 +47,15 @@ public:
 	void SetScore(int32 NewScore);
 	void AddScore(int32 DeltaScore);
 
+	int32 GetPreStartCountdownTime() const;
+	void SetPreStartCountdownTime(int32 NewTime);
+
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaSeconds) override;
+
+private:
+	UFUNCTION()
+	void OnPreStartCountdownTimerFired();
 };

@@ -6,6 +6,8 @@
 #include "GameFramework/Gameplay/Utils/ST_TargetRespawnManager.h"
 #include "GameFramework/ST_GameInstance.h"
 
+#include "TimerManager.h"
+
 UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
 	UST_GameInstance* GameInstance = GetGameInstance<UST_GameInstance>();
@@ -34,8 +36,10 @@ void AST_GameplayGameMode::InitGameState()
 
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
+		GameplayGameState->OnTimeHasEnded.BindUObject(this, &ThisClass::OnGameOver);
+
 		GameplayGameState->SetRemainingTime(GameData.StartTime);
-		GameplayGameState->SetActorTickEnabled(true);
+		GameplayGameState->SetPreStartCountdownTime(GameData.PreStartCountdownTime);
 	}
 }
 
@@ -43,8 +47,6 @@ void AST_GameplayGameMode::OnTargetDestroyed(AActor* DestroyedActor)
 {
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
-		GameplayGameState->OnTimeHasEnded.BindUObject(this, &ThisClass::OnGameOver);
-
 		GameplayGameState->AddScore(GameData.AddedScoreForTarget);
 		GameplayGameState->AddTime(GameData.AddedTimeForTarget);
 	}

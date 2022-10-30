@@ -42,6 +42,7 @@ void UPlayerUIWidget::NativeConstruct()
 	if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
 	{
 		GameState->OnScoreHasChanged.BindUObject(this, &ThisClass::UpdateScore);
+		GameState->OnPreStartCountdownChanged.BindUObject(this, &ThisClass::UpdatePreStartTime);
 	}
 }
 
@@ -59,4 +60,25 @@ void UPlayerUIWidget::UpdateTime()
 			RemainingTimeBlock->SetText(ConvertTimeToText(GameState->GetRemainingTime()));
 		}
 	}
+}
+
+void UPlayerUIWidget::UpdatePreStartTime(int32 NewTime)
+{
+	FText PreStartTimeBlockValue = NewTime > 0 ? FText::FromString(FString::FromInt(NewTime)) : FText::FromString(TEXT("Start!"));
+	PreStartTimeBlock->SetText(PreStartTimeBlockValue);
+	
+	if (NewTime <= 0)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			FTimerHandle TextBlockVisibilityTimerHandle;
+			FTimerDelegate TextBlockVisibilityDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::HidePreStartTimeBlock);
+			World->GetTimerManager().SetTimer(TextBlockVisibilityTimerHandle, TextBlockVisibilityDelegate, 1.5f, false);
+		}
+	}
+}
+
+void UPlayerUIWidget::HidePreStartTimeBlock()
+{
+	PreStartTimeBlock->SetVisibility(ESlateVisibility::Hidden);
 }

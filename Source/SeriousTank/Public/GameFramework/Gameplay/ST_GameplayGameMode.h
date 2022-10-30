@@ -11,6 +11,9 @@ struct FGameData
 {
 	GENERATED_USTRUCT_BODY()
 
+	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "0", ClampMax = "5"))
+	int32 PreStartCountdownTime = 3;
+
 	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "1", ClampMax = "500"))
 	int32 StartTime = 50;
 
@@ -28,7 +31,7 @@ UCLASS()
 class SERIOUSTANK_API AST_GameplayGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-		
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
 	FGameData GameData;
