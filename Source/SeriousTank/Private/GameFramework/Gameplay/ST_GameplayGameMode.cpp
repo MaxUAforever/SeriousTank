@@ -36,7 +36,7 @@ void AST_GameplayGameMode::InitGameState()
 
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
-		GameplayGameState->OnTimeHasEnded.BindUObject(this, &ThisClass::OnGameOver);
+		GameplayGameState->OnTimeHasEnded.AddUObject(this, &ThisClass::OnGameOver);
 
 		GameplayGameState->SetRemainingTime(GameData.StartTime);
 		GameplayGameState->SetPreStartCountdownTime(GameData.PreStartCountdownTime);
@@ -48,7 +48,7 @@ void AST_GameplayGameMode::OnTargetDestroyed(AActor* DestroyedActor)
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
 		GameplayGameState->AddScore(GameData.AddedScoreForTarget);
-		GameplayGameState->AddTime(GameData.AddedTimeForTarget);
+		GameplayGameState->AddRemainingTime(GameData.AddedTimeForTarget);
 	}
 
 	SpawnTarget();

@@ -27,9 +27,16 @@ void AST_MainMenuPlayerController::OnNewGameStarted()
 
 	if (UST_GameInstance* GameInstance = World->GetGameInstance<UST_GameInstance>())
 	{
-		if (const FLevelInfo* LevelInfo = GameInstance->GetLevelInfo(GameState->GetCurrentGameLevelIndex()))
+		if (const FGameplayLevelInfo* LevelInfo = GameInstance->GetLevelInfo(GameState->GetCurrentGameLevelIndex()))
 		{
 			UGameplayStatics::OpenLevel(World, FName(*LevelInfo->LevelName));
 		}
 	}
+}
+
+void AST_MainMenuPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetInputMode(FInputModeGameAndUI{});
 }

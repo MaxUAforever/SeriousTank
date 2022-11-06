@@ -13,5 +13,8 @@ protected:
 
 private:
 	UFUNCTION()
-	void SetInputEnabled(bool IsEnabled);
+	void SetPawnInputEnabled(bool IsEnabled);
+
+	UFUNCTION()
+	void SetOnlyUIInputEnabled(bool IsEnabled);
 };

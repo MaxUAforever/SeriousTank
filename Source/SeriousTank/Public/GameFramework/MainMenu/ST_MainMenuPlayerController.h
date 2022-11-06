@@ -12,4 +12,7 @@ public:
 	AST_MainMenuPlayerController();
 
 	void OnNewGameStarted();
+
+protected:
+	virtual void BeginPlay() override;
 };

@@ -17,7 +17,7 @@ public:
 	DECLARE_DELEGATE(FCountdownEnded)
 	FCountdownEnded OnPreStartCountdownEnded;
 
-	DECLARE_DELEGATE(FTimeHasEnded)
+	DECLARE_MULTICAST_DELEGATE(FTimeHasEnded)
 	FTimeHasEnded OnTimeHasEnded;
 
 	DECLARE_DELEGATE_OneParam(FScoreHasChanged, int32)
@@ -33,17 +33,22 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	float RemainingTime = 0.f;
 
+	UPROPERTY(VisibleAnywhere)
+	float TotalPlayTime = 0.f;
+
 	UPROPERTY(VisibleAnywhere, Category = "Timers")
 	FTimerHandle PreStartCountdownTimer;
 
 public:
 	AST_GameplayGameState();
 
-	int32 GetScore() const;
-	void SetRemainingTime(float NewTime);
-	void AddTime(float DeltaTime);
-
 	float GetRemainingTime() const;
+	void SetRemainingTime(float NewTime);
+	void AddRemainingTime(float DeltaTime);
+
+	float GetTotalPlayTime() const;
+
+	int32 GetScore() const;
 	void SetScore(int32 NewScore);
 	void AddScore(int32 DeltaScore);
 

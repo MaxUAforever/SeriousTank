@@ -19,7 +19,7 @@ void AST_MainMenuGameState::SetCurrentGameLevelIndex(int32 Index)
 
 	if (UST_GameInstance* GameInstance = World->GetGameInstance<UST_GameInstance>())
 	{
-		const FLevelInfo* LevelInfo = GameInstance->GetLevelInfo(Index);
+		const FGameplayLevelInfo* LevelInfo = GameInstance->GetLevelInfo(Index);
 		if (LevelInfo)
 		{
 			CurrentGameLevelIndex = Index;

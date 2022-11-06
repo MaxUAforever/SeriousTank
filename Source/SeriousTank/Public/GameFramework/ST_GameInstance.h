@@ -4,7 +4,7 @@
 #include "ST_GameInstance.generated.h"
 
 USTRUCT(BlueprintType)
-struct FLevelInfo
+struct FGameplayLevelInfo
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -34,20 +34,28 @@ class SERIOUSTANK_API UST_GameInstance : public UGameInstance
 	
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FLevelInfo> LevelsInfo;
+	TArray<FGameplayLevelInfo> LevelsInfo;
+
+	UPROPERTY(EditDefaultsOnly)
+	FString MainMenuLevelName;
 
 	UPROPERTY(EditAnywhere)
 	FVehicleInfo VehicleInfo; 
 
 public:
-	const TArray<FLevelInfo>& GetLevelsInfo() const 
+	const TArray<FGameplayLevelInfo>& GetLevelsInfo() const
 	{ 
 		return LevelsInfo; 
 	}
 
-	const FLevelInfo* GetLevelInfo(int32 Index) const
+	const FGameplayLevelInfo* GetLevelInfo(int32 Index) const
 	{
 		return Index >= 0 && Index < LevelsInfo.Num() ? &LevelsInfo[Index] : nullptr;
+	}
+
+	const FString GetMainMenuLevelName() const
+	{
+		return MainMenuLevelName;
 	}
 
 	TSubclassOf<AST_BaseVehicle> GetVehicleClass() const 

@@ -21,7 +21,7 @@ void UST_MainMenuWidget::NativeConstruct()
 
 	if (UST_GameInstance* GameInstance = World->GetGameInstance<UST_GameInstance>())
 	{
-		const FLevelInfo* DefaultLevelInfo = GameInstance->GetLevelInfo(0);
+		const FGameplayLevelInfo* DefaultLevelInfo = GameInstance->GetLevelInfo(0);
 		if (DefaultLevelInfo)
 		{
 			ChooseLevelButtonCaption->SetText(FText::FromString(DefaultLevelInfo->LevelName));

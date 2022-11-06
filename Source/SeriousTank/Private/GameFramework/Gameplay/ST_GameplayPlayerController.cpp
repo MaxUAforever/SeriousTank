@@ -9,17 +9,20 @@ void AST_GameplayPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetInputEnabled(false);
+	SetPawnInputEnabled(false);
+	SetInputMode(FInputModeGameOnly{});
+
 	if (UWorld* World = GetWorld())
 	{
 		if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
 		{
-			GameState->OnPreStartCountdownEnded.BindUObject(this, &ThisClass::SetInputEnabled, true);
+			GameState->OnPreStartCountdownEnded.BindUObject(this, &ThisClass::SetPawnInputEnabled, true);
+			GameState->OnTimeHasEnded.AddUObject(this, &ThisClass::SetOnlyUIInputEnabled, true);
 		}
 	}
 }
 
-void AST_GameplayPlayerController::SetInputEnabled(bool IsEnabled)
+void AST_GameplayPlayerController::SetPawnInputEnabled(bool IsEnabled)
 {
 	APawn* ControlledPawn = GetPawn();
 	if (!ControlledPawn)
@@ -34,5 +37,22 @@ void AST_GameplayPlayerController::SetInputEnabled(bool IsEnabled)
 	else
 	{
 		ControlledPawn->DisableInput(this);
+	}
+}
+
+void AST_GameplayPlayerController::SetOnlyUIInputEnabled(bool IsEnabled)
+{
+	SetPawnInputEnabled(!IsEnabled);
+
+	bShowMouseCursor = IsEnabled;
+	bEnableClickEvents = IsEnabled;
+
+	if (IsEnabled)
+	{
+		SetInputMode(FInputModeUIOnly{});
+	}
+	else
+	{
+		SetInputMode(FInputModeGameOnly{});
 	}
 }
