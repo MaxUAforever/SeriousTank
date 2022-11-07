@@ -5,6 +5,10 @@
 
 class UButton;
 class UTextBlock;
+class UScrollBox;
+class UST_GameplayLevelCardWidget;
+struct FGameplayLevelInfo;
+
 UCLASS()
 class SERIOUSTANK_API UST_MainMenuWidget : public UUserWidget
 {
@@ -20,10 +24,25 @@ protected:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* ChooseLevelButtonCaption;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UScrollBox* LevelsScrollBox;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UST_GameplayLevelCardWidget> LevelCardWidgetClass;
+
 protected:
 	virtual void NativeConstruct() override;
 
 private:
 	UFUNCTION()
 	void OnStartGameButtonClicked();
+
+	UFUNCTION()
+	void OnChooseLevelButtonClicked();
+
+	UFUNCTION()
+	void OnLevelIsChoosen(int32 LevelIndex);
+
+	void AddLevelCardWidget(const FGameplayLevelInfo& LevelInfo, int32 LevelIndex);
+	void SetCurrentLevelCaption(int32 LevelIndex);
 };

@@ -10,6 +10,9 @@ struct FGameplayLevelInfo
 
 	UPROPERTY(EditDefaultsOnly)
 	FString LevelName;
+
+	UPROPERTY(EditDefaultsOnly)
+	FString LevelCaption;
 };
 
 class AST_BaseVehicle;
