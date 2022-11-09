@@ -9,4 +9,6 @@ AST_TargetSpawningVolume::AST_TargetSpawningVolume()
 
 	SpawningBoxComponent = CreateDefaultSubobject<UBoxComponent>("SpawningBoxComponent");
 	SpawningBoxComponent->SetupAttachment(RootComponent);
+
+	SetActorEnableCollision(false);
 }

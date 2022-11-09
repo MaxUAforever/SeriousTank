@@ -15,6 +15,10 @@ UST_TrackMovementComponent::UST_TrackMovementComponent()
 	InertiaValue = 30;
 	BreakAcselerationValue = 100;
 
+	bConstrainToPlane = true;
+	bSnapToPlaneAtStart = true;
+	SetPlaneConstraintAxisSetting(EPlaneConstraintAxisSetting::Z);
+
 	CurrentSpeed = 0;
 }
 
@@ -54,7 +58,13 @@ void UST_TrackMovementComponent::CalculatePosition(float DeltaTime)
 	// Calculate location for moving without rotation.
 	if (CurrentSpeed != 0 && !IsTurningSideways)
 	{
-		GetOwner()->SetActorLocation(GetOwner()->GetActorLocation() + CurrentDirectionVector * MovementDistance);
+		FHitResult Hit;
+		SafeMoveUpdatedComponent(CurrentDirectionVector * MovementDistance, UpdatedComponent->GetComponentRotation(), true, Hit);
+		if (Hit.IsValidBlockingHit())
+		{
+			CurrentSpeed = 0.f;
+		}
+
 		return;
 	}
 
@@ -64,17 +74,23 @@ void UST_TrackMovementComponent::CalculatePosition(float DeltaTime)
 
 	// Angle from turning center between current position and new possible possition.
 	const float TurningAngle = (RotationMovementDistance * 180) / (RotationRadius * PI);
-	GetOwner()->AddActorLocalRotation(FRotator{ 0, TurningAngle * RequestedDirections.Y, 0 });
+	const FRotator UpdatedRotation = UpdatedComponent->GetComponentRotation() + FRotator{ 0, TurningAngle * RequestedDirections.Y, 0 };
 
 	// Calculate location for moving with rotation.
+	FVector MovementVector;
 	if (CurrentSpeed != 0)
 	{
 		const FVector VectorToCurrentLocation = CurrentDirectionVector.RotateAngleAxis(-90.f * RequestedDirections.Y, FVector::ZAxisVector) * RotationRadius;
 		const FVector VectorToNewLocation = VectorToCurrentLocation.RotateAngleAxis(TurningAngle * RequestedDirections.Y * -1, FVector::ZAxisVector);
 
-		const FVector NovementVector = VectorToCurrentLocation - VectorToNewLocation;
+		MovementVector = VectorToCurrentLocation - VectorToNewLocation;
+	}
 
-		GetOwner()->SetActorLocation(GetOwner()->GetActorLocation() + NovementVector);
+	FHitResult Hit;
+	SafeMoveUpdatedComponent(MovementVector, UpdatedRotation, true, Hit);
+	if (Hit.IsValidBlockingHit())
+	{
+		CurrentSpeed = 0.f;
 	}
 }
 

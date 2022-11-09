@@ -13,17 +13,11 @@ class SERIOUSTANK_API AST_BaseTrackedVehicle : public AST_BaseVehicle
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* SceneComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* VehicleSceneComponent;
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* BaseCollisionComponent;
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* BaseStaticMeshComponent;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* BaseCollisionComponent;
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* CameraSceneComponent;
@@ -36,6 +30,8 @@ protected:
 
 public:
 	AST_BaseTrackedVehicle();
+
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 private:
 	virtual void MoveForward(float Value) override;

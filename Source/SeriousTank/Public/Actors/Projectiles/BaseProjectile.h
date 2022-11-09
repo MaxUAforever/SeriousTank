@@ -12,9 +12,6 @@ class SERIOUSTANK_API ABaseProjectile : public AActor
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* SceneComponent;
-
 	UPROPERTY(EditAnywhere)
 	USphereComponent* CollisionComponent;
 

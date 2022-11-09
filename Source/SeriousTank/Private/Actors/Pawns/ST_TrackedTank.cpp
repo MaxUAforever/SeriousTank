@@ -10,7 +10,7 @@ AST_TrackedTank::AST_TrackedTank()
 	TurretRotationSpeed = 30.f;
 
 	TurretSceneComponent = CreateDefaultSubobject<USceneComponent>("TurretSceneComponent");
-	TurretSceneComponent->SetupAttachment(VehicleSceneComponent);
+	TurretSceneComponent->SetupAttachment(RootComponent);
 
 	TurretMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("TurretMeshComponent");
 	TurretMeshComponent->SetupAttachment(TurretSceneComponent);
@@ -38,11 +38,14 @@ void AST_TrackedTank::RotateTurretToCamera(float DeltaTime)
 
 	if (CameraRotator.Yaw != TurretRotator.Yaw)
 	{
-		const float DifferenceAngle = CameraRotator.Yaw - TurretRotator.Yaw;
-		const float MaxRotationAngle = TurretRotationSpeed * DeltaTime;
+		const float AbsoluteDifferenceAngle = CameraRotator.Yaw - TurretRotator.Yaw;
+		const float DifferenceAngle = FMath::Abs(AbsoluteDifferenceAngle) > 180.f ? ((FMath::Abs(AbsoluteDifferenceAngle) - 180.f) * (-1 * FMath::Sign(AbsoluteDifferenceAngle))) : AbsoluteDifferenceAngle;
+		const float MaxRotationAngle = TurretRotationSpeed * DeltaTime * FMath::Sign(DifferenceAngle);
 
-		const float RotationAngle = FMath::Min(MaxRotationAngle, FMath::Abs(DifferenceAngle)) * FMath::Sign(DifferenceAngle);
+		const float RotationAngle = FMath::Abs(DifferenceAngle) < FMath::Abs(MaxRotationAngle) ? DifferenceAngle : MaxRotationAngle;
 		TurretSceneComponent->AddLocalRotation(FRotator{ 0, RotationAngle, 0 });
+
+		UE_LOG(LogTemp, Warning, TEXT("DifferenceAngle: %f = CameraRotator.Yaw: %f - TurretRotator.Yaw: %f"), DifferenceAngle, CameraRotator.Yaw, TurretRotator.Yaw);
 	}
 }
 

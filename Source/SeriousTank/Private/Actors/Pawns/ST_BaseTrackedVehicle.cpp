@@ -10,18 +10,12 @@ DEFINE_LOG_CATEGORY_STATIC(BaseTrackLog, Display, All);
 AST_BaseTrackedVehicle::AST_BaseTrackedVehicle()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
-	SetRootComponent(SceneComponent);
-
-	VehicleSceneComponent = CreateDefaultSubobject<USceneComponent>("VehicleSceneComponent");
-	VehicleSceneComponent->SetupAttachment(RootComponent);
+	
+	BaseCollisionComponent = CreateDefaultSubobject<UBoxComponent>("CollisionComponent");
+	SetRootComponent(BaseCollisionComponent);
 
 	BaseStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
-	BaseStaticMeshComponent->SetupAttachment(VehicleSceneComponent);
-
-	BaseCollisionComponent = CreateDefaultSubobject<UBoxComponent>("CollisionComponent");
-	BaseCollisionComponent->SetupAttachment(VehicleSceneComponent);
+	BaseStaticMeshComponent->SetupAttachment(RootComponent);
 
 	CameraSceneComponent = CreateDefaultSubobject<USceneComponent>("CameraSceneComponent");
 	CameraSceneComponent->SetupAttachment(RootComponent);
@@ -31,6 +25,12 @@ AST_BaseTrackedVehicle::AST_BaseTrackedVehicle()
 	CameraComponent->SetupAttachment(CameraSceneComponent);
 
 	TrackMovementComponent = CreateDefaultSubobject<UST_TrackMovementComponent>("MovementComponent");
+	TrackMovementComponent->UpdatedComponent = RootComponent;
+}
+
+UPawnMovementComponent* AST_BaseTrackedVehicle::GetMovementComponent() const
+{
+	return TrackMovementComponent;
 }
 
 void AST_BaseTrackedVehicle::MoveForward(const float Value)

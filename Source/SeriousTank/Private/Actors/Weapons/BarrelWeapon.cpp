@@ -42,7 +42,10 @@ void ABarrelWeapon::Shoot()
 
 	if (UWorld* World = GetWorld())
 	{
-		World->SpawnActor<ABaseProjectile>(ProjectileClass, ShootingArrowComponent->GetComponentTransform());
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = this;
+
+		World->SpawnActor<ABaseProjectile>(ProjectileClass, ShootingArrowComponent->GetComponentTransform(), SpawnParameters);
 	}
 
 	StartReloading();

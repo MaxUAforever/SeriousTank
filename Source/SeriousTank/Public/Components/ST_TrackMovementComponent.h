@@ -1,11 +1,10 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "ST_TrackMovementComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class SERIOUSTANK_API UST_TrackMovementComponent : public UActorComponent
+class SERIOUSTANK_API UST_TrackMovementComponent : public UPawnMovementComponent
 {
 	GENERATED_BODY()
 

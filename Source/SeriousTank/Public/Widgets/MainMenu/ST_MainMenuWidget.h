@@ -30,6 +30,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UST_GameplayLevelCardWidget> LevelCardWidgetClass;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* ExitGameButton;
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -42,6 +45,9 @@ private:
 
 	UFUNCTION()
 	void OnLevelIsChoosen(int32 LevelIndex);
+
+	UFUNCTION()
+	void OnExitButtonClicked();
 
 	void AddLevelCardWidget(const FGameplayLevelInfo& LevelInfo, int32 LevelIndex);
 	void SetCurrentLevelCaption(int32 LevelIndex);

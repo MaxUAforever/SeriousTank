@@ -16,11 +16,10 @@
 		}
 	],
 	"TargetPlatforms": [
-		"Android",
-		"IOS",
 		"Linux",
 		"Mac",
 		"Switch",
-		"Windows"
+		"Windows",
+		"WindowsNoEditor"
 	]
 }

@@ -15,6 +15,7 @@ void UST_MainMenuWidget::NativeConstruct()
 
 	StartGameButton->OnClicked.AddDynamic(this, &ThisClass::OnStartGameButtonClicked);
 	ChooseGameplayLevelButton->OnClicked.AddDynamic(this, &ThisClass::OnChooseLevelButtonClicked);
+	ExitGameButton->OnClicked.AddDynamic(this, &ThisClass::OnExitButtonClicked);
 
 	UWorld* World = GetWorld();
 	if (!World)
@@ -54,6 +55,11 @@ void UST_MainMenuWidget::OnLevelIsChoosen(int32 LevelIndex)
 {
 	SetCurrentLevelCaption(LevelIndex);
 	LevelsScrollBox->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UST_MainMenuWidget::OnExitButtonClicked()
+{
+	FGenericPlatformMisc::RequestExit(false);
 }
 
 void UST_MainMenuWidget::AddLevelCardWidget(const FGameplayLevelInfo& LevelInfo, const int32 LevelIndex)

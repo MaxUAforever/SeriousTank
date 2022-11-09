@@ -3,6 +3,8 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 
+#include "GameFramework/Gameplay/ST_GameplayGameMode.h"
+
 AST_ShootTarget::AST_ShootTarget()
 {
 	SceneComponent = CreateDefaultSubobject<USceneComponent>("RootComponent");
@@ -14,5 +16,4 @@ AST_ShootTarget::AST_ShootTarget()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	MeshComponent->SetupAttachment(SceneComponent);
 }
-
 

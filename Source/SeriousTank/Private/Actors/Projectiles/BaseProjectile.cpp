@@ -8,14 +8,11 @@
 
 ABaseProjectile::ABaseProjectile()
 {
-	SceneComponent = CreateDefaultSubobject<USceneComponent>("RootComponent");
-	SetRootComponent(SceneComponent);
-
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>("CollisionComponent");
-	CollisionComponent->SetupAttachment(SceneComponent);
+	SetRootComponent(CollisionComponent);
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
-	MeshComponent->SetupAttachment(SceneComponent);
+	MeshComponent->SetupAttachment(RootComponent);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComponent");
 }
@@ -32,5 +29,9 @@ void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor
 	if (AST_ShootTarget* ShootingTargetActor = Cast<AST_ShootTarget>(OtherActor))
 	{
 		OtherActor->Destroy();
+	}
+	if (OtherActor != this && OtherActor != GetOwner())
+	{
+		Destroy();
 	}
 }
