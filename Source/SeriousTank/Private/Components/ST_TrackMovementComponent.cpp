@@ -77,7 +77,7 @@ void UST_TrackMovementComponent::CalculatePosition(float DeltaTime)
 	const FRotator UpdatedRotation = UpdatedComponent->GetComponentRotation() + FRotator{ 0, TurningAngle * RequestedDirections.Y, 0 };
 
 	// Calculate location for moving with rotation.
-	FVector MovementVector;
+	FVector MovementVector{0.f};
 	if (CurrentSpeed != 0)
 	{
 		const FVector VectorToCurrentLocation = CurrentDirectionVector.RotateAngleAxis(-90.f * RequestedDirections.Y, FVector::ZAxisVector) * RotationRadius;
