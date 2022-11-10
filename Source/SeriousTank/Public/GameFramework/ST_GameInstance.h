@@ -1,34 +1,12 @@
 #pragma once
 
+#include "Core/ST_CoreTypes.h"
+
 #include "Engine/GameInstance.h"
 #include "ST_GameInstance.generated.h"
 
-USTRUCT(BlueprintType)
-struct FGameplayLevelInfo
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly)
-	FString LevelName;
-
-	UPROPERTY(EditDefaultsOnly)
-	FString LevelCaption;
-};
-
 class AST_BaseVehicle;
 class ABaseWeapon;
-
-USTRUCT(BlueprintType)
-struct FVehicleInfo
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AST_BaseVehicle> VehicleClass;
-
-	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<ABaseWeapon>> WeaponClasses;
-};
 
 UCLASS()
 class SERIOUSTANK_API UST_GameInstance : public UGameInstance
