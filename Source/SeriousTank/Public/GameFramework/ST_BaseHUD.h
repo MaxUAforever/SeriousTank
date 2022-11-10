@@ -19,4 +19,6 @@ protected:
 
 protected:
 	virtual void BeginPlay() override;
+
+	UUserWidget* CreateAndAddWidget(TSubclassOf<UUserWidget> WidgetClass);
 };

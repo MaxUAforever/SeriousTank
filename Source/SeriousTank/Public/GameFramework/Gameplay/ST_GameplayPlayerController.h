@@ -8,8 +8,14 @@ class SERIOUSTANK_API AST_GameplayPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION()
+	void OnPauseGameClicked();
+
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void SetupInputComponent() override;
 
 private:
 	UFUNCTION()

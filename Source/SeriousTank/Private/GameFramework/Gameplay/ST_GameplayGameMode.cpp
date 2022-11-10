@@ -22,6 +22,27 @@ UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AC
 	}
 }
 
+bool AST_GameplayGameMode::SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate)
+{
+	bool bResult = Super::SetPause(PC, CanUnpauseDelegate);
+	if (bResult)
+	{
+		OnGamePaused.ExecuteIfBound(true);
+	}
+
+	return bResult;
+}
+
+bool AST_GameplayGameMode::ClearPause()
+{
+	bool bResult = Super::ClearPause();
+	if (bResult)
+	{
+		OnGamePaused.ExecuteIfBound(false);
+	}
+
+	return bResult;
+}
 
 void AST_GameplayGameMode::BeginPlay()
 {

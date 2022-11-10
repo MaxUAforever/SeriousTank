@@ -1,8 +1,9 @@
 #include "GameFramework/Gameplay/ST_GameplayPlayerController.h"
 
+#include "GameFramework/Gameplay/ST_GameplayGameMode.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
-#include "Engine/World.h"
 
+#include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 
 void AST_GameplayPlayerController::BeginPlay()
@@ -20,6 +21,13 @@ void AST_GameplayPlayerController::BeginPlay()
 			GameState->OnTimeHasEnded.AddUObject(this, &ThisClass::SetOnlyUIInputEnabled, true);
 		}
 	}
+}
+
+void AST_GameplayPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	InputComponent->BindAction("PauseGame", EInputEvent::IE_Pressed, this, &ThisClass::OnPauseGameClicked).bExecuteWhenPaused = true;
 }
 
 void AST_GameplayPlayerController::SetPawnInputEnabled(bool IsEnabled)
@@ -55,4 +63,11 @@ void AST_GameplayPlayerController::SetOnlyUIInputEnabled(bool IsEnabled)
 	{
 		SetInputMode(FInputModeGameOnly{});
 	}
+}
+
+void AST_GameplayPlayerController::OnPauseGameClicked()
+{
+	SetPause(!IsPaused());
+
+	SetOnlyUIInputEnabled(IsPaused());
 }

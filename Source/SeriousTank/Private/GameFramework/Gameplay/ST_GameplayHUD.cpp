@@ -1,5 +1,6 @@
 #include "GameFramework/Gameplay/ST_GameplayHUD.h"
 
+#include "GameFramework/Gameplay/ST_GameplayGameMode.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
 
 #include "Blueprint/UserWidget.h"
@@ -19,16 +20,28 @@ void AST_GameplayHUD::BeginPlay()
 	{
 		GameState->OnTimeHasEnded.AddUObject(this, &ThisClass::OnGameTimeEnded);
 	}
+	if (AST_GameplayGameMode* GameMode = World->GetAuthGameMode<AST_GameplayGameMode>())
+	{
+		GameMode->OnGamePaused.BindUObject(this, &ThisClass::OnGameIsPaused);
+	}
+
+	PauseWidget = CreateAndAddWidget(PauseWidgetClass);
+	FinalScoreWidget = CreateAndAddWidget(FinalScoreWidgetClass);
 }
 
 void AST_GameplayHUD::OnGameTimeEnded()
 {
-	APlayerController* Controller = Cast<APlayerController>(GetOwner());
-	FinalScoreWidget = CreateWidget<UUserWidget>(Controller, FinalScoreWidgetClass);
 	if (FinalScoreWidget)
 	{
-		GameUIWidget->SetVisibility(ESlateVisibility::Collapsed);
+		GameUIWidget->SetVisibility(ESlateVisibility::Hidden);
+		FinalScoreWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
 
-		FinalScoreWidget->AddToViewport();
+void AST_GameplayHUD::OnGameIsPaused(bool IsPaused)
+{
+	if (PauseWidget)
+	{
+		PauseWidget->SetVisibility(IsPaused ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

@@ -12,8 +12,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> FinalScoreWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> PauseWidgetClass;
+
 	UPROPERTY()
 	UUserWidget* FinalScoreWidget;
+
+	UPROPERTY()
+	UUserWidget* PauseWidget;
 
 protected:
 	virtual void BeginPlay() override;
@@ -21,4 +27,7 @@ protected:
 private:
 	UFUNCTION()
 	void OnGameTimeEnded();
+
+	UFUNCTION()
+	void OnGameIsPaused(bool IsPaused);
 };
