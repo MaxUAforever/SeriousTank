@@ -1,4 +1,4 @@
-#include "Actors/Projectiles/BaseProjectile.h"
+#include "Actors/Projectiles/ST_BaseProjectile.h"
 
 #include "Actors/GameplayActors/ST_ShootTarget.h"
 
@@ -6,7 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
-ABaseProjectile::ABaseProjectile()
+AST_BaseProjectile::AST_BaseProjectile()
 {
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>("CollisionComponent");
 	SetRootComponent(CollisionComponent);
@@ -17,14 +17,14 @@ ABaseProjectile::ABaseProjectile()
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComponent");
 }
 
-void ABaseProjectile::BeginPlay()
+void AST_BaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 }
 
-void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (AST_ShootTarget* ShootingTargetActor = Cast<AST_ShootTarget>(OtherActor))
 	{
@@ -35,3 +35,4 @@ void ABaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor
 		Destroy();
 	}
 }
+

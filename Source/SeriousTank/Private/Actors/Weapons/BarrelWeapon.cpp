@@ -1,5 +1,7 @@
 #include "Actors/Weapons/BarrelWeapon.h"
 
+#include "Actors/Projectiles/ST_BaseProjectile.h"
+
 #include "Components/ArrowComponent.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
@@ -45,7 +47,7 @@ void ABarrelWeapon::Shoot()
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
 
-		World->SpawnActor<ABaseProjectile>(ProjectileClass, ShootingArrowComponent->GetComponentTransform(), SpawnParameters);
+		World->SpawnActor<AST_BaseProjectile>(ProjectileClass, ShootingArrowComponent->GetComponentTransform(), SpawnParameters);
 	}
 
 	StartReloading();

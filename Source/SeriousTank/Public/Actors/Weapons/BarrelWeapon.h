@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Actors/Weapons/BaseWeapon.h"
-
-#include "Actors/Projectiles/BaseProjectile.h"
-
 #include "BarrelWeapon.generated.h"
+
+class AST_BaseProjectile;
 
 UCLASS()
 class SERIOUSTANK_API ABarrelWeapon : public ABaseWeapon
@@ -13,7 +12,7 @@ class SERIOUSTANK_API ABarrelWeapon : public ABaseWeapon
 
 protected:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ABaseProjectile> ProjectileClass;
+	TSubclassOf<AST_BaseProjectile> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float ReloadingTime;

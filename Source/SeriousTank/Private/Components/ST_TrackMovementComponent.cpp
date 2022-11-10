@@ -2,8 +2,6 @@
 
 #include "GameFramework/Actor.h"
 
-DEFINE_LOG_CATEGORY_STATIC(BaseTrackLog, Display, All);
-
 UST_TrackMovementComponent::UST_TrackMovementComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -135,6 +133,6 @@ void UST_TrackMovementComponent::CalculateCurrentSpeed(const float DeltaTime)
 		IsMovingBackward ? static_cast<float>(MaxBackwardSpeed) * -1 : 0,
 		IsMovingForward ? static_cast<float>(MaxSpeed) : 0);
 
-	UE_LOG(BaseTrackLog, Warning, TEXT("Speed: %f, Acseleration: %f"), CurrentSpeed, Acseleration);
+	//UE_LOG(BaseTrackLog, Warning, TEXT("Speed: %f, Acseleration: %f"), CurrentSpeed, Acseleration);
 }
 
