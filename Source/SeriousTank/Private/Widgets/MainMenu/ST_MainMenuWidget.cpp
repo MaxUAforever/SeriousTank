@@ -8,6 +8,7 @@
 #include "Components/ScrollBox.h"
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 void UST_MainMenuWidget::NativeConstruct()
 {
@@ -32,6 +33,11 @@ void UST_MainMenuWidget::NativeConstruct()
 		{
 			AddLevelCardWidget(LevelInfo, LevelIndex++);
 		}
+	}
+
+	if (BackgroundMusic)
+	{
+		UGameplayStatics::PlaySound2D(World, BackgroundMusic);
 	}
 }
 

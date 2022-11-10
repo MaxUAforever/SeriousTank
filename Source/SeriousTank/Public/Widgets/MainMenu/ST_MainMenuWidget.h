@@ -6,6 +6,7 @@
 class UButton;
 class UTextBlock;
 class UScrollBox;
+class USoundCue;
 class UST_GameplayLevelCardWidget;
 struct FGameplayLevelInfo;
 
@@ -32,6 +33,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ExitGameButton;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
+	USoundCue* BackgroundMusic;
 
 protected:
 	virtual void NativeConstruct() override;
