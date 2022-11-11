@@ -5,6 +5,7 @@
 
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerInput.h"
 
 void AST_GameplayPlayerController::BeginPlay()
 {

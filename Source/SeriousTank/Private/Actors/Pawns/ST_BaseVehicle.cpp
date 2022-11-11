@@ -1,6 +1,9 @@
 #include "Actors/Pawns/ST_BaseVehicle.h"
 
+#include "GameFramework/Gameplay/ST_GameplayGameState.h"
+
 #include "Components/InputComponent.h"
+#include "Engine/World.h"
 
 void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -17,4 +20,3 @@ void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction("SecondWeapon", EInputEvent::IE_Pressed, this, &ThisClass::SwitchToSecondWeapon);
 	PlayerInputComponent->BindAction("ThirdWeapon", EInputEvent::IE_Pressed, this, &ThisClass::SwitchToThirdWeapon);
 }
-

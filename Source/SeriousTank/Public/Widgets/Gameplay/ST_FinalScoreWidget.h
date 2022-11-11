@@ -40,4 +40,7 @@ private:
 
 	UFUNCTION()
 	void OnMenuButtonClicked();
+
+	UFUNCTION()
+	void OnGameIsOver();
 };

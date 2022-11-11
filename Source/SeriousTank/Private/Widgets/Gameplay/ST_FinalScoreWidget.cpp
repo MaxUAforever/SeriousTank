@@ -16,18 +16,15 @@ void UST_FinalScoreWidget::NativeConstruct()
 	PlayAgainButton->OnClicked.AddDynamic(this, &ThisClass::OnPlayAgainButtonClicked);
 	MenuButton->OnClicked.AddDynamic(this, &ThisClass::OnMenuButtonClicked);
 
-	UWorld* World = GetWorld();
-	if (!World)
+	if (UWorld* World = GetWorld())
 	{
-		return;
+		if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
+		{
+			GameState->OnTimeHasEnded.AddUObject(this, &ThisClass::OnGameIsOver);
+		}
 	}
 
-	if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
-	{
-		ScoreValueBlock->SetText(FText::FromString(FString::FromInt(GameState->GetScore())));
-		TimeValueBlock->SetText(UST_WidgetUtilsLibrary::ConvertTimeToText(GameState->GetTotalPlayTime()));
-		TargetsValueBlock->SetText(FText::FromString(FString::FromInt(GameState->GetScore())));
-	}
+	
 }
 
 void UST_FinalScoreWidget::OnPlayAgainButtonClicked()
@@ -59,5 +56,21 @@ void UST_FinalScoreWidget::OnMenuButtonClicked()
 		{
 			PlayerController->ClientTravel(GameInstance->GetMainMenuLevelName(), ETravelType::TRAVEL_Relative);
 		}
+	}
+}
+
+void UST_FinalScoreWidget::OnGameIsOver()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
+	{
+		ScoreValueBlock->SetText(FText::FromString(FString::FromInt(GameState->GetScore())));
+		TimeValueBlock->SetText(UST_WidgetUtilsLibrary::ConvertTimeToText(GameState->GetTotalPlayTime()));
+		TargetsValueBlock->SetText(FText::FromString(FString::FromInt(GameState->GetScore())));
 	}
 }

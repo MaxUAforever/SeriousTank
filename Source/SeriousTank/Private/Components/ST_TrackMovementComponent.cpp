@@ -23,17 +23,17 @@ UST_TrackMovementComponent::UST_TrackMovementComponent()
 
 EMovingType UST_TrackMovementComponent::GetMovingType() const
 {
-	if (CurrentSpeed == 0)
-	{
-		const bool IsRotating = RequestedDirections.Y != 0;
-		return IsRotating ? EMovingType::RotatingInPlace : EMovingType::Standing;
-	}
-
 	const bool IsForceMoving = RequestedDirections.X != 0;
 	if (IsForceMoving)
 	{
 		bool bIsBraking = CurrentSpeed < 0 != RequestedDirections.X < 0;
 		return bIsBraking ? EMovingType::Braking : EMovingType::ForceMoving;
+	}
+
+	if (CurrentSpeed == 0)
+	{
+		const bool IsRotating = RequestedDirections.Y != 0;
+		return IsRotating ? EMovingType::RotatingInPlace : EMovingType::Standing;
 	}
 
 	return EMovingType::InertiaMoving;
