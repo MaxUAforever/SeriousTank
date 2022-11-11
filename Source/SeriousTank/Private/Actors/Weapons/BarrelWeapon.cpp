@@ -4,6 +4,8 @@
 
 #include "Components/ArrowComponent.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 #include "TimerManager.h"
 
 ABarrelWeapon::ABarrelWeapon()
@@ -48,6 +50,11 @@ void ABarrelWeapon::Shoot()
 		SpawnParameters.Owner = this;
 
 		World->SpawnActor<AST_BaseProjectile>(ProjectileClass, ShootingArrowComponent->GetComponentTransform(), SpawnParameters);
+		
+		if (ShootSound)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(World, ShootSound, ShootingArrowComponent->GetComponentLocation());
+		}
 	}
 
 	StartReloading();

@@ -5,6 +5,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 AST_BaseProjectile::AST_BaseProjectile()
 {
@@ -32,6 +34,11 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	}
 	if (OtherActor != this && OtherActor != GetOwner())
 	{
+		if (ExplosionSound)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
+		}
+
 		Destroy();
 	}
 }

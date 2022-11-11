@@ -15,4 +15,7 @@ private:
 
 public:
 	void SpawnVehicle(TSubclassOf<AST_BaseVehicle> VehicleClass);
+
+private:
+	void DisableSoundsOnVehicle();
 };

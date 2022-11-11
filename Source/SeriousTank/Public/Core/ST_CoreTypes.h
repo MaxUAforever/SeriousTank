@@ -53,3 +53,13 @@ struct FVehicleInfo
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<ABaseWeapon>> WeaponClasses;
 };
+
+UENUM(BlueprintType)
+enum class EMovingType : uint8
+{
+	ForceMoving,
+	InertiaMoving,
+	Braking,
+	RotatingInPlace,
+	Standing
+};

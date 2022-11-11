@@ -10,9 +10,9 @@ ABaseWeapon::ABaseWeapon()
 	SetRootComponent(SceneComponent);
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
-	MeshComponent->SetupAttachment(SceneComponent);
+	MeshComponent->SetupAttachment(RootComponent);
 
 	ShootingArrowComponent = CreateDefaultSubobject<UArrowComponent>("ShootingArrowComponent");
-	ShootingArrowComponent->SetupAttachment(SceneComponent);
+	ShootingArrowComponent->SetupAttachment(RootComponent);
 }
 

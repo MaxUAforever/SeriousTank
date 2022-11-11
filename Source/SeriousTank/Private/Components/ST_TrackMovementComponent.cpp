@@ -1,5 +1,6 @@
 #include "Components/ST_TrackMovementComponent.h"
 
+#include "Core/ST_CoreTypes.h"
 #include "GameFramework/Actor.h"
 
 UST_TrackMovementComponent::UST_TrackMovementComponent()
@@ -20,11 +21,36 @@ UST_TrackMovementComponent::UST_TrackMovementComponent()
 	CurrentSpeed = 0;
 }
 
+EMovingType UST_TrackMovementComponent::GetMovingType() const
+{
+	if (CurrentSpeed == 0)
+	{
+		const bool IsRotating = RequestedDirections.Y != 0;
+		return IsRotating ? EMovingType::RotatingInPlace : EMovingType::Standing;
+	}
+
+	const bool IsForceMoving = RequestedDirections.X != 0;
+	if (IsForceMoving)
+	{
+		bool bIsBraking = CurrentSpeed < 0 != RequestedDirections.X < 0;
+		return bIsBraking ? EMovingType::Braking : EMovingType::ForceMoving;
+	}
+
+	return EMovingType::InertiaMoving;
+}
+
 void UST_TrackMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	CalculatePosition(DeltaTime);
+
+	const EMovingType NewMovingType = GetMovingType();
+	if (CurrentMovingType != NewMovingType)
+	{
+		CurrentMovingType = NewMovingType;
+		OnMovingTypeChanged.ExecuteIfBound(NewMovingType);
+	}
 }
 
 void UST_TrackMovementComponent::MoveForward(const float Value)

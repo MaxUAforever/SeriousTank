@@ -4,6 +4,7 @@
 #include "BaseWeapon.generated.h"
 
 class UArrowComponent;
+class USoundCue;
 
 UCLASS(Abstract)
 class SERIOUSTANK_API ABaseWeapon : public AActor
@@ -19,6 +20,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* ShootingArrowComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* ShootSound;
 
 	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
 	FTimerHandle ReloadTimerHandler;

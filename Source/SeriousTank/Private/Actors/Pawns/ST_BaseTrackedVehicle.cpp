@@ -4,6 +4,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ST_TrackMovementComponent.h"
+#include "Components/ST_VehicleSoundsComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(BaseTrackLog, Display, All);
 
@@ -24,6 +25,9 @@ AST_BaseTrackedVehicle::AST_BaseTrackedVehicle()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(CameraSceneComponent);
 
+	VehicleSoundComponent = CreateDefaultSubobject<UST_VehicleSoundsComponent>("AudioComponent");
+	VehicleSoundComponent->SetupAttachment(RootComponent);
+
 	TrackMovementComponent = CreateDefaultSubobject<UST_TrackMovementComponent>("MovementComponent");
 	TrackMovementComponent->UpdatedComponent = RootComponent;
 }
@@ -31,6 +35,16 @@ AST_BaseTrackedVehicle::AST_BaseTrackedVehicle()
 UPawnMovementComponent* AST_BaseTrackedVehicle::GetMovementComponent() const
 {
 	return TrackMovementComponent;
+}
+
+void AST_BaseTrackedVehicle::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (TrackMovementComponent)
+	{
+		TrackMovementComponent->OnMovingTypeChanged.BindUObject(this, &ThisClass::OnMovingTypeChanged);
+	}
 }
 
 void AST_BaseTrackedVehicle::MoveForward(const float Value)
@@ -54,5 +68,13 @@ void AST_BaseTrackedVehicle::RotateCamera(float Value)
 	if (Controller != nullptr)
 	{
 		CameraSceneComponent->AddLocalRotation(FRotator{ 0, Value, 0 });
+	}
+}
+
+void AST_BaseTrackedVehicle::OnMovingTypeChanged(EMovingType NewMovingType)
+{
+	if (VehicleSoundComponent)
+	{
+		VehicleSoundComponent->PlayMovingSound(NewMovingType);
 	}
 }

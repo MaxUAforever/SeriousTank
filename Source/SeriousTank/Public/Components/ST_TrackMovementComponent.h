@@ -3,10 +3,16 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "ST_TrackMovementComponent.generated.h"
 
+enum class EMovingType : uint8;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_TrackMovementComponent : public UPawnMovementComponent
 {
 	GENERATED_BODY()
+
+public:
+	DECLARE_DELEGATE_OneParam(FOnMovingTypeChanged, EMovingType)
+	FOnMovingTypeChanged OnMovingTypeChanged;
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -34,6 +40,7 @@ private:
 	FVector RequestedDirections;
 
 	float CurrentSpeed;
+	EMovingType CurrentMovingType;
 
 public:	
 	UST_TrackMovementComponent();
@@ -42,6 +49,8 @@ public:
 	{
 		return CurrentSpeed;
 	}
+
+	EMovingType GetMovingType() const;
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

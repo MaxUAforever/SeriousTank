@@ -4,6 +4,8 @@
 #include "ST_TrackedTank.generated.h"
 
 class UArrowComponent;
+class UAudioComponent;
+class USoundCue;
 class UST_WeaponSocketComponent;
 class UST_WeaponsManagerComponent;
 
@@ -24,6 +26,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UST_WeaponSocketComponent* SecondWeaponSocketComponent;
+
+	UPROPERTY(EditAnywhere)
+	UAudioComponent* TurretRotationSound;
 
 	UPROPERTY(VisibleAnywhere)
 	UST_WeaponsManagerComponent* WeaponsManagerComponent;
