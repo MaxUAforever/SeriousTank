@@ -71,8 +71,6 @@ void AST_GameplayGameMode::InitGameState()
 
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
-		GameplayGameState->OnTimeHasEnded.AddUObject(this, &ThisClass::OnGameOver);
-
 		GameplayGameState->SetRemainingTime(GameData.StartTime);
 		GameplayGameState->SetPreStartCountdownTime(GameData.PreStartCountdownTime);
 	}
@@ -87,14 +85,6 @@ void AST_GameplayGameMode::OnTargetDestroyed(AActor* DestroyedActor)
 	}
 
 	SpawnTarget();
-}
-
-void AST_GameplayGameMode::OnGameOver()
-{
-	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
-	{
-		GameplayGameState->SetActorTickEnabled(false);
-	}
 }
 
 void AST_GameplayGameMode::SpawnTarget()

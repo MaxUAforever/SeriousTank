@@ -54,6 +54,7 @@ void AST_GameplayGameState::AddRemainingTime(const float DeltaTime)
 	if (FMath::IsNearlyZero(RemainingTime))
 	{
 		OnTimeHasEnded.Broadcast();
+		SetActorTickEnabled(false);
 	}
 }
 

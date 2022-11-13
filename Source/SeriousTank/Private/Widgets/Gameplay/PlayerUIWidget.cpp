@@ -3,7 +3,10 @@
 #include "Widgets/Utils/ST_WidgetUtilsLibrary.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
 
+#include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h"
 #include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
 void UPlayerUIWidget::NativeConstruct()
@@ -29,6 +32,8 @@ void UPlayerUIWidget::NativeConstruct()
 		GameState->OnScoreHasChanged.BindUObject(this, &ThisClass::UpdateScore);
 		GameState->OnPreStartCountdownChanged.BindUObject(this, &ThisClass::UpdatePreStartTime);
 	}
+
+	UISoundsComponent = UGameplayStatics::SpawnSound2D(World, CountdownSound); 
 }
 
 void UPlayerUIWidget::UpdateScore(int32 NewScore)
@@ -62,6 +67,11 @@ void UPlayerUIWidget::UpdatePreStartTime(int32 NewTime)
 			FTimerHandle TextBlockVisibilityTimerHandle;
 			FTimerDelegate TextBlockVisibilityDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::HidePreStartTimeBlock);
 			World->GetTimerManager().SetTimer(TextBlockVisibilityTimerHandle, TextBlockVisibilityDelegate, 1.5f, false);
+		}
+
+		if (UISoundsComponent)
+		{
+			UISoundsComponent->SetSound(StartGameSound);
 		}
 	}
 }

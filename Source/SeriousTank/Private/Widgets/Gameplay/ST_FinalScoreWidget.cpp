@@ -23,8 +23,6 @@ void UST_FinalScoreWidget::NativeConstruct()
 			GameState->OnTimeHasEnded.AddUObject(this, &ThisClass::OnGameIsOver);
 		}
 	}
-
-	
 }
 
 void UST_FinalScoreWidget::OnPlayAgainButtonClicked()

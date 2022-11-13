@@ -28,18 +28,24 @@ void AST_BaseProjectile::BeginPlay()
 
 void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (OtherActor == this || OtherActor == GetOwner())
+	{
+		return;
+	}
+
+	// Prevent errors in case of spawning target on projectile location.
+	SetActorEnableCollision(false);
+
 	if (AST_ShootTarget* ShootingTargetActor = Cast<AST_ShootTarget>(OtherActor))
 	{
 		OtherActor->Destroy();
 	}
-	if (OtherActor != this && OtherActor != GetOwner())
+	
+	if (ExplosionSound)
 	{
-		if (ExplosionSound)
-		{
-			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
-		}
-
-		Destroy();
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
 	}
+
+	Destroy();
 }
 

@@ -3,8 +3,10 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerUIWidget.generated.h"
 
+class UAudioComponent;
 class UTextBlock;
 class UST_WeaponReloadingWidget;
+class USoundCue;
 
 UCLASS()
 class SERIOUSTANK_API UPlayerUIWidget : public UUserWidget
@@ -29,6 +31,15 @@ protected:
 
 	UPROPERTY(EditAnyWhere, meta = (BindWidget))
 	UTextBlock* PreStartTimeBlock;
+
+	UPROPERTY(EditAnyWhere, Category = "Audio")
+	USoundCue* CountdownSound;
+
+	UPROPERTY(EditAnyWhere, Category = "Audio")
+	USoundCue* StartGameSound;
+
+	UPROPERTY(VisibleAnyWhere, Category = "Audio")
+	UAudioComponent* UISoundsComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
 	FTimerHandle TimeRefreshHandler;

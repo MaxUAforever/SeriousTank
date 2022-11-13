@@ -40,8 +40,5 @@ private:
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);
 
-	UFUNCTION()
-	void OnGameOver();
-
 	void SpawnTarget();
 };

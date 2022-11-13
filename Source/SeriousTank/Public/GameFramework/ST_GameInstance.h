@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Engine/GameInstance.h"
+
 #include "Core/ST_CoreTypes.h"
 
-#include "Engine/GameInstance.h"
 #include "ST_GameInstance.generated.h"
 
 class AST_BaseVehicle;
 class ABaseWeapon;
+class UAudioComponent;
 
 UCLASS()
 class SERIOUSTANK_API UST_GameInstance : public UGameInstance
@@ -14,14 +16,14 @@ class SERIOUSTANK_API UST_GameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Levels")
 	TArray<FGameplayLevelInfo> LevelsInfo;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Levels")
 	FString MainMenuLevelName;
 
-	UPROPERTY(EditAnywhere)
-	FVehicleInfo VehicleInfo; 
+	UPROPERTY(EditAnywhere, Category = "Pawn")
+	FVehicleInfo VehicleInfo;
 
 public:
 	const TArray<FGameplayLevelInfo>& GetLevelsInfo() const
