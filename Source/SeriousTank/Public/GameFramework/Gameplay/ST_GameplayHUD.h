@@ -21,6 +21,9 @@ protected:
 	UPROPERTY()
 	UUserWidget* PauseWidget;
 
+public:
+	virtual void SetSettingsWidgetVisible(bool bShowSettings) override;
+
 protected:
 	virtual void BeginPlay() override;
 

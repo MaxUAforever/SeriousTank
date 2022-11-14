@@ -8,6 +8,8 @@ void AST_BaseHUD::BeginPlay()
 	Super::BeginPlay();
 
 	GameUIWidget = CreateAndAddWidget(GameUIClass);
+	SettingsWidget = CreateAndAddWidget(SettingsWidgetClass);
+
 	if (GameUIWidget)
 	{
 		GameUIWidget->SetVisibility(ESlateVisibility::Visible);

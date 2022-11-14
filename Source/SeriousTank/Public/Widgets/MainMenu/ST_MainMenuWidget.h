@@ -32,6 +32,9 @@ protected:
 	TSubclassOf<UST_GameplayLevelCardWidget> LevelCardWidgetClass;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* SettingsButton;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ExitGameButton;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
@@ -49,6 +52,9 @@ private:
 
 	UFUNCTION()
 	void OnLevelIsChoosen(int32 LevelIndex);
+
+	UFUNCTION()
+	void OnSettingsButtonClicked();
 
 	UFUNCTION()
 	void OnExitButtonClicked();

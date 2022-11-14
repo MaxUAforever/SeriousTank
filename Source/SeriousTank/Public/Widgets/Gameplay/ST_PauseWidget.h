@@ -15,6 +15,9 @@ protected:
 	UButton* ResumeButton;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* SettingsButton;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* MenuButton;
 
 protected:
@@ -23,6 +26,9 @@ protected:
 private:
 	UFUNCTION()
 	void OnResumeButtonClicked();
+
+	UFUNCTION()
+	void OnSettingsButtonClicked();
 
 	UFUNCTION()
 	void OnMenuButtonClicked();

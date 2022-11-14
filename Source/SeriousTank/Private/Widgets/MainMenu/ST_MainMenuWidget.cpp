@@ -1,6 +1,7 @@
 #include "Widgets/MainMenu/ST_MainMenuWidget.h"
 
 #include "GameFramework/MainMenu/ST_MainMenuPlayerController.h"
+#include "GameFramework/ST_BaseHUD.h"
 #include "GameFramework/ST_GameInstance.h"
 #include "Widgets/MainMenu/ST_GameplayLevelCardWidget.h"
 
@@ -16,6 +17,7 @@ void UST_MainMenuWidget::NativeConstruct()
 
 	StartGameButton->OnClicked.AddDynamic(this, &ThisClass::OnStartGameButtonClicked);
 	ChooseGameplayLevelButton->OnClicked.AddDynamic(this, &ThisClass::OnChooseLevelButtonClicked);
+	SettingsButton->OnClicked.AddDynamic(this, &ThisClass::OnSettingsButtonClicked);
 	ExitGameButton->OnClicked.AddDynamic(this, &ThisClass::OnExitButtonClicked);
 
 	UWorld* World = GetWorld();
@@ -61,6 +63,23 @@ void UST_MainMenuWidget::OnLevelIsChoosen(int32 LevelIndex)
 {
 	SetCurrentLevelCaption(LevelIndex);
 	LevelsScrollBox->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UST_MainMenuWidget::OnSettingsButtonClicked()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	
+	if (AST_MainMenuPlayerController* PlayerController = Cast<AST_MainMenuPlayerController>(UGameplayStatics::GetPlayerController(World, 0)))
+	{
+		if (AST_BaseHUD* BaseHUD = PlayerController->GetHUD<AST_BaseHUD>())
+		{
+			BaseHUD->SetSettingsWidgetVisible(true);
+		}
+	}
 }
 
 void UST_MainMenuWidget::OnExitButtonClicked()

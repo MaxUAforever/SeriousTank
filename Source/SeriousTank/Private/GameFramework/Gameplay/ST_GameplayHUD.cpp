@@ -29,6 +29,15 @@ void AST_GameplayHUD::BeginPlay()
 	FinalScoreWidget = CreateAndAddWidget(FinalScoreWidgetClass);
 }
 
+void AST_GameplayHUD::SetSettingsWidgetVisible(bool bShowSettings)
+{
+	if (PauseWidget && SettingsWidget)
+	{
+		PauseWidget->SetVisibility(bShowSettings ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+		SettingsWidget->SetVisibility(bShowSettings ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
+
 void AST_GameplayHUD::OnGameTimeEnded()
 {
 	if (FinalScoreWidget)
