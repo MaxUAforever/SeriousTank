@@ -10,7 +10,11 @@ UCLASS(Abstract)
 class SERIOUSTANK_API ABaseWeapon : public AActor
 {
 	GENERATED_BODY()
-	
+
+public:
+	DECLARE_DELEGATE(FReloadingStarted)
+	FReloadingStarted OnReloadingStarted;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneComponent;
@@ -21,21 +25,36 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* ShootingArrowComponent;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
 	USoundCue* ShootSound;
 
 	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
 	FTimerHandle ReloadTimerHandler;
 
+	UPROPERTY(EditAnywhere, Category = "Reloading")
+	float ReloadingTime;
+
+private:
+	bool bIsFireForced;
+	bool bIsWeaponReloading;
+
 public:
 	ABaseWeapon();
 
-	virtual void StartFire() {};
-	virtual void StopFire() {};
+	bool IsFireForced() const { return bIsFireForced; };
+	bool IsReloading() const { return bIsWeaponReloading; };
+	float GetReloadingRemainingTime() const;
 
-	virtual bool IsReloading() const { return false; };
-	virtual float GetReloadingRemainingTime() const { return 0.f; };
+ 	void StartFire();
+	void StopFire();
 
-	DECLARE_DELEGATE(FReloadingStarted)
-	FReloadingStarted OnReloadingStarted;
+	void StartReloading();
+
+protected:
+	void StopReloading();
+
+	virtual void StartShooting() {};
+	virtual void StopShooting() {};
+
+	virtual void FinishReloading() {};
 };
