@@ -47,19 +47,6 @@ bool AST_GameplayGameMode::ClearPause()
 void AST_GameplayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (UWorld* World = GetWorld())
-	{
-		auto OnTargetSpawned = [this](AActor* SpawnedActor)
-		{
-			if (AST_ShootTarget* Target = Cast<AST_ShootTarget>(SpawnedActor))
-			{
-				Target->OnDestroyed.AddDynamic(this, &ThisClass::OnTargetDestroyed);
-			}
-		};
-
-		World->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateLambda(OnTargetSpawned));
-	}
 
 	TargetRespawnManager = NewObject<UST_TargetRespawnManager>(this);
 	SpawnTarget();
@@ -92,5 +79,6 @@ void AST_GameplayGameMode::SpawnTarget()
 	if (TargetRespawnManager)
 	{
 		AST_ShootTarget* Target = TargetRespawnManager->SpawnTarget(GameData.ShootingTargetClass);
+		Target->OnDestroyed.AddDynamic(this, &ThisClass::OnTargetDestroyed);
 	}
 }
