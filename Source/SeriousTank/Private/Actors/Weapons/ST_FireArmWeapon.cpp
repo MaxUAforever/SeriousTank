@@ -10,7 +10,7 @@
 
 void AST_FireArmWeapon::Shoot()
 {
-	if (IsReloading())
+	if (!CanShoot())
 	{
 		return;
 	}
@@ -27,6 +27,8 @@ void AST_FireArmWeapon::Shoot()
 			UGameplayStatics::SpawnSoundAtLocation(World, ShootSound, ShootingArrowComponent->GetComponentLocation());
 		}
 	}
+
+	--TotalAmmoCount;
 }
 
 void AST_FireArmWeapon::FinishReloading()

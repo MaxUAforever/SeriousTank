@@ -30,7 +30,7 @@ void AMachineGunWeapon::FinishReloading()
 
 void AMachineGunWeapon::Shoot()
 {
-	if (IsReloading() || bIsInBurstPause)
+	if (!CanShoot() || bIsInBurstPause)
 	{
 		return;
 	}

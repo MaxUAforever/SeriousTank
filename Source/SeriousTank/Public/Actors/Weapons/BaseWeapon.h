@@ -34,6 +34,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Reloading")
 	float ReloadingTime;
 
+	UPROPERTY(EditAnywhere, Category = "Ammo")
+	int32 TotalAmmoCount;
+
 private:
 	bool bIsFireForced;
 	bool bIsWeaponReloading;
@@ -45,6 +48,9 @@ public:
 	bool IsReloading() const { return bIsWeaponReloading; };
 	float GetReloadingRemainingTime() const;
 
+	int32 GetTotalAmmoCount() const { return TotalAmmoCount; };
+	void SetTotalAmmoCount(int32 NewAmmoCount);
+
  	void StartFire();
 	void StopFire();
 
@@ -52,6 +58,10 @@ public:
 
 protected:
 	void StopReloading();
+
+	bool CanShoot() const;
+
+	virtual void Shoot() {};
 
 	virtual void StartShooting() {};
 	virtual void StopShooting() {};

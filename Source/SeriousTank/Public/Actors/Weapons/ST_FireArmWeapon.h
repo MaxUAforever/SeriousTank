@@ -15,7 +15,7 @@ protected:
 	TSubclassOf<AST_BaseProjectile> ProjectileClass;
 
 protected:
-	virtual void Shoot();
+	virtual void Shoot() override;
 
 	virtual void FinishReloading() override;
 };

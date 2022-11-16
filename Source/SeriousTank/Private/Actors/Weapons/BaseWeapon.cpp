@@ -20,11 +20,26 @@ ABaseWeapon::ABaseWeapon()
 	bIsWeaponReloading = false;
 	
 	ReloadingTime = 5.f;
+	TotalAmmoCount = 50;
 }
 
 float ABaseWeapon::GetReloadingRemainingTime() const
 {
 	return GetWorldTimerManager().GetTimerRemaining(ReloadTimerHandler);
+}
+
+void ABaseWeapon::SetTotalAmmoCount(int32 NewAmmoCount)
+{
+	if (NewAmmoCount >= 0)
+	{
+		int32 OldAmmoCount = TotalAmmoCount;
+		TotalAmmoCount = NewAmmoCount;
+
+		if (OldAmmoCount == 0 && NewAmmoCount > 0)
+		{
+			StartReloading();
+		}	
+	}
 }
 
 void ABaseWeapon::StartFire()
@@ -41,7 +56,7 @@ void ABaseWeapon::StopFire()
 
 void ABaseWeapon::StartReloading()
 {
-	if (bIsWeaponReloading)
+	if (bIsWeaponReloading || TotalAmmoCount <= 0)
 	{
 		return;
 	}
@@ -60,5 +75,10 @@ void ABaseWeapon::StopReloading()
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandler);
 
 	FinishReloading();
+}
+
+bool ABaseWeapon::CanShoot() const
+{
+	return !bIsWeaponReloading && TotalAmmoCount > 0;
 }
 
