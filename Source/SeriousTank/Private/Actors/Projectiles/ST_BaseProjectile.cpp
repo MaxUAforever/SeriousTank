@@ -4,7 +4,10 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 
@@ -28,7 +31,19 @@ void AST_BaseProjectile::BeginPlay()
 
 void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor == this || OtherActor == GetOwner())
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return;
+    }
+    
+    APlayerController* PC = World->GetFirstPlayerController();
+    if (!PC)
+    {
+        return;
+    }
+    
+	if (OtherActor == this || OtherActor == GetOwner() || OtherActor == PC->GetPawn())
 	{
 		return;
 	}
@@ -43,7 +58,7 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	
 	if (ExplosionSound)
 	{
-		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
+		UGameplayStatics::SpawnSoundAtLocation(World, ExplosionSound, GetActorLocation());
 	}
 
 	Destroy();

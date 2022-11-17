@@ -15,6 +15,9 @@ public:
 	DECLARE_DELEGATE(FReloadingStarted)
 	FReloadingStarted OnReloadingStarted;
 
+    DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmmoCountChanged, int32)
+    FOnAmmoCountChanged OnAmmoCountChanged;
+    
 protected:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneComponent;
@@ -33,7 +36,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Reloading")
 	float ReloadingTime;
-
+    
 	UPROPERTY(EditAnywhere, Category = "Ammo")
 	int32 TotalAmmoCount;
 
@@ -46,6 +49,8 @@ public:
 
 	bool IsFireForced() const { return bIsFireForced; };
 	bool IsReloading() const { return bIsWeaponReloading; };
+    
+    float GetTotalReloadingTime() const { return ReloadingTime; };
 	float GetReloadingRemainingTime() const;
 
 	int32 GetTotalAmmoCount() const { return TotalAmmoCount; };

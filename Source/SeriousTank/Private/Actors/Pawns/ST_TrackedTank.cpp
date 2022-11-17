@@ -74,10 +74,14 @@ void AST_TrackedTank::StopFire()
 
 void AST_TrackedTank::SwitchToFirstWeapon()
 {
+    Super::SwitchToFirstWeapon();
+    
 	WeaponsManagerComponent->SwitchWeapon(0);
 }
 
 void AST_TrackedTank::SwitchToSecondWeapon()
 {
+    Super::SwitchToSecondWeapon();
+    
 	WeaponsManagerComponent->SwitchWeapon(1);
 }

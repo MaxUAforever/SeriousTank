@@ -28,7 +28,7 @@ void AST_FireArmWeapon::Shoot()
 		}
 	}
 
-	--TotalAmmoCount;
+    OnAmmoCountChanged.Broadcast(--TotalAmmoCount);
 }
 
 void AST_FireArmWeapon::FinishReloading()

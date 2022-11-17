@@ -2,12 +2,11 @@
 
 #include "TimerManager.h"
 
-AMachineGunWeapon::AMachineGunWeapon()
+void AMachineGunWeapon::BeginPlay()
 {
-	MaxClipAmmoCount = 10;
-	BurstShootingPause = 0.2f;
-
-	CurrentClipAmmoCount = MaxClipAmmoCount;
+    Super::BeginPlay();
+    
+	CurrentClipAmmoCount = MaxClipAmmoCount < TotalAmmoCount ? MaxClipAmmoCount : TotalAmmoCount;
 }
 
 void AMachineGunWeapon::StartShooting()
@@ -24,7 +23,8 @@ void AMachineGunWeapon::StartShooting()
 void AMachineGunWeapon::FinishReloading()
 {
 	CurrentClipAmmoCount = MaxClipAmmoCount;
-
+    OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
+    
 	Super::FinishReloading();
 }
 
@@ -43,6 +43,8 @@ void AMachineGunWeapon::Shoot()
 		StopShooting();
 		StartReloading();
 	}
+    
+    OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
 }
 
 void AMachineGunWeapon::OnBurstPauseEnded()

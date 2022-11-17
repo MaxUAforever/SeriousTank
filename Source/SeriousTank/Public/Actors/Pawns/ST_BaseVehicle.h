@@ -9,6 +9,10 @@ class SERIOUSTANK_API AST_BaseVehicle : public APawn
 	GENERATED_BODY()
 
 public:
+    DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponSwitched, int32)
+    FOnWeaponSwitched OnWeaponSwitched;
+    
+public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void MoveForward(float Value) {};
@@ -18,7 +22,7 @@ public:
 	virtual void StartFire() {};
 	virtual void StopFire() {};
 
-	virtual void SwitchToFirstWeapon() {};
-	virtual void SwitchToSecondWeapon() {};
-	virtual void SwitchToThirdWeapon() {};
+    virtual void SwitchToFirstWeapon() { OnWeaponSwitched.Broadcast(0); };
+    virtual void SwitchToSecondWeapon() { OnWeaponSwitched.Broadcast(1); };
+    virtual void SwitchToThirdWeapon() { OnWeaponSwitched.Broadcast(2); };
 };

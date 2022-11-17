@@ -8,6 +8,10 @@ class SERIOUSTANK_API AMachineGunWeapon : public AST_FireArmWeapon
 {
 	GENERATED_BODY()
 	
+public:
+    DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipAmmoCountChanged, int32)
+    FOnClipAmmoCountChanged OnClipAmmoCountChanged;
+    
 protected:
 	UPROPERTY(EditAnywhere, Category = "Ammo")
 	int32 MaxClipAmmoCount;
@@ -18,14 +22,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
 	FTimerHandle BurstShootingTimerHandler;
 
+public:
+    int32 GetCurrentClipAmmoCount() const { return CurrentClipAmmoCount; };
+    
 private:
 	bool bIsInBurstPause;
 	int32 CurrentClipAmmoCount;
 
-public:
-	AMachineGunWeapon();
-
 protected:
+    virtual void BeginPlay() override;
+    
 	virtual void StartShooting() override;
 
 	virtual void FinishReloading() override;
