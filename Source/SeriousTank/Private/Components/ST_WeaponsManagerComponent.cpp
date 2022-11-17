@@ -35,10 +35,12 @@ void UST_WeaponsManagerComponent::BeginPlay()
 	for (UActorComponent* WeaponSocketActor : WeaponSocketActors)
 	{
 		UST_WeaponSocketComponent* WeaponSocket = Cast<UST_WeaponSocketComponent>(WeaponSocketActor);
-		TSubclassOf<ABaseWeapon> CurrentWeaponClass = GameInstance->GetWeaponClass(WeaponIndex++);
+		TSubclassOf<ABaseWeapon> CurrentWeaponClass = GameInstance->GetWeaponClass(WeaponIndex);
 		
 		ABaseWeapon* Weapon = CurrentWeaponClass ? WeaponSocket->SetWeapon(CurrentWeaponClass) : nullptr;
-		Weapons.Add(Weapon);
+        Weapon->SetWeaponEnabled(WeaponIndex == 0);
+        Weapons.Add(Weapon);
+        WeaponIndex++;
 	}
 }
 
@@ -65,8 +67,12 @@ bool UST_WeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
 		return false;
 	}
 
-	StopFire();
-	CurrentWeaponIndex = WeaponIndex;
+    StopFire();
+	
+    Weapons[CurrentWeaponIndex]->SetWeaponEnabled(false);
+    Weapons[WeaponIndex]->SetWeaponEnabled(true);
+    
+    CurrentWeaponIndex = WeaponIndex;
 	
 	return true;
 }

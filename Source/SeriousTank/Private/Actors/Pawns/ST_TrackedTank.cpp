@@ -53,8 +53,6 @@ void AST_TrackedTank::RotateTurretToCamera(float DeltaTime)
 		{
 			TurretRotationSound->Play();
 		}
-
-		UE_LOG(LogTemp, Warning, TEXT("DifferenceAngle: %f = CameraRotator.Yaw: %f - TurretRotator.Yaw: %f"), DifferenceAngle, CameraRotator.Yaw, TurretRotator.Yaw);
 	}
 	else if (TurretRotationSound->IsActive())
 	{

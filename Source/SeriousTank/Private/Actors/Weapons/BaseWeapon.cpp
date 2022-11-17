@@ -54,6 +54,15 @@ void ABaseWeapon::StopFire()
 	StopShooting();
 }
 
+void ABaseWeapon::AttachToVehicleComponent(USceneComponent* ParentComponent)
+{
+    if (ParentComponent)
+    {
+        AttachToComponent(ParentComponent, FAttachmentTransformRules::KeepWorldTransform);
+        SetOwner(ParentComponent->GetOwner());
+    }
+}
+
 void ABaseWeapon::StartReloading()
 {
 	if (bIsWeaponReloading || TotalAmmoCount <= 0)

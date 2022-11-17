@@ -34,16 +34,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
 	FTimerHandle ReloadTimerHandler;
 
-	UPROPERTY(EditAnywhere, Category = "Reloading")
+	UPROPERTY(EditAnywhere, Category = "Ammo")
 	float ReloadingTime;
     
 	UPROPERTY(EditAnywhere, Category = "Ammo")
 	int32 TotalAmmoCount;
-
+    
 private:
 	bool bIsFireForced;
 	bool bIsWeaponReloading;
-
+    
 public:
 	ABaseWeapon();
 
@@ -55,12 +55,15 @@ public:
 
 	int32 GetTotalAmmoCount() const { return TotalAmmoCount; };
 	void SetTotalAmmoCount(int32 NewAmmoCount);
-
+    
  	void StartFire();
 	void StopFire();
 
 	void StartReloading();
-
+    
+    virtual void AttachToVehicleComponent(USceneComponent* ParentComponent);
+    virtual void SetWeaponEnabled(bool bIsEnabled) {};
+    
 protected:
 	void StopReloading();
 

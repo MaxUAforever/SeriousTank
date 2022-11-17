@@ -14,7 +14,7 @@ ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> Weapo
 	}
 
 	Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass, GetComponentTransform());
-	Weapon->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+	Weapon->AttachToVehicleComponent(this);
 		
 	OnWeaponAdded.ExecuteIfBound(Weapon);
 	

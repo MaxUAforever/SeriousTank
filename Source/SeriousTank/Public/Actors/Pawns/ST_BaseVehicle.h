@@ -12,9 +12,15 @@ public:
     DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponSwitched, int32)
     FOnWeaponSwitched OnWeaponSwitched;
     
+protected:
+    UPROPERTY(EditAnywhere, Category = "Camera");
+    float MaxVisibleDistance;
+    
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+    float GetMaxVisibleDistance() const { return MaxVisibleDistance; };
+    
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
 	virtual void RotateCamera(float Value) {};
