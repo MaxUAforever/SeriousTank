@@ -64,4 +64,6 @@ protected:
 	void CalculateCurrentSpeed(float DeltaTime);
 	
 	float CalculateAcceleration();
+    
+    virtual FVector ConstrainLocationToPlane(FVector Location) const override;
 };

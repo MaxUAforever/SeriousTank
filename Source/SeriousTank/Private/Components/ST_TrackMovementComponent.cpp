@@ -2,6 +2,7 @@
 
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 UST_TrackMovementComponent::UST_TrackMovementComponent()
 {
@@ -162,3 +163,18 @@ void UST_TrackMovementComponent::CalculateCurrentSpeed(const float DeltaTime)
 	//UE_LOG(BaseTrackLog, Warning, TEXT("Speed: %f, Acseleration: %f"), CurrentSpeed, Acseleration);
 }
 
+FVector UST_TrackMovementComponent::ConstrainLocationToPlane(FVector Location) const
+{
+    FVector OffsetVector{0.f};
+    if (AActor* CompOwner = GetOwner())
+    {
+        FVector Origin;
+        FVector BoxExtent;
+        float SphereRadius;
+        UKismetSystemLibrary::GetComponentBounds(CompOwner->GetRootComponent(), Origin, BoxExtent, SphereRadius);
+        
+        OffsetVector.Z = BoxExtent.Z;
+    }
+    
+    return Super::ConstrainLocationToPlane(Location) + OffsetVector;
+}
