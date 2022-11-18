@@ -23,18 +23,18 @@ AST_FireArmWeapon::AST_FireArmWeapon()
     AimMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AST_FireArmWeapon::AttachToVehicleComponent(USceneComponent* ParentComponent)
+void AST_FireArmWeapon::AttachToVehicleComponent(USceneComponent* ParentVehicleComponent)
 {
-    if (!ParentComponent)
+    if (!ParentVehicleComponent)
     {
         return;
     }
     
-    Super::AttachToVehicleComponent(ParentComponent);
+    Super::AttachToVehicleComponent(ParentVehicleComponent);
     
-    if (AST_BaseVehicle* Vehicle = Cast<AST_BaseVehicle>(ParentComponent->GetOwner()))
+    if (AST_BaseVehicle* Vehicle = Cast<AST_BaseVehicle>(ParentVehicleComponent->GetOwner()))
     {
-        FVector ParentLocation = ParentComponent->GetRelativeLocation();
+        FVector ParentLocation = ParentVehicleComponent->GetRelativeLocation();
         AimSpringArm->TargetArmLength = Vehicle->GetMaxVisibleDistance() - AimLocationOffset - ParentLocation.X;
     }
 }

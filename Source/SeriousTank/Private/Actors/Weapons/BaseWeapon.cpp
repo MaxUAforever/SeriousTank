@@ -54,12 +54,12 @@ void ABaseWeapon::StopFire()
 	StopShooting();
 }
 
-void ABaseWeapon::AttachToVehicleComponent(USceneComponent* ParentComponent)
+void ABaseWeapon::AttachToVehicleComponent(USceneComponent* ParentVehicleComponent)
 {
-    if (ParentComponent)
+    if (ParentVehicleComponent)
     {
-        AttachToComponent(ParentComponent, FAttachmentTransformRules::KeepWorldTransform);
-        SetOwner(ParentComponent->GetOwner());
+        AttachToComponent(ParentVehicleComponent, FAttachmentTransformRules::KeepWorldTransform);
+        SetOwner(ParentVehicleComponent->GetOwner());
     }
 }
 

@@ -61,7 +61,7 @@ public:
 
 	void StartReloading();
     
-    virtual void AttachToVehicleComponent(USceneComponent* ParentComponent);
+    virtual void AttachToVehicleComponent(USceneComponent* ParentVehicleComponent);
     virtual void SetWeaponEnabled(bool bIsEnabled) {};
     
 protected:

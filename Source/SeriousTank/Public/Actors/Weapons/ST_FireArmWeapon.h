@@ -27,7 +27,7 @@ protected:
 public:
     AST_FireArmWeapon();
     
-    virtual void AttachToVehicleComponent(USceneComponent* ParentComponent) override;
+    virtual void AttachToVehicleComponent(USceneComponent* ParentVehicleComponent) override;
     virtual void SetWeaponEnabled(bool bIsEnabled) override;
     
 protected:
