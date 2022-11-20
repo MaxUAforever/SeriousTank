@@ -13,7 +13,18 @@ void AST_BaseHUD::BeginPlay()
 	if (GameUIWidget)
 	{
 		GameUIWidget->SetVisibility(ESlateVisibility::Visible);
+        CurrentWidget = GameUIWidget;
 	}
+}
+
+void AST_BaseHUD::SwitchToMainWidget()
+{
+    SwitchToWidget(GameUIWidget);
+}
+
+void AST_BaseHUD::SwitchToSettingsWidget()
+{
+    SwitchToWidget(SettingsWidget);
 }
 
 UUserWidget* AST_BaseHUD::CreateAndAddWidget(TSubclassOf<UUserWidget> WidgetClass)
@@ -34,4 +45,20 @@ UUserWidget* AST_BaseHUD::CreateAndAddWidget(TSubclassOf<UUserWidget> WidgetClas
 	}
 
 	return nullptr;
+}
+
+void AST_BaseHUD::SwitchToWidget(UUserWidget* NeededWidget)
+{
+    if (NeededWidget == nullptr || NeededWidget == CurrentWidget)
+    {
+        return;
+    }
+    
+    if (CurrentWidget)
+    {
+        CurrentWidget->SetVisibility(ESlateVisibility::Hidden);
+    }
+    
+    NeededWidget->SetVisibility(ESlateVisibility::Visible);
+    CurrentWidget = NeededWidget;
 }

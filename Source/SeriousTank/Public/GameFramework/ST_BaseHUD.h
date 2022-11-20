@@ -11,21 +11,28 @@ class SERIOUSTANK_API AST_BaseHUD : public AHUD
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> GameUIClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> SettingsWidgetClass;
 
 protected:
 	UUserWidget* GameUIWidget;
 	UUserWidget* SettingsWidget;
 
-public:
-	virtual void SetSettingsWidgetVisible(bool bShowSettings) {};
+private:
+    UUserWidget* CurrentWidget;
 
+public:
+    void SwitchToMainWidget();
+	void SwitchToSettingsWidget();
+    
+    virtual void SwitchFromSettingsWidget() {};
+    
 protected:
 	virtual void BeginPlay() override;
 
 	UUserWidget* CreateAndAddWidget(TSubclassOf<UUserWidget> WidgetClass);
+    void SwitchToWidget(UUserWidget* NeededWidget);
 };

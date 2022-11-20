@@ -1,7 +1,7 @@
 #include "Widgets/MainMenu/ST_MainMenuWidget.h"
 
+#include "GameFramework/MainMenu/ST_MainMenuHUD.h"
 #include "GameFramework/MainMenu/ST_MainMenuPlayerController.h"
-#include "GameFramework/ST_BaseHUD.h"
 #include "GameFramework/ST_GameInstance.h"
 #include "Widgets/MainMenu/ST_GameplayLevelCardWidget.h"
 
@@ -19,7 +19,8 @@ void UST_MainMenuWidget::NativeConstruct()
 	ChooseGameplayLevelButton->OnClicked.AddDynamic(this, &ThisClass::OnChooseLevelButtonClicked);
 	SettingsButton->OnClicked.AddDynamic(this, &ThisClass::OnSettingsButtonClicked);
 	ExitGameButton->OnClicked.AddDynamic(this, &ThisClass::OnExitButtonClicked);
-
+    GarageButton->OnClicked.AddDynamic(this, &ThisClass::OnGarageButtonClicked);
+    
 	UWorld* World = GetWorld();
 	if (!World)
 	{
@@ -73,11 +74,11 @@ void UST_MainMenuWidget::OnSettingsButtonClicked()
 		return;
 	}
 	
-	if (AST_MainMenuPlayerController* PlayerController = Cast<AST_MainMenuPlayerController>(UGameplayStatics::GetPlayerController(World, 0)))
+	if (AST_MainMenuPlayerController* PlayerController = World->GetFirstPlayerController<AST_MainMenuPlayerController>())
 	{
 		if (AST_BaseHUD* BaseHUD = PlayerController->GetHUD<AST_BaseHUD>())
 		{
-			BaseHUD->SetSettingsWidgetVisible(true);
+			BaseHUD->SwitchToSettingsWidget();
 		}
 	}
 }
@@ -85,6 +86,23 @@ void UST_MainMenuWidget::OnSettingsButtonClicked()
 void UST_MainMenuWidget::OnExitButtonClicked()
 {
 	FGenericPlatformMisc::RequestExit(false);
+}
+
+void UST_MainMenuWidget::OnGarageButtonClicked()
+{
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return;
+    }
+    
+    if (AST_MainMenuPlayerController* PlayerController = World->GetFirstPlayerController<AST_MainMenuPlayerController>())
+    {
+        if (AST_MainMenuHUD* MainMenuHUD = PlayerController->GetHUD<AST_MainMenuHUD>())
+        {
+            MainMenuHUD->SwitchToGarageWidget();
+        }
+    }
 }
 
 void UST_MainMenuWidget::AddLevelCardWidget(const FGameplayLevelInfo& LevelInfo, const int32 LevelIndex)

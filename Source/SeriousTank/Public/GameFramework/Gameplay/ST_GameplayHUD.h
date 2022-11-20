@@ -9,10 +9,10 @@ class SERIOUSTANK_API AST_GameplayHUD : public AST_BaseHUD
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> FinalScoreWidgetClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> PauseWidgetClass;
 
 	UPROPERTY()
@@ -22,8 +22,11 @@ protected:
 	UUserWidget* PauseWidget;
 
 public:
-	virtual void SetSettingsWidgetVisible(bool bShowSettings) override;
-
+    void SwitchToPauseWidget();
+    void SwitchToFinalScoreWidget();
+    
+    virtual void SwitchFromSettingsWidget() override;
+    
 protected:
 	virtual void BeginPlay() override;
 

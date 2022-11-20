@@ -37,7 +37,7 @@ void UST_UserSettings::OnApplyButtonClicked()
 	{
 		if (AST_BaseHUD* BaseHUD = PlayerController->GetHUD<AST_BaseHUD>())
 		{
-			BaseHUD->SetSettingsWidgetVisible(false);
+			BaseHUD->SwitchFromSettingsWidget();
 		}
 	}
 }

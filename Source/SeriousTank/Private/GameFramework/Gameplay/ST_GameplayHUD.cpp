@@ -29,22 +29,24 @@ void AST_GameplayHUD::BeginPlay()
 	FinalScoreWidget = CreateAndAddWidget(FinalScoreWidgetClass);
 }
 
-void AST_GameplayHUD::SetSettingsWidgetVisible(bool bShowSettings)
+void AST_GameplayHUD::SwitchToPauseWidget()
 {
-	if (PauseWidget && SettingsWidget)
-	{
-		PauseWidget->SetVisibility(bShowSettings ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
-		SettingsWidget->SetVisibility(bShowSettings ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	}
+    SwitchToWidget(PauseWidget);
+}
+
+void AST_GameplayHUD::SwitchToFinalScoreWidget()
+{
+    SwitchToWidget(FinalScoreWidget);
+}
+
+void AST_GameplayHUD::SwitchFromSettingsWidget()
+{
+    SwitchToPauseWidget();
 }
 
 void AST_GameplayHUD::OnGameTimeEnded()
 {
-	if (FinalScoreWidget)
-	{
-		GameUIWidget->SetVisibility(ESlateVisibility::Hidden);
-		FinalScoreWidget->SetVisibility(ESlateVisibility::Visible);
-	}
+    SwitchToFinalScoreWidget();
 }
 
 void AST_GameplayHUD::OnGameIsPaused(bool IsPaused)

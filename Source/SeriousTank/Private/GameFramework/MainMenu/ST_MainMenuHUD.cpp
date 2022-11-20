@@ -2,11 +2,19 @@
 
 #include "Blueprint/UserWidget.h"
 
-void AST_MainMenuHUD::SetSettingsWidgetVisible(bool bShowSettings)
+void AST_MainMenuHUD::BeginPlay()
 {
-	if (GameUIWidget && SettingsWidget)
-	{
-		GameUIWidget->SetVisibility(bShowSettings ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
-		SettingsWidget->SetVisibility(bShowSettings ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	}
+    Super::BeginPlay();
+    
+    GarageWidget = CreateAndAddWidget(GarageWidgetClass);
+}
+
+void AST_MainMenuHUD::SwitchToGarageWidget()
+{
+    SwitchToWidget(GarageWidget);
+}
+
+void AST_MainMenuHUD::SwitchFromSettingsWidget()
+{
+    SwitchToMainWidget();
 }
