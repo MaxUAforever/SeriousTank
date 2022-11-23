@@ -8,10 +8,7 @@ ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> Weapo
 		return nullptr;
 	}
 
-	if (Weapon)
-	{
-		Weapon->Destroy();
-	}
+    DestroyWeapon();
 
 	Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass, GetComponentTransform());
 	Weapon->AttachToVehicleComponent(this);
@@ -21,3 +18,10 @@ ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> Weapo
 	return Weapon;
 }
 
+void UST_WeaponSocketComponent::DestroyWeapon()
+{
+    if (Weapon)
+    {
+        Weapon->Destroy();
+    }
+}

@@ -3,6 +3,8 @@
 void UST_GameInstance::SetVehicle(TSubclassOf<AST_BaseVehicle> NewVehicleClass)
 {
 	VehicleInfo.VehicleClass = NewVehicleClass;
+    
+    OnVehicleChanged.Broadcast(NewVehicleClass);
 }
 
 bool UST_GameInstance::SetWeapon(TSubclassOf<ABaseWeapon> NewWeaponClass, int32 WeaponIndex)

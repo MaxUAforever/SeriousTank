@@ -22,4 +22,6 @@ private:
 public:
 	ABaseWeapon* GetWeapon() const { return Weapon; }
 	ABaseWeapon* SetWeapon(TSubclassOf<ABaseWeapon> WeaponClass);
+    
+    void DestroyWeapon();
 };

@@ -13,12 +13,16 @@ public:
     FOnWeaponSwitched OnWeaponSwitched;
     
 protected:
+    UPROPERTY(EditDefaultsOnly, Category = "Info")
+    FString DisplayName;
+    
     UPROPERTY(EditAnywhere, Category = "Camera");
     float MaxVisibleDistance;
     
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+    FString GetDisplayName() const { return DisplayName; };
     float GetMaxVisibleDistance() const { return MaxVisibleDistance; };
     
 	virtual void MoveForward(float Value) {};

@@ -14,7 +14,11 @@ UCLASS()
 class SERIOUSTANK_API UST_GameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
+public:
+    DECLARE_MULTICAST_DELEGATE_OneParam(FOnVehicleChanged, TSubclassOf<AST_BaseVehicle>)
+    FOnVehicleChanged OnVehicleChanged;
+    
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Levels")
 	TArray<FGameplayLevelInfo> LevelsInfo;

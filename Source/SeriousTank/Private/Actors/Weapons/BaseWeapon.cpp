@@ -59,7 +59,10 @@ void ABaseWeapon::AttachToVehicleComponent(USceneComponent* ParentVehicleCompone
     if (ParentVehicleComponent)
     {
         AttachToComponent(ParentVehicleComponent, FAttachmentTransformRules::KeepWorldTransform);
-        SetOwner(ParentVehicleComponent->GetOwner());
+        
+        AActor* Owner = ParentVehicleComponent->GetOwner();
+        Owner->OnDestroyed.AddDynamic(this, &ThisClass::OnVehicleDestroyed);
+        SetOwner(Owner);
     }
 }
 
@@ -91,3 +94,7 @@ bool ABaseWeapon::CanShoot() const
 	return !bIsWeaponReloading && TotalAmmoCount > 0;
 }
 
+void ABaseWeapon::OnVehicleDestroyed(AActor* DestroyedOwnerVehicle)
+{
+    Destroy();
+}

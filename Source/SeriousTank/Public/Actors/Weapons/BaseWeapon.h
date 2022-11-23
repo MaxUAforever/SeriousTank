@@ -75,4 +75,8 @@ protected:
 	virtual void StopShooting() {};
 
 	virtual void FinishReloading() {};
+    
+private:
+    UFUNCTION()
+    void OnVehicleDestroyed(AActor* DestroyedOwnerVehicle);
 };
