@@ -1,6 +1,7 @@
 #include "Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleChoosingWidget.h"
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
+#include "Core/ST_CoreTypes.h"
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 #include "GameFramework/ST_BaseHUD.h"
 #include "Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleInfoCardWidget.h"
@@ -50,9 +51,10 @@ void UST_VehicleChoosingWidget::FillVehicleScrollBox()
         return;
     }
     
-    for (TSubclassOf<AST_BaseVehicle> VehicleClass : PlayerState->GetVehicles())
+    int32 VehicleIndex = 0;
+    for (FVehicleInfo VehicleInfo : PlayerState->GetVehicles())
     {
-        AST_BaseVehicle* DefaultBaseVehicle = VehicleClass->GetDefaultObject<AST_BaseVehicle>();
+        AST_BaseVehicle* DefaultBaseVehicle = VehicleInfo.VehicleClass->GetDefaultObject<AST_BaseVehicle>();
         if (!DefaultBaseVehicle)
         {
             continue;
@@ -62,7 +64,7 @@ void UST_VehicleChoosingWidget::FillVehicleScrollBox()
         
         VehicleCardInfo->SetPadding(FMargin{5.f, 5.f});
         VehicleCardInfo->SetDisplayName(DefaultBaseVehicle->GetDisplayName());
-        VehicleCardInfo->SetVehicleClass(VehicleClass);
+        VehicleCardInfo->SetVehicleIndex(VehicleIndex++);
 
         VehiclesScrollBox->AddChild(VehicleCardInfo);
     }

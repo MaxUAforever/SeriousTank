@@ -9,8 +9,6 @@ class SERIOUSTANK_API AST_MainMenuPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
-	AST_MainMenuPlayerController();
-
 	void OnNewGameStarted();
 
 protected:

@@ -3,23 +3,31 @@
 #include "Actors/GameplayActors/ST_ShootTarget.h"
 #include "Actors/Pawns/ST_BaseTrackedVehicle.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
+#include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
 #include "GameFramework/Gameplay/Utils/ST_TargetRespawnManager.h"
-#include "GameFramework/ST_GameInstance.h"
-#include "Engine/World.h"
 
+#include "Engine/World.h"
 #include "TimerManager.h"
+
+AST_GameplayGameMode::AST_GameplayGameMode()
+{
+    bUseSeamlessTravel = true;
+}
 
 UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-	UST_GameInstance* GameInstance = GetGameInstance<UST_GameInstance>();
-	if (GameInstance)
-	{
-		return GameInstance->GetVehicleClass();
-	}
-	else
-	{
-		return Super::GetDefaultPawnClassForController_Implementation(InController);
-	}
+    if (UWorld* World = GetWorld())
+    {
+        if (APlayerController* PC = World->GetFirstPlayerController())
+        {
+            if (AST_GameplayPlayerState* PlayerState = PC->GetPlayerState<AST_GameplayPlayerState>())
+            {
+                return PlayerState->GetVehicleInfo().VehicleClass;
+            }
+        }
+    }
+    
+    return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
 
 bool AST_GameplayGameMode::SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate)

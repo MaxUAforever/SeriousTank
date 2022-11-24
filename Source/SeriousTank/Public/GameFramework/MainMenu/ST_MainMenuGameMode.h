@@ -3,8 +3,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "ST_MainMenuGameMode.generated.h"
 
-class AST_BaseVehicle;
 class UST_VehicleSpawnManager;
+struct FVehicleInfo;
 
 UCLASS()
 class SERIOUSTANK_API AST_MainMenuGameMode : public AGameModeBase
@@ -14,10 +14,13 @@ class SERIOUSTANK_API AST_MainMenuGameMode : public AGameModeBase
 private:
 	UST_VehicleSpawnManager* VehicleSpawnManager;
 
+public:
+    AST_MainMenuGameMode();
+    
 protected:
 	virtual void BeginPlay() override;
 
 private:
     UFUNCTION()
-	void SpawnVehicle(TSubclassOf<AST_BaseVehicle> VehicleClass);
+	void SpawnVehicle(FVehicleInfo VehicleClass);
 };

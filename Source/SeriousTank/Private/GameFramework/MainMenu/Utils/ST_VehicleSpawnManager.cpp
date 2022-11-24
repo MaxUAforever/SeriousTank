@@ -1,13 +1,14 @@
 #include "GameFramework/MainMenu/Utils/ST_VehicleSpawnManager.h"
 
+#include "Actors/Pawns/ST_BaseVehicle.h"
+#include "Core/ST_CoreTypes.h"
+
+#include "Components/AudioComponent.h"
 #include "Engine/TargetPoint.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 
-#include "Actors/Pawns/ST_BaseVehicle.h"
-#include "Components/AudioComponent.h"
-
-void UST_VehicleSpawnManager::SpawnVehicle(TSubclassOf<AST_BaseVehicle> VehicleClass)
+void UST_VehicleSpawnManager::SpawnVehicle(FVehicleInfo VehicleInfo)
 {
 	UWorld* World = GetWorld();
 	if (!World)
@@ -26,7 +27,7 @@ void UST_VehicleSpawnManager::SpawnVehicle(TSubclassOf<AST_BaseVehicle> VehicleC
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		
-		Vehicle = World->SpawnActor<AST_BaseVehicle>(VehicleClass, It->GetActorLocation(), FRotator{ 0.f }, SpawnParameters);
+		Vehicle = World->SpawnActor<AST_BaseVehicle>(VehicleInfo.VehicleClass, It->GetActorLocation(), FRotator{ 0.f }, SpawnParameters);
 		DisableSoundsOnVehicle();
 	}
 }

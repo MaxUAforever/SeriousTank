@@ -3,7 +3,7 @@
 #include "UObject/Object.h"
 #include "ST_VehicleSpawnManager.generated.h"
 
-class AST_BaseVehicle;
+struct FVehicleInfo;
 
 UCLASS(BlueprintType)
 class SERIOUSTANK_API UST_VehicleSpawnManager : public UObject
@@ -14,7 +14,7 @@ private:
 	AST_BaseVehicle* Vehicle;
 
 public:
-	void SpawnVehicle(TSubclassOf<AST_BaseVehicle> VehicleClass);
+	void SpawnVehicle(FVehicleInfo VehicleInfo);
 
 private:
 	void DisableSoundsOnVehicle();

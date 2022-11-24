@@ -4,12 +4,6 @@
 #include "GameFramework/ST_GameInstance.h"
 
 #include "Engine/World.h"
-#include "Kismet/GameplayStatics.h"
-
-AST_MainMenuPlayerController::AST_MainMenuPlayerController()
-{
-	SetShowMouseCursor(true);
-}
 
 void AST_MainMenuPlayerController::OnNewGameStarted()
 {
@@ -29,7 +23,7 @@ void AST_MainMenuPlayerController::OnNewGameStarted()
 	{
 		if (const FGameplayLevelInfo* LevelInfo = GameInstance->GetLevelInfo(GameState->GetCurrentGameLevelIndex()))
 		{
-			UGameplayStatics::OpenLevel(World, FName(*LevelInfo->LevelName));
+            ClientTravel(LevelInfo->LevelName, ETravelType::TRAVEL_Relative, true);
 		}
 	}
 }
@@ -37,6 +31,7 @@ void AST_MainMenuPlayerController::OnNewGameStarted()
 void AST_MainMenuPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
+    
+    SetShowMouseCursor(true);
 	SetInputMode(FInputModeGameAndUI{});
 }

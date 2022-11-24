@@ -14,8 +14,12 @@ class SERIOUSTANK_API UST_WeaponSocketComponent : public UArrowComponent
 
 public:
 	DECLARE_DELEGATE_OneParam(FWeaponAdded, ABaseWeapon*)
-	FWeaponAdded OnWeaponAdded;
+    FWeaponAdded OnWeaponAdded;
 
+protected:
+    UPROPERTY(EditAnywhere, Category = "Weapon")
+    TSubclassOf<ABaseWeapon> DefaultWeaponClass;
+    
 private:
 	ABaseWeapon* Weapon;
 
@@ -23,5 +27,6 @@ public:
 	ABaseWeapon* GetWeapon() const { return Weapon; }
 	ABaseWeapon* SetWeapon(TSubclassOf<ABaseWeapon> WeaponClass);
     
+    TSubclassOf<ABaseWeapon> GetDefaultWeaponClass() const { return DefaultWeaponClass; };
     void DestroyWeapon();
 };

@@ -14,10 +14,6 @@ UCLASS()
 class SERIOUSTANK_API UST_GameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-
-public:
-    DECLARE_MULTICAST_DELEGATE_OneParam(FOnVehicleChanged, TSubclassOf<AST_BaseVehicle>)
-    FOnVehicleChanged OnVehicleChanged;
     
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Levels")
@@ -25,9 +21,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Levels")
 	FString MainMenuLevelName;
-
-	UPROPERTY(EditAnywhere, Category = "Pawn")
-	FVehicleInfo VehicleInfo;
 
 public:
 	const TArray<FGameplayLevelInfo>& GetLevelsInfo() const
@@ -44,17 +37,4 @@ public:
 	{
 		return MainMenuLevelName;
 	}
-
-	TSubclassOf<AST_BaseVehicle> GetVehicleClass() const 
-	{
-		return VehicleInfo.VehicleClass; 
-	};
-
-	TSubclassOf<ABaseWeapon> GetWeaponClass(int32 Index) const 
-	{
-		return Index >= 0 && Index < VehicleInfo.WeaponClasses.Num() ? VehicleInfo.WeaponClasses[Index] : nullptr;
-	};
-
-	void SetVehicle(TSubclassOf<AST_BaseVehicle> NewVehicleClass);
-	bool SetWeapon(TSubclassOf<ABaseWeapon> NewWeaponClass, int32 WeaponIndex);
 };

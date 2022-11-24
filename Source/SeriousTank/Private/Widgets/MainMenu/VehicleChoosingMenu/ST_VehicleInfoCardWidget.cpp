@@ -1,8 +1,10 @@
 #include "Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleInfoCardWidget.h"
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
+#include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 #include "GameFramework/ST_GameInstance.h"
 
+#include "GameFramework/PlayerController.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
@@ -19,16 +21,25 @@ void UST_VehicleInfoCardWidget::SetDisplayName(FString Name)
     VehicleNameBlock->SetText(FText::FromString(Name));
 }
 
-void UST_VehicleInfoCardWidget::SetVehicleClass(TSubclassOf<AST_BaseVehicle> NewVehicleClass)
+void UST_VehicleInfoCardWidget::SetVehicleIndex(int32 NewVehicleIndex)
 {
-    VehicleClass = NewVehicleClass;
+    VehicleIndex = NewVehicleIndex;
 }
 
 void UST_VehicleInfoCardWidget::OnVehicleButtonClicked()
 {
-    if (UST_GameInstance* GameInstance = GetGameInstance<UST_GameInstance>())
+    UWorld* World = GetWorld();
+    if (!World)
     {
-        GameInstance->SetVehicle(VehicleClass);
+        return;
+    }
+    
+    if (APlayerController* PlayerController = World->GetFirstPlayerController())
+    {
+        if (AST_MainMenuPlayerState* PlayerState = PlayerController->GetPlayerState<AST_MainMenuPlayerState>())
+        {
+            PlayerState->SetCurrentVehicle(VehicleIndex);
+        }
     }
 }
 

@@ -24,6 +24,8 @@ private:
 	UST_TargetRespawnManager* TargetRespawnManager;
 
 public:
+    AST_GameplayGameMode();
+    
 	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 public:

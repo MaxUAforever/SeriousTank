@@ -3,7 +3,6 @@
 #include "Blueprint/UserWidget.h"
 #include "ST_VehicleInfoCardWidget.generated.h"
 
-class AST_BaseVehicle;
 class UButton;
 class UTextBlock;
 
@@ -20,11 +19,11 @@ protected:
     UButton* VehicleButton;
     
 private:
-    TSubclassOf<AST_BaseVehicle> VehicleClass;
+    int32 VehicleIndex;
     
 public:
     void SetDisplayName(FString Name);
-    void SetVehicleClass(TSubclassOf<AST_BaseVehicle> NewVehicleClass);
+    void SetVehicleIndex(int32 NewVehicleIndex);
     
 protected:
     virtual void NativeConstruct() override;

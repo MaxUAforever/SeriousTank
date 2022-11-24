@@ -32,7 +32,8 @@ public:
     
 protected:
 	virtual void BeginPlay() override;
-
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
+    
 	UUserWidget* CreateAndAddWidget(TSubclassOf<UUserWidget> WidgetClass);
     void SwitchToWidget(UUserWidget* NeededWidget);
 };

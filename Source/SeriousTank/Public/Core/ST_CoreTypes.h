@@ -52,6 +52,12 @@ struct FVehicleInfo
 
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<ABaseWeapon>> WeaponClasses;
+    
+public:
+    FORCEINLINE bool operator==(const FVehicleInfo& Other) const
+    {
+        return VehicleClass == Other.VehicleClass;
+    }
 };
 
 UENUM(BlueprintType)

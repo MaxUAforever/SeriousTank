@@ -1,6 +1,7 @@
 #include "GameFramework/ST_BaseHUD.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "GameFramework/PlayerController.h"
 
 void AST_BaseHUD::BeginPlay()
@@ -15,6 +16,28 @@ void AST_BaseHUD::BeginPlay()
 		GameUIWidget->SetVisibility(ESlateVisibility::Visible);
         CurrentWidget = GameUIWidget;
 	}
+}
+
+void AST_BaseHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    Super::EndPlay(EndPlayReason);
+    
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return;
+    }
+    
+    TArray<UUserWidget*> FoundWidgets;
+    UWidgetBlueprintLibrary::GetAllWidgetsOfClass(World, FoundWidgets, UUserWidget::StaticClass(), true);
+    
+    for (UUserWidget* Widget : FoundWidgets)
+    {
+        if (Widget)
+        {
+            Widget->RemoveFromParent();
+        }
+    }
 }
 
 void AST_BaseHUD::SwitchToMainWidget()
