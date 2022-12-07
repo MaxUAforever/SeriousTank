@@ -22,7 +22,7 @@ void UPlayerUIWidget::NativeConstruct()
 		return;
 	}
 
-	TimeRefreshRate = 1.0f;
+	TimeRefreshRate = 0.5f;
 
 	FTimerDelegate TimeUpdateDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::UpdateTime);
 	World->GetTimerManager().SetTimer(TimeRefreshHandler, TimeUpdateDelegate, TimeRefreshRate, true);

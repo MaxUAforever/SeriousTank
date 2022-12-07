@@ -43,8 +43,6 @@ void AST_ViewCameraPawn::RotateCameraByXAxis(float Value)
 
 void AST_ViewCameraPawn::RotateCameraByYAxis(float Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *CameraSceneComponent->GetComponentRotation().ToString());
-
 	if (Controller != nullptr)
 	{
 		const FRotator CameraRotation = CameraSceneComponent->GetRelativeRotation();

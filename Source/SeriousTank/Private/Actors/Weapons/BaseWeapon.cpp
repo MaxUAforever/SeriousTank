@@ -60,9 +60,9 @@ void ABaseWeapon::AttachToVehicleComponent(USceneComponent* ParentVehicleCompone
     {
         AttachToComponent(ParentVehicleComponent, FAttachmentTransformRules::KeepWorldTransform);
         
-        AActor* Owner = ParentVehicleComponent->GetOwner();
-        Owner->OnDestroyed.AddDynamic(this, &ThisClass::OnVehicleDestroyed);
-        SetOwner(Owner);
+        AActor* OwnerVehicle = ParentVehicleComponent->GetOwner();
+		OwnerVehicle->OnDestroyed.AddDynamic(this, &ThisClass::OnVehicleDestroyed);
+        SetOwner(OwnerVehicle);
     }
 }
 

@@ -10,7 +10,7 @@
 
 void UST_VehicleSpawnManager::SpawnVehicle(FVehicleInfo VehicleInfo)
 {
-	UWorld* World = GetWorld();
+	UWorld* World = Vehicle != nullptr ? Vehicle->GetWorld() : GetWorld();
 	if (!World)
 	{
 		return;

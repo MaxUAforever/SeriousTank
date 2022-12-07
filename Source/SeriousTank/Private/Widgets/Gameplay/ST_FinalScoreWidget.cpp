@@ -36,7 +36,7 @@ void UST_FinalScoreWidget::OnPlayAgainButtonClicked()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(World, 0);
 	if (PlayerController)
 	{
-		PlayerController->RestartLevel();
+		PlayerController->ClientTravel(TEXT("?restart"), ETravelType::TRAVEL_Relative, true);;
 	}
 }
 

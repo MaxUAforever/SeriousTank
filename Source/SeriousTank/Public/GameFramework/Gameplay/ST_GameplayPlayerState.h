@@ -16,4 +16,7 @@ private:
 public:
     FVehicleInfo GetVehicleInfo() const { return VehicleInfo; };
     void SetVehicleInfo(FVehicleInfo NewVehicleInfo) { VehicleInfo = NewVehicleInfo; };
+
+protected:
+	virtual void CopyProperties(APlayerState* PlayerState) override;
 };

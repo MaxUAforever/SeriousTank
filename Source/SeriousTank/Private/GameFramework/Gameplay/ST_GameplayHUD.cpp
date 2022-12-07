@@ -51,8 +51,12 @@ void AST_GameplayHUD::OnGameTimeEnded()
 
 void AST_GameplayHUD::OnGameIsPaused(bool IsPaused)
 {
-	if (PauseWidget)
+	if (IsPaused)
 	{
-		PauseWidget->SetVisibility(IsPaused ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		SwitchToPauseWidget();
+	}
+	else
+	{
+		SwitchToMainWidget();
 	}
 }
