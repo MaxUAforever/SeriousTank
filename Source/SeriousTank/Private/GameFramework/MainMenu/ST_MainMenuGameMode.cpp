@@ -28,7 +28,6 @@ void AST_MainMenuGameMode::BeginPlay()
         if (AST_MainMenuPlayerState* PlayerState = PlayerController->GetPlayerState<AST_MainMenuPlayerState>())
         {
             PlayerState->OnCurrentVehicleChanged.BindUObject(this, &ThisClass::SpawnVehicle);
-            SpawnVehicle(PlayerState->GetCurrentVehicle());
         }
     }
 }

@@ -2,7 +2,19 @@
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Core/ST_CoreTypes.h"
-#include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
+#include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
+
+void AST_MainMenuPlayerState::BeginPlay()
+{
+    Super::BeginPlay();
+    
+    auto OnPlayerStateLoaded = [this](USaveGame* /*GameSave*/)
+    {
+        OnCurrentVehicleChanged.ExecuteIfBound(GetCurrentVehicle());
+    };
+    
+    UST_PlayerStateSaveGame::AsyncLoad(this, FPlayerStateAsyncLoadDelegate::CreateLambda(OnPlayerStateLoaded));
+}
 
 FVehicleInfo AST_MainMenuPlayerState::GetVehicle(TSubclassOf<AST_BaseVehicle> VehicleClass) const
 {
@@ -32,6 +44,11 @@ void AST_MainMenuPlayerState::SetCurrentVehicle(int32 NewVehicleIndex)
     CurrentVehicleIndex = NewVehicleIndex;
     
     OnCurrentVehicleChanged.ExecuteIfBound(GetCurrentVehicle());
+}
+
+void AST_MainMenuPlayerState::SetVehicles(TArray<FVehicleInfo> Vehicles)
+{
+    AvailableVehicles = Vehicles;
 }
 
 void AST_MainMenuPlayerState::AddVehicle(FVehicleInfo VehicleInfo)

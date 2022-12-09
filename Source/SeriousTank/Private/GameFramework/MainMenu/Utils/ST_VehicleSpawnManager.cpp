@@ -15,7 +15,7 @@ void UST_VehicleSpawnManager::SpawnVehicle(FVehicleInfo VehicleInfo)
 	{
 		return;
 	}
-
+    
 	if (Vehicle)
 	{
 		Vehicle->Destroy();

@@ -3,6 +3,7 @@
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
+#include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
 #include "GameFramework/ST_BaseHUD.h"
 #include "Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleInfoCardWidget.h"
 
@@ -21,9 +22,14 @@ void UST_VehicleChoosingWidget::OnAcceptButtonClicked()
     {
         return;
     }
-    
+ 
     if (AST_MainMenuPlayerController* PlayerController = World->GetFirstPlayerController<AST_MainMenuPlayerController>())
     {
+        if (AST_MainMenuPlayerState* PlayerState = PlayerController->GetPlayerState<AST_MainMenuPlayerState>())
+        {
+            UST_PlayerStateSaveGame::AsyncSave(PlayerState);
+        }
+        
         if (AST_BaseHUD* BaseHUD = PlayerController->GetHUD<AST_BaseHUD>())
         {
             BaseHUD->SwitchToMainWidget();
