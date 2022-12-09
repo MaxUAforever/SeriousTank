@@ -11,17 +11,7 @@ void UST_PlayerStateSaveGame::AsyncLoad(AST_MainMenuPlayerState* PlayerState, FP
 {
     auto OnAsyncLoadDone = [PlayerState, OnLoadedDelegate](const FString& /*SlotName*/, const int32 /*UserIndex*/, USaveGame* LoadedGameData)
     {
-        UST_PlayerStateSaveGame* LoadedPlayerStateData = Cast<UST_PlayerStateSaveGame>(LoadedGameData);
-        if (PlayerState && LoadedPlayerStateData)
-        {
-            if (LoadedPlayerStateData->AvailableVehicles.Num() > 0)
-            {
-                PlayerState->SetVehicles(LoadedPlayerStateData->AvailableVehicles);
-            }
-            
-            PlayerState->SetCurrentVehicle(LoadedPlayerStateData->CurrentVehicleIndex);
-        }
-        
+		LoadDataFromSaveGame(PlayerState, LoadedGameData);
         OnLoadedDelegate.ExecuteIfBound(LoadedGameData);
     };
     
@@ -43,9 +33,8 @@ void UST_PlayerStateSaveGame::AsyncSave(const AST_MainMenuPlayerState* PlayerSta
     {
         OnSavedDelegate.ExecuteIfBound(false);
     }
-    
-    SaveGameInstance->AvailableVehicles = PlayerState->GetVehicles();
-    SaveGameInstance->CurrentVehicleIndex = PlayerState->GetCurrentVehicleIndex();
+	
+	StoreDataToSaveGame(SaveGameInstance, PlayerState);
     
     auto OnAsyncSaveDone = [OnSavedDelegate](const FString& /*SlotName*/, const int32 /*UserIndex*/, bool bSuccess)
     {
@@ -54,4 +43,32 @@ void UST_PlayerStateSaveGame::AsyncSave(const AST_MainMenuPlayerState* PlayerSta
     
     FAsyncSaveGameToSlotDelegate SavedDelegate = FAsyncSaveGameToSlotDelegate::CreateLambda(OnAsyncSaveDone);
     UGameplayStatics::AsyncSaveGameToSlot(SaveGameInstance, SaveSlotName, UserIndex, SavedDelegate);
+}
+
+void UST_PlayerStateSaveGame::LoadDataFromSaveGame(AST_MainMenuPlayerState* PlayerState, USaveGame* LoadedGameData)
+{
+	UST_PlayerStateSaveGame* LoadedPlayerStateData = Cast<UST_PlayerStateSaveGame>(LoadedGameData);
+	if (!PlayerState || !LoadedPlayerStateData)
+	{
+		return;
+	}
+		
+	const FPlayerStateSaveData& PlayerStateSaveData = LoadedPlayerStateData->PlayerStateSaveData;
+	if (PlayerStateSaveData.AvailableVehicles.Num() > 0)
+	{
+		PlayerState->SetVehicles(PlayerStateSaveData.AvailableVehicles);
+	}
+	if (PlayerStateSaveData.CurrentVehicleIndex >= 0 && PlayerStateSaveData.CurrentVehicleIndex < PlayerStateSaveData.AvailableVehicles.Num())
+	{
+		PlayerState->SetCurrentVehicle(PlayerStateSaveData.CurrentVehicleIndex);
+	}
+}
+
+void UST_PlayerStateSaveGame::StoreDataToSaveGame(UST_PlayerStateSaveGame* SaveGameInstance, const AST_MainMenuPlayerState* PlayerState)
+{
+	if (SaveGameInstance && PlayerState)
+	{
+		SaveGameInstance->PlayerStateSaveData.AvailableVehicles = PlayerState->GetVehicles();
+		SaveGameInstance->PlayerStateSaveData.CurrentVehicleIndex = PlayerState->GetCurrentVehicleIndex();
+	}
 }
