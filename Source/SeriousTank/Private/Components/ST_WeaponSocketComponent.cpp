@@ -2,7 +2,7 @@
 
 ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> WeaponClass)
 {
-	UWorld* World = GetWorld();
+	UWorld* World = Weapon ? Weapon->GetWorld() : GetWorld();
 	if (!World || !WeaponClass)
 	{
 		return nullptr;
@@ -12,7 +12,7 @@ ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> Weapo
 
 	Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass, GetComponentTransform());
 	Weapon->AttachToVehicleComponent(this);
-		
+
 	OnWeaponAdded.ExecuteIfBound(Weapon);
 	
 	return Weapon;
