@@ -32,7 +32,7 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnGameTimeEnded();
+	void OnGameIsOver();
 
 	UFUNCTION()
 	void OnGameIsPaused(bool IsPaused);

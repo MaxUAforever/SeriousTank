@@ -18,7 +18,7 @@ void AST_GameplayHUD::BeginPlay()
 
 	if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
 	{
-		GameState->OnTimeHasEnded.AddUObject(this, &ThisClass::OnGameTimeEnded);
+		GameState->OnGameIsOver.AddUObject(this, &ThisClass::OnGameIsOver);
 	}
 	if (AST_GameplayGameMode* GameMode = World->GetAuthGameMode<AST_GameplayGameMode>())
 	{
@@ -44,7 +44,7 @@ void AST_GameplayHUD::SwitchFromSettingsWidget()
     SwitchToPauseWidget();
 }
 
-void AST_GameplayHUD::OnGameTimeEnded()
+void AST_GameplayHUD::OnGameIsOver()
 {
     SwitchToFinalScoreWidget();
 }

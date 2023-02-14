@@ -5,17 +5,24 @@
 #include "UObject/Object.h"
 #include "ST_CoreTypes.generated.h"
 
-class AST_ShootTarget;
-class AST_BaseVehicle;
 class ABaseWeapon;
+class AST_BaseVehicle;
+class AST_ShootTarget;
+class AST_TargetSpawningVolume;
 
 USTRUCT(BlueprintType)
-struct FGameData
+struct FBaseGameData
 {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "0", ClampMax = "5"))
 	int32 PreStartCountdownTime = 3;
+};
+
+USTRUCT(BlueprintType)
+struct FTargetShootingGameData
+{
+	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "1", ClampMax = "500"))
 	int32 StartTime = 50;
@@ -28,6 +35,9 @@ struct FGameData
 
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
 	TSubclassOf<AST_ShootTarget> ShootingTargetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Game")
+	TSubclassOf<AST_TargetSpawningVolume> TargetSpawnVolumeClass;
 };
 
 USTRUCT(BlueprintType)

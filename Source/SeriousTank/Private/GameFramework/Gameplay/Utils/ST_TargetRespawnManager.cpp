@@ -6,7 +6,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
-UST_TargetRespawnManager::UST_TargetRespawnManager()
+DEFINE_LOG_CATEGORY_STATIC(TargetRespawnManager, Display, All);
+
+void UST_TargetRespawnManager::SetSpawnVolumeClass(TSubclassOf<AST_TargetSpawningVolume> NewSpawnVolumeClass)
 {
 	const UWorld* World = GetWorld();
 	if (!World)
@@ -14,8 +16,10 @@ UST_TargetRespawnManager::UST_TargetRespawnManager()
 		return;
 	}
 
+	SpawnVolumeClass = NewSpawnVolumeClass;
+
 	TArray<AActor*> FoundVolumesActors;
-	UGameplayStatics::GetAllActorsOfClass(World, AST_TargetSpawningVolume::StaticClass(), FoundVolumesActors);
+	UGameplayStatics::GetAllActorsOfClass(World, SpawnVolumeClass, FoundVolumesActors);
 
 	SpawnVolumes.Reserve(FoundVolumesActors.Num());
 	for (AActor* FoundVolumesActor : FoundVolumesActors)
@@ -27,8 +31,20 @@ UST_TargetRespawnManager::UST_TargetRespawnManager()
 	}
 }
 
-AST_ShootTarget* UST_TargetRespawnManager::SpawnTarget(TSubclassOf<AST_ShootTarget> ShootTargetClass)
+AST_ShootTarget* UST_TargetRespawnManager::SpawnTarget()
 {
+	if (!ShootTargetClass)
+	{
+		UE_LOG(TargetRespawnManager, Warning, TEXT("Target class for spawning is not defined."));
+		return nullptr;
+	}
+
+	if (!SpawnVolumeClass)
+	{
+		UE_LOG(TargetRespawnManager, Warning, TEXT("Class for spawn volumes is not defined."));
+		return nullptr;
+	}
+
 	if (UWorld* World = GetWorld())
 	{
 		if (AST_TargetSpawningVolume* SpawnVolume = GetRandomSpawnVolume())
@@ -46,6 +62,7 @@ AST_TargetSpawningVolume* UST_TargetRespawnManager::GetRandomSpawnVolume()
 {
 	if (SpawnVolumes.Num() == 0)
 	{
+		UE_LOG(TargetRespawnManager, Warning, TEXT("No spawning volumes are located in the world."));
 		return nullptr;
 	}
 

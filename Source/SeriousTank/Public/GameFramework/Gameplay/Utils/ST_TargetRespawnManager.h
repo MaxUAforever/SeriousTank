@@ -11,15 +11,23 @@ class SERIOUSTANK_API UST_TargetRespawnManager : public UObject
 {
 	GENERATED_BODY()
 
+protected:
+    UPROPERTY(EditAnywhere, Category = "Settings")
+    TSubclassOf<AST_TargetSpawningVolume> SpawnVolumeClass;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+    TSubclassOf<AST_ShootTarget> ShootTargetClass;
+
 private:
 	TArray<AST_TargetSpawningVolume*> SpawnVolumes;
 
 	float SpawningHeight = 50.f;
 
 public:
-	UST_TargetRespawnManager();
+	void SetSpawnVolumeClass(TSubclassOf<AST_TargetSpawningVolume> NewSpawnVolumeClass);
+	void SetShootTargetClass(TSubclassOf<AST_ShootTarget> NewShootTargetClass) { ShootTargetClass = NewShootTargetClass; };
 
-	AST_ShootTarget* SpawnTarget(TSubclassOf<AST_ShootTarget> ShootTargetClass);
+	AST_ShootTarget* SpawnTarget();
 
 private:
 	AST_TargetSpawningVolume* GetRandomSpawnVolume();

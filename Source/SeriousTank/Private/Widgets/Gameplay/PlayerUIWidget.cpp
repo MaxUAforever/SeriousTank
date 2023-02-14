@@ -1,7 +1,7 @@
 #include "Widgets/Gameplay/PlayerUIWidget.h"
 
 #include "Widgets/Utils/ST_WidgetUtilsLibrary.h"
-#include "GameFramework/Gameplay/ST_GameplayGameState.h"
+#include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameState.h"
 
 #include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
@@ -27,7 +27,7 @@ void UPlayerUIWidget::NativeConstruct()
 	FTimerDelegate TimeUpdateDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::UpdateTime);
 	World->GetTimerManager().SetTimer(TimeRefreshHandler, TimeUpdateDelegate, TimeRefreshRate, true);
 
-	if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
+	if (AST_TargetShootingGameState* GameState = World->GetGameState<AST_TargetShootingGameState>())
 	{
 		GameState->OnScoreHasChanged.BindUObject(this, &ThisClass::UpdateScore);
 		GameState->OnPreStartCountdownChanged.BindUObject(this, &ThisClass::UpdatePreStartTime);
@@ -48,7 +48,7 @@ void UPlayerUIWidget::UpdateTime()
 {
 	if (UWorld* World = GetWorld())
 	{
-		if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
+		if (AST_TargetShootingGameState* GameState = World->GetGameState<AST_TargetShootingGameState>())
 		{
 			RemainingTimeBlock->SetText(UST_WidgetUtilsLibrary::ConvertTimeToText(GameState->GetRemainingTime()));
 		}

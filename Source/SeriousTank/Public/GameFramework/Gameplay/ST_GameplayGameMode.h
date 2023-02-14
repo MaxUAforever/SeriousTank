@@ -4,8 +4,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "ST_GameplayGameMode.generated.h"
 
-class UST_TargetRespawnManager;
-
 UCLASS()
 class SERIOUSTANK_API AST_GameplayGameMode : public AGameModeBase
 {
@@ -17,30 +15,17 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
-	FGameData GameData;
-	
-private:
-	UPROPERTY()
-	UST_TargetRespawnManager* TargetRespawnManager;
+	FBaseGameData BaseGameData;
 
 public:
     AST_GameplayGameMode();
     
-	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 public:
 	virtual bool SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate = FCanUnpause()) override;
-
 	virtual bool ClearPause() override;
 
 protected:
-	virtual void BeginPlay() override;
-
 	virtual void InitGameState() override;
-
-private:
-	UFUNCTION()
-	void OnTargetDestroyed(AActor* DestroyedActor);
-
-	void SpawnTarget();
 };

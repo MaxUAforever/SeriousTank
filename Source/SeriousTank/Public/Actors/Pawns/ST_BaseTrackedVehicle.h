@@ -9,6 +9,7 @@ class UBoxComponent;
 class UCameraComponent;
 class UST_TrackMovementComponent;
 class UST_VehicleSoundsComponent;
+class UST_ViewAreaBoxComponent;
 
 UCLASS()
 class SERIOUSTANK_API AST_BaseTrackedVehicle : public AST_BaseVehicle
@@ -24,6 +25,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* CameraSceneComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UST_ViewAreaBoxComponent* CameraViewAreaComponent;
 
 	UPROPERTY(EditAnywhere)
 	UCameraComponent* CameraComponent;
@@ -49,4 +53,6 @@ private:
 
 	UFUNCTION()
 	void OnMovingTypeChanged(EMovingType NewMovingType);
+
+	void UpdateCameraViewArea();
 };

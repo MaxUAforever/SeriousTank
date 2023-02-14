@@ -11,23 +11,6 @@ AST_GameplayGameState::AST_GameplayGameState()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
-int32 AST_GameplayGameState::GetScore() const
-{
-	return Score;
-}
-
-void AST_GameplayGameState::SetScore(const int32 NewScore)
-{
-	Score = NewScore;
-}
-
-void AST_GameplayGameState::AddScore(const int32 DeltaScore)
-{
-	Score = FMath::Max(Score + DeltaScore, 0);
-
-	OnScoreHasChanged.ExecuteIfBound(Score);
-}
-
 int32 AST_GameplayGameState::GetPreStartCountdownTime() const
 {
 	return RemainingCountdownTime;
@@ -38,26 +21,6 @@ void AST_GameplayGameState::SetPreStartCountdownTime(int32 NewTime)
 	RemainingCountdownTime = NewTime;
 }
 
-float AST_GameplayGameState::GetRemainingTime() const
-{
-	return RemainingTime;
-}
-
-void AST_GameplayGameState::SetRemainingTime(const float NewTime)
-{
-	RemainingTime = NewTime;
-}
-
-void AST_GameplayGameState::AddRemainingTime(const float DeltaTime)
-{
-	RemainingTime = FMath::Max(RemainingTime + DeltaTime, 0.f);
-	if (FMath::IsNearlyZero(RemainingTime))
-	{
-		OnTimeHasEnded.Broadcast();
-		SetActorTickEnabled(false);
-	}
-}
-
 float AST_GameplayGameState::GetTotalPlayTime() const
 {
 	return TotalPlayTime;
@@ -65,6 +28,8 @@ float AST_GameplayGameState::GetTotalPlayTime() const
 
 void AST_GameplayGameState::BeginPlay()
 {
+	Super::BeginPlay();
+
 	UWorld* World = GetWorld();
 	if (!World)
 	{
@@ -79,7 +44,6 @@ void AST_GameplayGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	AddRemainingTime(DeltaSeconds * -1);
 	TotalPlayTime += DeltaSeconds;
 }
 
