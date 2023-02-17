@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Blueprint/UserWidget.h"
+#include "Widgets/CommonElements/ST_BaseUserWidget.h"
 #include "ST_MainMenuWidget.generated.h"
 
 class UButton;
@@ -11,7 +11,7 @@ class UST_GameplayLevelCardWidget;
 struct FGameplayLevelInfo;
 
 UCLASS()
-class SERIOUSTANK_API UST_MainMenuWidget : public UUserWidget
+class SERIOUSTANK_API UST_MainMenuWidget : public UST_BaseUserWidget
 {
 	GENERATED_BODY()
 	

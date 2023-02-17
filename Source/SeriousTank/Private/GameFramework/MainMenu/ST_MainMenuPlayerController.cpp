@@ -1,8 +1,10 @@
 #include "GameFramework/MainMenu/ST_MainMenuPlayerController.h"
 
 #include "GameFramework/MainMenu/ST_MainMenuGameState.h"
+#include "GameFramework/MainMenu/ST_MainMenuHUD.h"
 #include "GameFramework/ST_GameInstance.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
 
 void AST_MainMenuPlayerController::OnNewGameStarted()

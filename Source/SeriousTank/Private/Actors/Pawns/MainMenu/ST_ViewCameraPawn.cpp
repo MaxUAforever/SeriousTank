@@ -29,7 +29,7 @@ void AST_ViewCameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(TEXT("RotateCamera"), this, &ThisClass::RotateCameraByXAxis);
+	PlayerInputComponent->BindAxis(TEXT("RotateMainMenuCamera"), this, &ThisClass::RotateCameraByXAxis);
 	PlayerInputComponent->BindAxis(TEXT("RotateCameraByYAxis"), this, &ThisClass::RotateCameraByYAxis);
 }
 

@@ -25,6 +25,8 @@ private:
     UUserWidget* CurrentWidget;
 
 public:
+	UUserWidget* GetCurrentWidget() { return CurrentWidget; };
+
     void SwitchToMainWidget();
 	void SwitchToSettingsWidget();
     

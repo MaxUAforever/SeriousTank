@@ -11,6 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 
+DEFINE_LOG_CATEGORY_STATIC(MainMenuWidget, Warning, All);
+
 void UST_MainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -42,6 +44,8 @@ void UST_MainMenuWidget::NativeConstruct()
 	{
 		UGameplayStatics::PlaySound2D(World, BackgroundMusic);
 	}
+
+	StartGameButton->SetKeyboardFocus();
 }
 
 void UST_MainMenuWidget::OnStartGameButtonClicked()
@@ -108,6 +112,13 @@ void UST_MainMenuWidget::OnGarageButtonClicked()
 void UST_MainMenuWidget::AddLevelCardWidget(const FGameplayLevelInfo& LevelInfo, const int32 LevelIndex)
 {
 	UST_GameplayLevelCardWidget* LevelCardInfo = CreateWidget<UST_GameplayLevelCardWidget>(GetWorld(), LevelCardWidgetClass);
+	
+	if (!LevelCardInfo)
+	{
+		UE_LOG(MainMenuWidget, Warning, TEXT("AddLevelCardWidget: Error while creating UST_GameplayLevelCardWidget."));
+		return;
+	}
+
 	LevelCardInfo->SetPadding(FMargin{10.f, 10.f});
 	LevelCardInfo->SetLevelName(FText::FromString(LevelInfo.LevelCaption));
 	LevelCardInfo->SetLevelIndex(LevelIndex);
