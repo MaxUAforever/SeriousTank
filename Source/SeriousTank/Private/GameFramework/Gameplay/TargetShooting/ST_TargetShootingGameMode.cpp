@@ -1,20 +1,24 @@
 #include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameMode.h"
 
 #include "Actors/GameplayActors/ST_ShootTarget.h"
+#include "Engine/World.h"
 #include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameState.h"
-#include "GameFramework/Gameplay/Utils/ST_TargetRespawnManager.h"
+#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 
 DEFINE_LOG_CATEGORY_STATIC(TargetShootingGameMode, Display, All);
 
 void AST_TargetShootingGameMode::BeginPlay()
 {
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		UE_LOG(TargetShootingGameMode, Warning, TEXT("BeginPlay: Failed to get world"));
+		return;
+	}
+
+	World->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateUObject(this, &ThisClass::OnTargetSpawned));
+	
 	Super::BeginPlay();
-
-	TargetRespawnManager = NewObject<UST_TargetRespawnManager>(this);
-	TargetRespawnManager->SetSpawnVolumeClass(GameData.TargetSpawnVolumeClass);
-	TargetRespawnManager->SetShootTargetClass(GameData.ShootingTargetClass);
-
-	SpawnTarget();
 }
 
 void AST_TargetShootingGameMode::InitGameState()
@@ -34,20 +38,15 @@ void AST_TargetShootingGameMode::OnTargetDestroyed(AActor* DestroyedActor)
 		GameplayGameState->AddScore(GameData.AddedScoreForTarget);
 		GameplayGameState->AddRemainingTime(GameData.AddedTimeForTarget);
 	}
-
-	SpawnTarget();
 }
 
-void AST_TargetShootingGameMode::SpawnTarget()
+void AST_TargetShootingGameMode::OnTargetSpawned(AActor* InTargetActor)
 {
-	if (!TargetRespawnManager)
+	AST_ShootTarget* Target = Cast<AST_ShootTarget>(InTargetActor);
+	if (!Target)
 	{
-		UE_LOG(TargetShootingGameMode, Warning, TEXT("Failed to get pointer to TargetRespawnManager"))
 		return;
 	}
-	
-	if (AST_ShootTarget* Target = TargetRespawnManager->SpawnTarget())
-	{
-		Target->OnDestroyed.AddDynamic(this, &ThisClass::OnTargetDestroyed);
-	}
+
+	Target->OnDestroyed.AddDynamic(this, &ThisClass::OnTargetDestroyed);
 }

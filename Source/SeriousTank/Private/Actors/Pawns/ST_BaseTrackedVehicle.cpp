@@ -107,7 +107,13 @@ void AST_BaseTrackedVehicle::UpdateCameraViewArea()
 	{
 		// Finding intersection between 2 planes of frustum.
 		FVector Intersection, Direction;
-		FMath::IntersectPlanes2(Intersection, Direction, FrustumPlanes[i], FrustumPlanes[(i + 1) % 4]);
+		const bool bIsIntersected = FMath::IntersectPlanes2(Intersection, Direction, FrustumPlanes[i], FrustumPlanes[(i + 1) % 4]);
+
+		if (!bIsIntersected)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UpdateCameraViewArea: Frustum planes are not intersected."));
+			return;
+		}
 
 		// Calculate intersection point on 0z-axis.
 		float ZeroZCoef = -Intersection.Z / Direction.Z;

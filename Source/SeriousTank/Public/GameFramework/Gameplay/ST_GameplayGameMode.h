@@ -4,6 +4,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "ST_GameplayGameMode.generated.h"
 
+struct FObjectTypeSpawnParams;
+
 UCLASS()
 class SERIOUSTANK_API AST_GameplayGameMode : public AGameModeBase
 {
@@ -17,6 +19,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
 	FBaseGameData BaseGameData;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Game")
+	TArray<FObjectTypeSpawnParams> ObjectsSpawnParameters;
+
 public:
     AST_GameplayGameMode();
     
@@ -27,5 +32,7 @@ public:
 	virtual bool ClearPause() override;
 
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void InitGameState() override;
 };

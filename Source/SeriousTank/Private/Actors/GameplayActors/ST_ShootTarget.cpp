@@ -16,4 +16,3 @@ AST_ShootTarget::AST_ShootTarget()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	MeshComponent->SetupAttachment(SceneComponent);
 }
-

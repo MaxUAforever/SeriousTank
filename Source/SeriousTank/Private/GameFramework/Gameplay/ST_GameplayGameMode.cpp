@@ -3,6 +3,7 @@
 #include "Actors/Pawns/ST_BaseTrackedVehicle.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
+#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 
 #include "Engine/World.h"
 #include "TimerManager.h"
@@ -10,6 +11,19 @@
 AST_GameplayGameMode::AST_GameplayGameMode()
 {
     bUseSeamlessTravel = true;
+}
+
+void AST_GameplayGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UObjectSpawnSubsystem* ObjectSpawnSubsystem = GetWorld()->GetSubsystem<UObjectSpawnSubsystem>())
+	{
+		for (FObjectTypeSpawnParams TypeSpawnParams : ObjectsSpawnParameters)
+		{
+			ObjectSpawnSubsystem->AddObjectSpawnManager(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
+		}
+	}
 }
 
 UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)

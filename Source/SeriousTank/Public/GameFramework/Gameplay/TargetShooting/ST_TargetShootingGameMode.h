@@ -14,18 +14,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
 	FTargetShootingGameData GameData;
 
-private:
-	UPROPERTY()
-	UST_TargetRespawnManager* TargetRespawnManager;
-
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void InitGameState() override;
 
 private:
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);
-
-	void SpawnTarget();
+	void OnTargetSpawned(AActor* InTargetActor);
 };

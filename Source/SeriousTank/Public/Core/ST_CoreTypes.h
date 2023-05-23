@@ -32,12 +32,6 @@ struct FTargetShootingGameData
 
 	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "1", ClampMax = "500"))
 	int32 AddedScoreForTarget = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Game")
-	TSubclassOf<AST_ShootTarget> ShootingTargetClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Game")
-	TSubclassOf<AST_TargetSpawningVolume> TargetSpawnVolumeClass;
 };
 
 USTRUCT(BlueprintType)
