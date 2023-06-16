@@ -3,7 +3,7 @@
 #include "Components/ActorComponent.h"
 #include "ST_WeaponsManagerComponent.generated.h"
 
-class ABaseWeapon;
+class AST_BaseWeapon;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_WeaponsManagerComponent : public UActorComponent
@@ -11,7 +11,7 @@ class SERIOUSTANK_API UST_WeaponsManagerComponent : public UActorComponent
 	GENERATED_BODY()
 		
 private:
-	TArray<ABaseWeapon*> Weapons;
+	TArray<AST_BaseWeapon*> Weapons;
 	uint32 CurrentWeaponIndex;
 
 public:	
@@ -22,7 +22,7 @@ public:
 
 	bool SwitchWeapon(int32 WeaponIndex);
 
-	ABaseWeapon* GetWeapon(int32 WeaponIndex) const;
+	AST_BaseWeapon* GetWeapon(int32 WeaponIndex) const;
 
 protected:
 	virtual void BeginPlay() override;

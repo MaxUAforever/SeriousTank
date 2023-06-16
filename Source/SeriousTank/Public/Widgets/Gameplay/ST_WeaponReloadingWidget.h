@@ -46,10 +46,10 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnWeaponAdded(ABaseWeapon* Weapon);
+	void OnWeaponAdded(AST_BaseWeapon* Weapon);
 
 	UFUNCTION()
-	void OnWeaponReloadingStarted(ABaseWeapon* Weapon);
+	void OnWeaponReloadingStarted(AST_BaseWeapon* Weapon);
 
     UFUNCTION()
     void OnWeaponSelected(int32 Index);
@@ -60,5 +60,5 @@ private:
     UFUNCTION()
     void UpdateClipAmmoCount(int32 ClipAmmoCount);
     
-	void UpdateReloadingProgressbar(ABaseWeapon* Weapon);
+	void UpdateReloadingProgressbar(AST_BaseWeapon* Weapon);
 };

@@ -1,15 +1,15 @@
-#include "Actors/Weapons/MachineGunWeapon.h"
+#include "Actors/Weapons/ST_MachineGunWeapon.h"
 
 #include "TimerManager.h"
 
-void AMachineGunWeapon::BeginPlay()
+void AST_MachineGunWeapon::BeginPlay()
 {
-    Super::BeginPlay();
-    
+	Super::BeginPlay();
+
 	CurrentClipAmmoCount = MaxClipAmmoCount < TotalAmmoCount ? MaxClipAmmoCount : TotalAmmoCount;
 }
 
-void AMachineGunWeapon::StartShooting()
+void AST_MachineGunWeapon::StartShooting()
 {
 	Shoot();
 
@@ -20,15 +20,15 @@ void AMachineGunWeapon::StartShooting()
 	}
 }
 
-void AMachineGunWeapon::FinishReloading()
+void AST_MachineGunWeapon::FinishReloading()
 {
 	CurrentClipAmmoCount = MaxClipAmmoCount;
-    OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
-    
+	OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
+
 	Super::FinishReloading();
 }
 
-void AMachineGunWeapon::Shoot()
+void AST_MachineGunWeapon::Shoot()
 {
 	if (!CanShoot() || bIsInBurstPause)
 	{
@@ -43,11 +43,11 @@ void AMachineGunWeapon::Shoot()
 		StopShooting();
 		StartReloading();
 	}
-    
-    OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
+
+	OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
 }
 
-void AMachineGunWeapon::OnBurstPauseEnded()
+void AST_MachineGunWeapon::OnBurstPauseEnded()
 {
 	bIsInBurstPause = false;
 	if (IsFireForced())

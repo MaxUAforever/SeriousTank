@@ -1,16 +1,18 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "BaseWeapon.generated.h"
+#include "ST_BaseWeapon.generated.h"
 
 class UArrowComponent;
 class USoundCue;
 
-UCLASS(Abstract)
-class SERIOUSTANK_API ABaseWeapon : public AActor
+UCLASS()
+class SERIOUSTANK_API AST_BaseWeapon : public AActor
 {
 	GENERATED_BODY()
-
+	
 public:
 	DECLARE_DELEGATE(FReloadingStarted)
 	FReloadingStarted OnReloadingStarted;
@@ -45,7 +47,7 @@ private:
 	bool bIsWeaponReloading;
     
 public:
-	ABaseWeapon();
+	AST_BaseWeapon();
 
 	bool IsFireForced() const { return bIsFireForced; };
 	bool IsReloading() const { return bIsWeaponReloading; };
@@ -79,4 +81,5 @@ protected:
 private:
     UFUNCTION()
     void OnVehicleDestroyed(AActor* DestroyedOwnerVehicle);
+
 };

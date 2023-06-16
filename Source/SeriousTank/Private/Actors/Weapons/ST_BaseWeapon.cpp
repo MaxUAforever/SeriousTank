@@ -1,11 +1,10 @@
-#include "Actors/Weapons/BaseWeapon.h"
+#include "Actors/Weapons/ST_BaseWeapon.h"
 
 #include "Components/ArrowComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "TimerManager.h"
 
-// Sets default values
-ABaseWeapon::ABaseWeapon()
+AST_BaseWeapon::AST_BaseWeapon()
 {
 	SceneComponent = CreateDefaultSubobject<USceneComponent>("RootComponent");
 	SetRootComponent(SceneComponent);
@@ -18,17 +17,17 @@ ABaseWeapon::ABaseWeapon()
 
 	bIsFireForced = false;
 	bIsWeaponReloading = false;
-	
+
 	ReloadingTime = 5.f;
 	TotalAmmoCount = 50;
 }
 
-float ABaseWeapon::GetReloadingRemainingTime() const
+float AST_BaseWeapon::GetReloadingRemainingTime() const
 {
 	return GetWorldTimerManager().GetTimerRemaining(ReloadTimerHandler);
 }
 
-void ABaseWeapon::SetTotalAmmoCount(int32 NewAmmoCount)
+void AST_BaseWeapon::SetTotalAmmoCount(int32 NewAmmoCount)
 {
 	if (NewAmmoCount >= 0)
 	{
@@ -38,35 +37,35 @@ void ABaseWeapon::SetTotalAmmoCount(int32 NewAmmoCount)
 		if (OldAmmoCount == 0 && NewAmmoCount > 0)
 		{
 			StartReloading();
-		}	
+		}
 	}
 }
 
-void ABaseWeapon::StartFire()
+void AST_BaseWeapon::StartFire()
 {
 	bIsFireForced = true;
 	StartShooting();
 }
 
-void ABaseWeapon::StopFire()
+void AST_BaseWeapon::StopFire()
 {
 	bIsFireForced = false;
 	StopShooting();
 }
 
-void ABaseWeapon::AttachToVehicleComponent(USceneComponent* ParentVehicleComponent)
+void AST_BaseWeapon::AttachToVehicleComponent(USceneComponent* ParentVehicleComponent)
 {
-    if (ParentVehicleComponent)
-    {
-        AttachToComponent(ParentVehicleComponent, FAttachmentTransformRules::KeepWorldTransform);
-        
-        AActor* OwnerVehicle = ParentVehicleComponent->GetOwner();
+	if (ParentVehicleComponent)
+	{
+		AttachToComponent(ParentVehicleComponent, FAttachmentTransformRules::KeepWorldTransform);
+
+		AActor* OwnerVehicle = ParentVehicleComponent->GetOwner();
 		OwnerVehicle->OnDestroyed.AddDynamic(this, &ThisClass::OnVehicleDestroyed);
-        SetOwner(OwnerVehicle);
-    }
+		SetOwner(OwnerVehicle);
+	}
 }
 
-void ABaseWeapon::StartReloading()
+void AST_BaseWeapon::StartReloading()
 {
 	if (bIsWeaponReloading || TotalAmmoCount <= 0)
 	{
@@ -81,7 +80,7 @@ void ABaseWeapon::StartReloading()
 	OnReloadingStarted.ExecuteIfBound();
 }
 
-void ABaseWeapon::StopReloading()
+void AST_BaseWeapon::StopReloading()
 {
 	bIsWeaponReloading = false;
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandler);
@@ -89,12 +88,13 @@ void ABaseWeapon::StopReloading()
 	FinishReloading();
 }
 
-bool ABaseWeapon::CanShoot() const
+bool AST_BaseWeapon::CanShoot() const
 {
 	return !bIsWeaponReloading && TotalAmmoCount > 0;
 }
 
-void ABaseWeapon::OnVehicleDestroyed(AActor* DestroyedOwnerVehicle)
+void AST_BaseWeapon::OnVehicleDestroyed(AActor* DestroyedOwnerVehicle)
 {
-    Destroy();
+	Destroy();
 }
+

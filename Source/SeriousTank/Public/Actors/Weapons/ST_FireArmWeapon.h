@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Actors/Weapons/BaseWeapon.h"
+#include "Actors/Weapons/ST_BaseWeapon.h"
 #include "ST_FireArmWeapon.generated.h"
 
 class AST_BaseProjectile;
 class USpringArmComponent;
 
 UCLASS(Abstract)
-class SERIOUSTANK_API AST_FireArmWeapon : public ABaseWeapon
+class SERIOUSTANK_API AST_FireArmWeapon : public AST_BaseWeapon
 {
 	GENERATED_BODY()
 

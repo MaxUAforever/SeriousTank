@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Actors/Weapons/ST_FireArmWeapon.h"
-#include "MachineGunWeapon.generated.h"
+#include "ST_MachineGunWeapon.generated.h"
 
 UCLASS()
-class SERIOUSTANK_API AMachineGunWeapon : public AST_FireArmWeapon
+class SERIOUSTANK_API AST_MachineGunWeapon : public AST_FireArmWeapon
 {
 	GENERATED_BODY()
 	

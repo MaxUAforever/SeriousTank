@@ -1,8 +1,8 @@
 #include "Widgets/Gameplay/ST_WeaponReloadingWidget.h"
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
-#include "Actors/Weapons/BaseWeapon.h"
-#include "Actors/Weapons/MachineGunWeapon.h"
+#include "Actors/Weapons/ST_BaseWeapon.h"
+#include "Actors/Weapons/ST_MachineGunWeapon.h"
 #include "Components/ST_WeaponSocketComponent.h"
 
 #include "Components/Border.h"
@@ -40,7 +40,7 @@ void UST_WeaponReloadingWidget::NativeConstruct()
 	}
 }
 
-void UST_WeaponReloadingWidget::OnWeaponAdded(ABaseWeapon* Weapon)
+void UST_WeaponReloadingWidget::OnWeaponAdded(AST_BaseWeapon* Weapon)
 {
     if (!Weapon)
     {
@@ -55,7 +55,9 @@ void UST_WeaponReloadingWidget::OnWeaponAdded(ABaseWeapon* Weapon)
     
     UpdateTotalAmmoCount(Weapon->GetTotalAmmoCount());
     
-    if (AMachineGunWeapon* MachineGunWeapon = Cast<AMachineGunWeapon>(Weapon))
+	// TODO: Probably it is needed to get rid of such dependency - move whole method
+	// to HUD with splitting for different weapon types.
+    if (AST_MachineGunWeapon* MachineGunWeapon = Cast<AST_MachineGunWeapon>(Weapon))
     {
         ClipAmmoCountBlock->SetVisibility(ESlateVisibility::Visible);
         AmmoDelimiterBlock->SetVisibility(ESlateVisibility::Visible);
@@ -65,7 +67,7 @@ void UST_WeaponReloadingWidget::OnWeaponAdded(ABaseWeapon* Weapon)
     }
 }
 
-void UST_WeaponReloadingWidget::OnWeaponReloadingStarted(ABaseWeapon* Weapon)
+void UST_WeaponReloadingWidget::OnWeaponReloadingStarted(AST_BaseWeapon* Weapon)
 {
     FTimerDelegate ReloadingRefreshRateTimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::UpdateReloadingProgressbar, Weapon);
 	GetWorld()->GetTimerManager().SetTimer(WeaponReloadingRefreshRateHandler, ReloadingRefreshRateTimerDelegate, ReloadingRefreshRate, true);
@@ -88,7 +90,7 @@ void UST_WeaponReloadingWidget::UpdateClipAmmoCount(int32 ClipAmmoCount)
     ClipAmmoCountBlock->SetText(FText::FromString(FString::FromInt(ClipAmmoCount)));
 }
 
-void UST_WeaponReloadingWidget::UpdateReloadingProgressbar(ABaseWeapon* Weapon)
+void UST_WeaponReloadingWidget::UpdateReloadingProgressbar(AST_BaseWeapon* Weapon)
 {
 	if (!Weapon || !Weapon->IsReloading())
 	{

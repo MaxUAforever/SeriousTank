@@ -1,6 +1,6 @@
 #include "Components/ST_WeaponSocketComponent.h"
 
-ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> WeaponClass)
+AST_BaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<AST_BaseWeapon> WeaponClass)
 {
 	UWorld* World = Weapon ? Weapon->GetWorld() : GetWorld();
 	if (!World || !WeaponClass)
@@ -10,7 +10,7 @@ ABaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<ABaseWeapon> Weapo
 
     DestroyWeapon();
 
-	Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass, GetComponentTransform());
+	Weapon = World->SpawnActor<AST_BaseWeapon>(WeaponClass, GetComponentTransform());
 	Weapon->AttachToVehicleComponent(this);
 
 	OnWeaponAdded.ExecuteIfBound(Weapon);

@@ -7,7 +7,7 @@
 #include "ST_GameInstance.generated.h"
 
 class AST_BaseVehicle;
-class ABaseWeapon;
+class AST_BaseWeapon;
 class UAudioComponent;
 
 UCLASS()

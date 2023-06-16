@@ -5,7 +5,7 @@
 #include "UObject/Object.h"
 #include "ST_CoreTypes.generated.h"
 
-class ABaseWeapon;
+class AST_BaseWeapon;
 class AST_BaseVehicle;
 class AST_ShootTarget;
 class AST_TargetSpawningVolume;
@@ -55,7 +55,7 @@ struct FVehicleInfo
 	TSubclassOf<AST_BaseVehicle> VehicleClass;
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<ABaseWeapon>> WeaponClasses;
+	TArray<TSubclassOf<AST_BaseWeapon>> WeaponClasses;
     
 public:
     FORCEINLINE bool operator==(const FVehicleInfo& Other) const

@@ -30,7 +30,7 @@ void UST_WeaponsManagerComponent::BeginPlay()
         return;
     }
     
-    TArray<TSubclassOf<ABaseWeapon>> CustomWeaponClasses;
+    TArray<TSubclassOf<AST_BaseWeapon>> CustomWeaponClasses;
     if (AST_MainMenuPlayerState* MenuPlayerState = PlayerController->GetPlayerState<AST_MainMenuPlayerState>())
     {
         CustomWeaponClasses = MenuPlayerState->GetCurrentVehicle().WeaponClasses;
@@ -50,9 +50,9 @@ void UST_WeaponsManagerComponent::BeginPlay()
 		UST_WeaponSocketComponent* WeaponSocket = Cast<UST_WeaponSocketComponent>(WeaponSocketActor);
         
         bool bHasCustomWeapon = WeaponIndex < CustomWeaponClasses.Num() && CustomWeaponClasses[WeaponIndex] != nullptr;
-        TSubclassOf<ABaseWeapon> CurrentWeaponClass = bHasCustomWeapon ? CustomWeaponClasses[WeaponIndex] : WeaponSocket->GetDefaultWeaponClass();
+        TSubclassOf<AST_BaseWeapon> CurrentWeaponClass = bHasCustomWeapon ? CustomWeaponClasses[WeaponIndex] : WeaponSocket->GetDefaultWeaponClass();
 		
-		ABaseWeapon* Weapon = CurrentWeaponClass ? WeaponSocket->SetWeapon(CurrentWeaponClass) : nullptr;
+		AST_BaseWeapon* Weapon = CurrentWeaponClass ? WeaponSocket->SetWeapon(CurrentWeaponClass) : nullptr;
         if (Weapon)
         {
             Weapon->SetWeaponEnabled(WeaponIndex == 0);
@@ -65,7 +65,7 @@ void UST_WeaponsManagerComponent::BeginPlay()
 
 void UST_WeaponsManagerComponent::StartFire()
 {
-	if (Weapons.Num() != 0)
+	if (Weapons.IsValidIndex(CurrentWeaponIndex))
 	{
 		Weapons[CurrentWeaponIndex]->StartFire();
 	}
@@ -73,7 +73,7 @@ void UST_WeaponsManagerComponent::StartFire()
 
 void UST_WeaponsManagerComponent::StopFire()
 {
-	if (Weapons.Num() != 0)
+	if (Weapons.IsValidIndex(CurrentWeaponIndex))
 	{
 		Weapons[CurrentWeaponIndex]->StopFire();
 	}
@@ -96,7 +96,7 @@ bool UST_WeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
 	return true;
 }
 
-ABaseWeapon* UST_WeaponsManagerComponent::GetWeapon(int32 WeaponIndex) const
+AST_BaseWeapon* UST_WeaponsManagerComponent::GetWeapon(int32 WeaponIndex) const
 {
 	return (WeaponIndex >= 0 && WeaponIndex < Weapons.Num()) ? Weapons[CurrentWeaponIndex] : nullptr;
 }

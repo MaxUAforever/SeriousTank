@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Subsystems/ObjectSpawnSubsystem/SpawnSubsystemTypes.h"
-#include "UObject/NoExportTypes.h"
+#include "UObject/Object.h"
+#include "Engine/EngineTypes.h"
 #include "ObjectSpawnManager.generated.h"
 
 class AObjectSpawnVolume;
