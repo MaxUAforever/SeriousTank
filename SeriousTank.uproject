@@ -15,11 +15,19 @@
 			]
 		}
 	],
+	"Plugins": [
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		}
+	],
 	"TargetPlatforms": [
 		"Linux",
 		"Mac",
 		"Switch",
 		"Windows",
-		"WindowsNoEditor"
+		"WindowsNoEditor",
+		"Android",
+		"IOS"
 	]
 }

@@ -1,10 +1,14 @@
 #pragma once
 
 #include "GameFramework/Pawn.h"
+#include "AbilitySystemInterface.h"
 #include "ST_BaseVehicle.generated.h"
 
+class UAbilitySystemComponent;
+class UGameplayAbility;
+
 UCLASS(Abstract)
-class SERIOUSTANK_API AST_BaseVehicle : public APawn
+class SERIOUSTANK_API AST_BaseVehicle : public APawn, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -18,9 +22,16 @@ protected:
     
     UPROPERTY(EditAnywhere, Category = "Camera");
     float MaxVisibleDistance;
+
+	UPROPERTY()
+	UAbilitySystemComponent* AbilitySystemComponent;
     
 public:
+	AST_BaseVehicle();
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void NotifyControllerChanged() override;
 
     FString GetDisplayName() const { return DisplayName; };
     float GetMaxVisibleDistance() const { return MaxVisibleDistance; };
@@ -35,4 +46,12 @@ public:
     virtual void SwitchToFirstWeapon() { OnWeaponSwitched.Broadcast(0); };
     virtual void SwitchToSecondWeapon() { OnWeaponSwitched.Broadcast(1); };
     virtual void SwitchToThirdWeapon() { OnWeaponSwitched.Broadcast(2); };
+
+	/**
+	 * Abilities
+	 */
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; };
+
+	void AddAbility(TSubclassOf<UGameplayAbility> InAbility);
 };
