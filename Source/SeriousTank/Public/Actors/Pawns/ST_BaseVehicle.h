@@ -6,6 +6,7 @@
 
 class UAbilitySystemComponent;
 class UGameplayAbility;
+class UST_VehicleAbilitySystemComponent;
 
 UCLASS(Abstract)
 class SERIOUSTANK_API AST_BaseVehicle : public APawn, public IAbilitySystemInterface
@@ -24,7 +25,7 @@ protected:
     float MaxVisibleDistance;
 
 	UPROPERTY()
-	UAbilitySystemComponent* AbilitySystemComponent;
+	UST_VehicleAbilitySystemComponent* AbilitySystemComponent;
     
 public:
 	AST_BaseVehicle();
@@ -51,7 +52,5 @@ public:
 	 * Abilities
 	 */
 
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystemComponent; };
-
-	void AddAbility(TSubclassOf<UGameplayAbility> InAbility);
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override { return Cast<UAbilitySystemComponent>(AbilitySystemComponent); };
 };

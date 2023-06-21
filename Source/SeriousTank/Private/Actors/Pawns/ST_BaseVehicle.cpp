@@ -2,13 +2,15 @@
 
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystemComponent.h"
-#include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "Engine/World.h"
+#include "Systems/GameplayAbilitySystem/ST_VehicleAbilitySystemComponent.h"
+
 
 AST_BaseVehicle::AST_BaseVehicle()
 {
-	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent = CreateDefaultSubobject<UST_VehicleAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 }
 
 void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -41,20 +43,5 @@ void AST_BaseVehicle::NotifyControllerChanged()
 	if (AbilitySystemComponent)
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
-	}
-}
-
-void AST_BaseVehicle::AddAbility(const TSubclassOf<UGameplayAbility> InAbility)
-{
-	if (!AbilitySystemComponent)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ST_BaseVehicle::AddAbility: Failed to get AbilitySystemComponent"));
-		return;
-	}
-
-	if (HasAuthority() && InAbility)
-	{
-		const FGameplayAbilitySpec AbilitySpec(InAbility);
-		AbilitySystemComponent->GiveAbility(AbilitySpec);
 	}
 }
