@@ -4,7 +4,6 @@
 #include "Components/AudioComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ST_WeaponSocketComponent.h"
-#include "Components/ST_WeaponsManagerComponent.h"
 
 AST_TrackedTank::AST_TrackedTank()
 {
@@ -24,8 +23,6 @@ AST_TrackedTank::AST_TrackedTank()
 
 	SecondWeaponSocketComponent = CreateDefaultSubobject<UST_WeaponSocketComponent>("SecondWeaponSocketComponent");
 	SecondWeaponSocketComponent->SetupAttachment(TurretSceneComponent);
-
-	WeaponsManagerComponent = CreateDefaultSubobject<UST_WeaponsManagerComponent>("WeaponsManagerComponent");
 }
 
 void AST_TrackedTank::Tick(float DeltaTime)
@@ -58,28 +55,4 @@ void AST_TrackedTank::RotateTurretToCamera(float DeltaTime)
 	{
 		TurretRotationSound->Stop();
 	}
-}
-
-void AST_TrackedTank::StartFire()
-{
-	WeaponsManagerComponent->StartFire();
-}
-
-void AST_TrackedTank::StopFire()
-{
-	WeaponsManagerComponent->StopFire();
-}
-
-void AST_TrackedTank::SwitchToFirstWeapon()
-{
-    Super::SwitchToFirstWeapon();
-    
-	WeaponsManagerComponent->SwitchWeapon(0);
-}
-
-void AST_TrackedTank::SwitchToSecondWeapon()
-{
-    Super::SwitchToSecondWeapon();
-    
-	WeaponsManagerComponent->SwitchWeapon(1);
 }

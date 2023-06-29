@@ -4,6 +4,7 @@
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "ST_WeaponSocketComponent.generated.h"
 
+class AST_WeaponBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_WeaponSocketComponent : public UArrowComponent
@@ -16,15 +17,18 @@ public:
 
 protected:
     UPROPERTY(EditAnywhere, Category = "Weapon")
-    TSubclassOf<AST_BaseWeapon> DefaultWeaponClass;
+    TSubclassOf<AST_WeaponBase> DefaultWeaponClass;
     
 private:
-	AST_BaseWeapon* Weapon;
+	AST_WeaponBase* Weapon;
+
+protected:
+	virtual void OnChildAttached(USceneComponent* ChildComponent) override;
 
 public:
-	AST_BaseWeapon* GetWeapon() const { return Weapon; }
-	AST_BaseWeapon* SetWeapon(TSubclassOf<AST_BaseWeapon> WeaponClass);
+	AST_WeaponBase* GetWeapon() const { return Weapon; }
+	
+	TSubclassOf<AST_WeaponBase> GetDefaultWeaponClass() const { return DefaultWeaponClass; };
     
-    TSubclassOf<AST_BaseWeapon> GetDefaultWeaponClass() const { return DefaultWeaponClass; };
-    void DestroyWeapon();
+	void DestroyWeapon();
 };

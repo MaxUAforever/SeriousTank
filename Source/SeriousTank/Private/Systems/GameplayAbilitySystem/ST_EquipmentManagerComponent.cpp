@@ -3,7 +3,11 @@
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystemGlobals.h"
 #include "Systems/GameplayAbilitySystem/Equipment/ST_EquippableAbilityItem.h"
+#include "Systems/GameplayAbilitySystem/ST_AbilitySet.h"
 #include "Systems/GameplayAbilitySystem/ST_VehicleAbilitySystemComponent.h"
+
+// TODO: Remove after test.
+#include "Systems/GameplayAbilitySystem/Abilities/ST_GunFireGameplayAbility.h"
 
 UST_EquipmentManagerComponent::UST_EquipmentManagerComponent()
 {	
@@ -16,40 +20,29 @@ void UST_EquipmentManagerComponent::SetMaxItemsAmount(int32 InMaxItemsAmount)
 	{
 		MaxItemsAmount = InMaxItemsAmount;
 		EquippedItems.Reserve(MaxItemsAmount);
-		EquippedItems.AddUninitialized(MaxItemsAmount);
+		EquippedItems.AddDefaulted(MaxItemsAmount);
 	}
 }
 
-void UST_EquipmentManagerComponent::GrantEquipmentAbilities(AST_EquippableAbilityItem* AbilityItem)
+void UST_EquipmentManagerComponent::EquipItem(AST_EquippableAbilityItem* AbilityItem, USceneComponent* ParentComponent)
 {
-	if (EquippedItems.Num() >= MaxItemsAmount)
+	for (int32 Index = 0; Index < EquippedItems.Num(); ++Index)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::GrantEquipmentAbilities: Max amount of abilities is granted."));
-		return;
+		if (EquippedItems[Index] == nullptr)
+		{
+			EquipItemByIndex(AbilityItem, Index, ParentComponent);
+			return;
+		}
 	}
 
-	GrantEquipmentAbilitiesByIndex(AbilityItem, EquippedItems.Num());
+	UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::EquipItem: Max amount of items is equipped."));
 }
 
-void UST_EquipmentManagerComponent::GrantEquipmentAbilitiesByIndex(AST_EquippableAbilityItem* AbilityItem, int32 Index)
+void UST_EquipmentManagerComponent::EquipItemByIndex(AST_EquippableAbilityItem* AbilityItem, int32 Index, USceneComponent* ParentComponent)
 {
 	if (!AbilityItem)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::GrantEquipmentAbilities: Failed to get AbilityItem."));
-		return;
-	}
-
-	UST_VehicleAbilitySystemComponent* AbilityComponent = GetAbilitySystemComponent();
-	if (!AbilityComponent)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::GrantEquipmentAbilities: Failed to get AbilitySystemComponent."));
-		return;
-	}
-
-	const FEquipmentAbilitySet& AbilitySet = AbilityItem->GetAbilitySet();
-	if (!AbilitySet.GameplayAbilityClass)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::GrantEquipmentAbilities: GameplayAbilityClass is not defined."));
+		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::EquipItemByIndex: Failed to get AbilityItem."));
 		return;
 	}
 
@@ -59,16 +52,38 @@ void UST_EquipmentManagerComponent::GrantEquipmentAbilitiesByIndex(AST_Equippabl
 		return;
 	}
 
-	UGameplayAbility* AbilityCDO = AbilitySet.GameplayAbilityClass->GetDefaultObject<UGameplayAbility>();
+	AbilityItem->AttachToParentActor(GetOwner(), ParentComponent);
 
-	FGameplayAbilitySpec AbilitySpec(AbilityCDO);
-	AbilitySpec.SourceObject = Cast<UObject>(AbilityItem);
-	AbilitySpec.DynamicAbilityTags.AppendTags(AbilityCDO->AbilityTags);
+	bool bIsAbilityGranted = GrantEquipmentAbilitiesByIndex(AbilityItem, Index);
+	if (bIsAbilityGranted)
+	{
+		EquippedItems[Index] = AbilityItem;
+		OnItemEquipped.Broadcast(AbilityItem, Index);
+	}
+	
+}
 
-	const FGameplayAbilitySpecHandle AbilitySpecHandle = AbilityComponent->GiveAbility(AbilitySpec);
+void UST_EquipmentManagerComponent::EquipItemByIndex(TSubclassOf<AST_EquippableAbilityItem> AbilityItemClass, int32 Index, USceneComponent* ParentComponent)
+{
+	if (!AbilityItemClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::EquipItemByIndex: AbilityItemClass is not defined."))
+		return;
+	}
 
-	EquippedItems[Index] = AbilityItem;
-	OnItemEquipped.Broadcast(AbilityItem, Index);
+	AST_EquippableAbilityItem* AbilityItem;
+	
+	UWorld* World = GetWorld();
+	if (World && ParentComponent)
+	{
+		AbilityItem = World->SpawnActor<AST_EquippableAbilityItem>(AbilityItemClass, ParentComponent->GetComponentTransform());
+	}
+	else
+	{
+		AbilityItem = NewObject<AST_EquippableAbilityItem>(this);
+	}
+
+	EquipItemByIndex(AbilityItem, Index, ParentComponent);
 }
 
 void UST_EquipmentManagerComponent::RemoveEquipment(AST_EquippableAbilityItem* AbilityItem)
@@ -143,6 +158,28 @@ bool UST_EquipmentManagerComponent::ActivateAbilityByIndex(const int32 Index) co
 	}
 
 	return AbilityComponent->TryActivateAbility(AbilityItem->GetAbilityHandle().GetValue());
+}
+
+bool UST_EquipmentManagerComponent::GrantEquipmentAbilitiesByIndex(AST_EquippableAbilityItem* AbilityItem, int32 Index)
+{
+	UST_VehicleAbilitySystemComponent* AbilityComponent = GetAbilitySystemComponent();
+	if (!AbilityComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::GrantEquipmentAbilities: Failed to get AbilitySystemComponent."));
+		return false;
+	}
+
+	const FST_AbilitySet& AbilitySet = AbilityItem->GetAbilitySet();
+	if (!AbilitySet.GameplayAbilityInfo.GameplayAbilityClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ST_EquipmentManagerComponent::GrantEquipmentAbilities: GameplayAbilityClass is not defined."));
+		return false;
+	}
+
+	EST_AbilityInputID InputID = static_cast<EST_AbilityInputID>(static_cast<int32>(EST_AbilityInputID::EquippedItem1) + Index);
+	FGameplayAbilitySpecHandle AbilitySpecHandle = AbilityComponent->GiveAbility(AbilitySet.GameplayAbilityInfo, Cast<UObject>(AbilityItem), InputID);
+	
+	return AbilitySpecHandle != FGameplayAbilitySpecHandle{};
 }
 
 UST_VehicleAbilitySystemComponent* UST_EquipmentManagerComponent::GetAbilitySystemComponent() const

@@ -1,21 +1,18 @@
 #include "Components/ST_WeaponSocketComponent.h"
 
-AST_BaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<AST_BaseWeapon> WeaponClass)
+#include "Systems/GameplayAbilitySystem/Equipment/Weapons/ST_WeaponBase.h"
+
+void UST_WeaponSocketComponent::OnChildAttached(USceneComponent* ChildComponent)
 {
-	UWorld* World = Weapon ? Weapon->GetWorld() : GetWorld();
-	if (!World || !WeaponClass)
+	AST_WeaponBase* NewWeapon = Cast<AST_WeaponBase>(ChildComponent);
+	if (!NewWeapon)
 	{
-		return nullptr;
+		UE_LOG(LogTemp, Warning, TEXT("ST_WeaponSocketComponent::OnChildAttached: Failed to cast child to weapon class."));
+		return;
 	}
 
-    DestroyWeapon();
-
-	Weapon = World->SpawnActor<AST_BaseWeapon>(WeaponClass, GetComponentTransform());
-	Weapon->AttachToVehicleComponent(this);
-
-	OnWeaponAdded.ExecuteIfBound(Weapon);
-	
-	return Weapon;
+	DestroyWeapon();
+	Weapon = NewWeapon;
 }
 
 void UST_WeaponSocketComponent::DestroyWeapon()

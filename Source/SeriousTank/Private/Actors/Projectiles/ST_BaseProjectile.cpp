@@ -43,7 +43,7 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
         return;
     }
     
-	if (OtherActor == this || OtherActor == GetOwner() || OtherActor == PC->GetPawn())
+	if (OtherActor == this || OtherActor == GetOwner() || OtherActor == PC->GetPawn() || OtherActor->IsA(AST_BaseProjectile::StaticClass()))
 	{
 		return;
 	}

@@ -1,13 +1,36 @@
 #include "Systems/GameplayAbilitySystem/Equipment/ST_EquippableAbilityItem.h"
 
-#include "Abilities/GameplayAbility.h"
+#include "AbilitySystemGlobals.h"
+#include "Systems/GameplayAbilitySystem/Abilities/ST_EquippedItemAbility.h"
+#include "Systems/GameplayAbilitySystem/ST_AbilitySet.h"
+#include "Systems/GameplayAbilitySystem/ST_VehicleAbilitySystemComponent.h"
 
-void AST_EquippableAbilityItem::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
+void AST_EquippableAbilityItem::AttachToParentActor(AActor* ParentActor, USceneComponent* ParentActorComponent)
 {
-	AbilitySpecHandle = MakeUnique<FGameplayAbilitySpecHandle>(AbilitySpec.Handle);
+	if (ParentActor)
+	{
+		ParentActor->OnDestroyed.AddDynamic(this, &ThisClass::OnParentDestroyed);
+		SetOwner(ParentActor);
+	}
+
+	if (ParentActorComponent)
+	{
+		AttachToComponent(ParentActorComponent, FAttachmentTransformRules::KeepWorldTransform);
+	}
 }
 
-void AST_EquippableAbilityItem::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
+void AST_EquippableAbilityItem::OnGiveAbility(const FGameplayAbilitySpec& AbilitySpec)
+{
+	AbilitySpecHandle = MakeUnique<FGameplayAbilitySpecHandle>(AbilitySpec.Handle);
+
+	if (UST_EquippedItemAbility* ItemAbility = Cast<UST_EquippedItemAbility>(AbilitySpec.Ability))
+	{
+		ItemAbility->OnItemAbilityActivated.AddUObject(this, &ThisClass::HandleAbilityActivated);
+		ItemAbility->OnGameplayAbilityEnded.AddUObject(this, &ThisClass::HandleAbilityEnded);
+	}
+}
+
+void AST_EquippableAbilityItem::OnRemoveAbility(const FGameplayAbilitySpec& AbilitySpec)
 {
 	AbilitySpecHandle.Reset();
 }
@@ -15,4 +38,9 @@ void AST_EquippableAbilityItem::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpe
 TOptional<FGameplayAbilitySpecHandle> AST_EquippableAbilityItem::GetAbilityHandle() const
 {
 	return AbilitySpecHandle ? TOptional<FGameplayAbilitySpecHandle>(*AbilitySpecHandle.Get()) : TOptional<FGameplayAbilitySpecHandle>();
+}
+
+void AST_EquippableAbilityItem::OnParentDestroyed(AActor* DestroyedOwnerActor)
+{
+	Destroy();
 }

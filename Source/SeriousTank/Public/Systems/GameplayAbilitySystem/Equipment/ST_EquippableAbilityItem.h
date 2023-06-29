@@ -1,28 +1,12 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "GameplayAbilitySpecHandle.h"
+#include "Systems/GameplayAbilitySystem/ST_AbilitySet.h"
 #include "ST_EquippableAbilityItem.generated.h"
 
-class UAttributeSet;
-class UGameplayAbility;
-class UGameplayEffect;
 struct FGameplayAbilitySpec;
 struct FGameplayAbilitySpecHandle;
-
-USTRUCT(BlueprintType)
-struct FEquipmentAbilitySet
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGameplayAbility> GameplayAbilityClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TArray<TSubclassOf<UGameplayEffect>> GameplayEffectClasses;
-
-	// TODO: Add AttributeSet for equipment properties
-};
-
 
 UCLASS()
 class SERIOUSTANK_API AST_EquippableAbilityItem : public AActor
@@ -31,16 +15,28 @@ class SERIOUSTANK_API AST_EquippableAbilityItem : public AActor
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
-	FEquipmentAbilitySet EquipmentAbilitySetToGrant;
+	FST_AbilitySet EquipmentAbilitySetToGrant;
 
 private:
 	TUniquePtr<FGameplayAbilitySpecHandle> AbilitySpecHandle;
 
 public:
-	FORCEINLINE const FEquipmentAbilitySet& GetAbilitySet() const { return EquipmentAbilitySetToGrant; }
+	virtual void AttachToParentActor(AActor* ParentActor, USceneComponent* ParentActorComponent = nullptr);
 
-	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec);
-	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec);
-
+	FORCEINLINE const FST_AbilitySet& GetAbilitySet() const { return EquipmentAbilitySetToGrant; }
 	TOptional<FGameplayAbilitySpecHandle> GetAbilityHandle() const;
+	
+	virtual void OnGiveAbility(const FGameplayAbilitySpec& AbilitySpec);
+	virtual void OnRemoveAbility(const FGameplayAbilitySpec& AbilitySpec);
+
+	virtual bool CheckCost() { return true; };
+	virtual void ApplyCost() {};
+	
+protected:
+	virtual void HandleAbilityActivated(const FGameplayAbilitySpecHandle InHandle) {};
+	virtual void HandleAbilityEnded(UGameplayAbility* InAbility) {};
+
+private:
+	UFUNCTION()
+	void OnParentDestroyed(AActor* DestroyedOwnerActor);
 };

@@ -2,6 +2,9 @@
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Core/ST_CoreTypes.h"
+#include "Components/Button.h"
+#include "Components/ScrollBox.h"
+#include "GameFramework/MainMenu/ST_MainMenuPlayerController.h"
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 #include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
 #include "GameFramework/ST_BaseHUD.h"

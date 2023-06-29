@@ -30,9 +30,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UAudioComponent* TurretRotationSound;
 
-	UPROPERTY(VisibleAnywhere)
-	UST_WeaponsManagerComponent* WeaponsManagerComponent;
-
 protected:
 	UPROPERTY(EditAnywhere)
 	float TurretRotationSpeed;
@@ -45,10 +42,4 @@ protected:
 
 private:
 	void RotateTurretToCamera(float DeltaTime);
-
-	virtual void StartFire() override;
-	virtual void StopFire() override;
-
-	virtual void SwitchToFirstWeapon() override;
-	virtual void SwitchToSecondWeapon() override;
 };

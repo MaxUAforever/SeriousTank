@@ -2,11 +2,13 @@
 
 #include "GameFramework/Pawn.h"
 #include "AbilitySystemInterface.h"
+#include "Systems/GameplayAbilitySystem/ST_VehicleAbilitySystemComponent.h"
 #include "ST_BaseVehicle.generated.h"
 
 class UAbilitySystemComponent;
 class UGameplayAbility;
-class UST_VehicleAbilitySystemComponent;
+class UST_EquipmentManagerComponent;
+class UST_WeaponSocketManagerComponent;
 
 UCLASS(Abstract)
 class SERIOUSTANK_API AST_BaseVehicle : public APawn, public IAbilitySystemInterface
@@ -27,9 +29,19 @@ protected:
 	UPROPERTY()
 	UST_VehicleAbilitySystemComponent* AbilitySystemComponent;
     
+	UPROPERTY()
+	UST_WeaponSocketManagerComponent* WeaponSocketManagerComponent;
+
+	UPROPERTY(EditAnywhere)
+	UST_EquipmentManagerComponent* EquipmentManagerComponent;
+
 public:
 	AST_BaseVehicle();
 
+protected:
+	virtual void BeginPlay() override;
+
+public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void NotifyControllerChanged() override;
@@ -53,4 +65,7 @@ public:
 	 */
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override { return Cast<UAbilitySystemComponent>(AbilitySystemComponent); };
+
+private:
+	void SetupEquipment() const;
 };
