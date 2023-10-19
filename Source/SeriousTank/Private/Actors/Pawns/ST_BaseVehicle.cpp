@@ -33,7 +33,7 @@ void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	FTopLevelAssetPath AbilityEnumAssetPath = FTopLevelAssetPath(FName("/Script/SeriousTank"), FName("EST_AbilityInputID"));
-	FGameplayAbilityInputBinds AbilityInput(FString("ConfirmAbility"), FString("CancelAbility"), AbilityEnumAssetPath, static_cast<int32>(EST_AbilityInputID::ConfirmAbility), static_cast<int32>(EST_AbilityInputID::CancelAbility));
+	FGameplayAbilityInputBinds AbilityInput(FString("ConfirmAbility"), FString("CancelAbility"), AbilityEnumAssetPath);
 
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, AbilityInput);
 

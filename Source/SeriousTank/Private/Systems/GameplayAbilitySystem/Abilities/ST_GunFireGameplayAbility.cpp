@@ -25,11 +25,42 @@ void UST_GunFireGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandl
 	WaitAbilityActivate->ReadyForActivation();
 }
 
+const FGameplayTagContainer* UST_GunFireGameplayAbility::GetCooldownTags() const
+{
+	// MutableTags writes to the TempCooldownTags on the CDO so clear it in case the ability cooldown tags change (moved to a different slot)
+	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&TempCooldownTags);
+	MutableTags->Reset();
+	
+	if (const FGameplayTagContainer* ParentTags = Super::GetCooldownTags())
+	{
+		MutableTags->AppendTags(*ParentTags);
+	}
+
+	MutableTags->AppendTags(CooldownTags);
+	return MutableTags;
+}
+
+void UST_GunFireGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
+	if (CooldownGE)
+	{
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
+		SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);
+		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Cooldown")), CooldownDuration.GetValueAtLevel(GetAbilityLevel()));
+		
+		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+	}
+}
+
 void UST_GunFireGameplayAbility::OnConfirm()
 {
+	UE_LOG(LogTemp, Warning, TEXT("OnConfirmCalled"));
 	if (!CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
 	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		UE_LOG(LogTemp, Warning, TEXT("CommitAbilityFailed"));
+		RestartConfirmTask();
+		return;
 	}
 
 	UST_AbilityTask_SpawnProjectile* SpawnProjectileTask = UST_AbilityTask_SpawnProjectile::SpawnProjectile(this);
@@ -48,6 +79,11 @@ void UST_GunFireGameplayAbility::OnAbilityChanged(UGameplayAbility* ActivatedAbi
 }
 
 void UST_GunFireGameplayAbility::OnProjectileSpawned(AActor* SpawnedProjectile)
+{
+	RestartConfirmTask();
+}
+
+void UST_GunFireGameplayAbility::RestartConfirmTask()
 {
 	UAbilityTask_WaitConfirmCancel* WaitConfirmTask = UAbilityTask_WaitConfirmCancel::WaitConfirmCancel(this);
 	WaitConfirmTask->OnConfirm.AddDynamic(this, &ThisClass::OnConfirm);

@@ -32,9 +32,8 @@ public:
 	virtual bool CheckCost() { return true; };
 	virtual void ApplyCost() {};
 	
-protected:
-	virtual void HandleAbilityActivated(const FGameplayAbilitySpecHandle InHandle) {};
-	virtual void HandleAbilityEnded(UGameplayAbility* InAbility) {};
+	virtual void HandleAbilityActivated() {};
+	virtual void HandleAbilityEnded() {};
 
 private:
 	UFUNCTION()

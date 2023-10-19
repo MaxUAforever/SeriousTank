@@ -25,7 +25,21 @@ void UST_EquippedItemAbility::ApplyCost(const FGameplayAbilitySpecHandle Handle,
 
 void UST_EquippedItemAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	OnItemAbilityActivated.Broadcast(Handle);
+	if (AST_EquippableAbilityItem* AbilityItem = GetAbilityItem(Handle, ActorInfo))
+	{
+		AbilityItem->HandleAbilityActivated();
+		return;
+	}
+}
+
+void UST_EquippedItemAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	if (AST_EquippableAbilityItem* AbilityItem = GetAbilityItem(Handle, ActorInfo))
+	{
+		AbilityItem->HandleAbilityEnded();
+	}
+
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 AST_EquippableAbilityItem* UST_EquippedItemAbility::GetAbilityItem(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const

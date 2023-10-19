@@ -22,12 +22,6 @@ void AST_EquippableAbilityItem::AttachToParentActor(AActor* ParentActor, USceneC
 void AST_EquippableAbilityItem::OnGiveAbility(const FGameplayAbilitySpec& AbilitySpec)
 {
 	AbilitySpecHandle = MakeUnique<FGameplayAbilitySpecHandle>(AbilitySpec.Handle);
-
-	if (UST_EquippedItemAbility* ItemAbility = Cast<UST_EquippedItemAbility>(AbilitySpec.Ability))
-	{
-		ItemAbility->OnItemAbilityActivated.AddUObject(this, &ThisClass::HandleAbilityActivated);
-		ItemAbility->OnGameplayAbilityEnded.AddUObject(this, &ThisClass::HandleAbilityEnded);
-	}
 }
 
 void AST_EquippableAbilityItem::OnRemoveAbility(const FGameplayAbilitySpec& AbilitySpec)

@@ -39,7 +39,6 @@ public:
 	virtual bool CheckCost() override;
 	virtual void ApplyCost() override;
 
-protected:
-	virtual void HandleAbilityActivated(const FGameplayAbilitySpecHandle InHandle) override;
-	virtual void HandleAbilityEnded(UGameplayAbility* InAbility) override;
+	virtual void HandleAbilityActivated() override;
+	virtual void HandleAbilityEnded() override;
 };

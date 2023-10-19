@@ -17,6 +17,7 @@ AST_ProjectileWeapon::AST_ProjectileWeapon()
 	AimMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AimMeshComponent"));
 	AimMesh->SetupAttachment(AimSpringArm);
 	AimMesh->SetOnlyOwnerSee(true);
+	AimMesh->SetVisibility(false);
 	AimMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	EquipmentAbilitySetToGrant.GameplayAbilityInfo.GameplayAbilityClass = UST_GunFireGameplayAbility::StaticClass();
@@ -40,12 +41,12 @@ void AST_ProjectileWeapon::ApplyCost()
 	--CurrentAmmoCount;
 }
 
-void AST_ProjectileWeapon::HandleAbilityActivated(const FGameplayAbilitySpecHandle InHandle)
+void AST_ProjectileWeapon::HandleAbilityActivated()
 {
 	AimMesh->SetVisibility(true);
 }
 
-void AST_ProjectileWeapon::HandleAbilityEnded(UGameplayAbility* InAbility)
+void AST_ProjectileWeapon::HandleAbilityEnded()
 {
 	AimMesh->SetVisibility(false);
 }
