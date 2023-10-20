@@ -32,6 +32,7 @@ void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// We didn't bound ConfirmTargetInputID/CancelTargetInputID because in this case input event would be called twice.
 	FTopLevelAssetPath AbilityEnumAssetPath = FTopLevelAssetPath(FName("/Script/SeriousTank"), FName("EST_AbilityInputID"));
 	FGameplayAbilityInputBinds AbilityInput(FString("ConfirmAbility"), FString("CancelAbility"), AbilityEnumAssetPath);
 

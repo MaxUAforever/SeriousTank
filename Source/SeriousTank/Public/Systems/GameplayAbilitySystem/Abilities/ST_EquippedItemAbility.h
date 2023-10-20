@@ -5,6 +5,8 @@
 
 class AST_EquippableAbilityItem;
 
+DECLARE_DELEGATE_OneParam(FOnTaskActivated, UGameplayTask&);
+
 UCLASS()
 class SERIOUSTANK_API UST_EquippedItemAbility : public UGameplayAbility
 {

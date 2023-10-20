@@ -3,6 +3,8 @@
 #include "Abilities/Tasks/AbilityTask_WaitAbilityActivate.h"
 #include "Abilities/Tasks/AbilityTask_WaitConfirmCancel.h"
 #include "Systems/GameplayAbilitySystem/Abilities/Tasks/ST_AbilityTask_SpawnProjectile.h"
+#include "Systems/GameplayAbilitySystem/Abilities/Tasks/ST_AbilityTask_WaitCooldownEnd.h"
+
 
 UST_GunFireGameplayAbility::UST_GunFireGameplayAbility()
 {
@@ -14,6 +16,8 @@ UST_GunFireGameplayAbility::UST_GunFireGameplayAbility()
 void UST_GunFireGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	OnCooldownEffectAppliedDelegate.AddUObject(this, &ThisClass::OnCooldownEffectApplied);
 
 	UAbilityTask_WaitConfirmCancel* WaitConfirmTask = UAbilityTask_WaitConfirmCancel::WaitConfirmCancel(this);
 	WaitConfirmTask->OnConfirm.AddDynamic(this, &ThisClass::OnConfirm);
@@ -48,24 +52,18 @@ void UST_GunFireGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle 
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
 		SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);
 		SpecHandle.Data.Get()->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Cooldown")), CooldownDuration.GetValueAtLevel(GetAbilityLevel()));
-		
-		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+		FActiveGameplayEffectHandle NewCooldownEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+
+		OnCooldownEffectAppliedDelegate.Broadcast(NewCooldownEffectHandle);
 	}
 }
 
 void UST_GunFireGameplayAbility::OnConfirm()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnConfirmCalled"));
-	if (!CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CommitAbilityFailed"));
-		RestartConfirmTask();
-		return;
-	}
-
-	UST_AbilityTask_SpawnProjectile* SpawnProjectileTask = UST_AbilityTask_SpawnProjectile::SpawnProjectile(this);
-	SpawnProjectileTask->OnSpawnProjectile.AddDynamic(this, &ThisClass::OnProjectileSpawned);
-	SpawnProjectileTask->ReadyForActivation();
+	UST_AbilityTask_WaitCooldownEnd* WaitCooldownEndTask = UST_AbilityTask_WaitCooldownEnd::WaitCooldownEnd(this, CooldownEffectHandle);
+	WaitCooldownEndTask->OnCooldownEndedDelegate.AddDynamic(this, &ThisClass::OnConfirmTaskActivated);
+	WaitCooldownEndTask->OnConfirmReleasedDelegate.AddDynamic(this, &ThisClass::RestartConfirmTask);
+	WaitCooldownEndTask->ReadyForActivation();
 }
 
 void UST_GunFireGameplayAbility::OnCancel()
@@ -78,9 +76,15 @@ void UST_GunFireGameplayAbility::OnAbilityChanged(UGameplayAbility* ActivatedAbi
 	OnCancel();
 }
 
-void UST_GunFireGameplayAbility::OnProjectileSpawned(AActor* SpawnedProjectile)
+void UST_GunFireGameplayAbility::OnConfirmTaskActivated()
 {
-	RestartConfirmTask();
+	if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
+	{
+		UST_AbilityTask_SpawnProjectile* SpawnProjectileTask = UST_AbilityTask_SpawnProjectile::SpawnProjectile(this);
+		SpawnProjectileTask->ReadyForActivation();
+	}
+
+	OnConfirm();
 }
 
 void UST_GunFireGameplayAbility::RestartConfirmTask()
@@ -89,4 +93,9 @@ void UST_GunFireGameplayAbility::RestartConfirmTask()
 	WaitConfirmTask->OnConfirm.AddDynamic(this, &ThisClass::OnConfirm);
 	WaitConfirmTask->OnCancel.AddDynamic(this, &ThisClass::OnCancel);
 	WaitConfirmTask->ReadyForActivation();
+}
+
+void UST_GunFireGameplayAbility::OnCooldownEffectApplied(FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
+{
+	CooldownEffectHandle = ActiveGameplayEffectHandle;
 }

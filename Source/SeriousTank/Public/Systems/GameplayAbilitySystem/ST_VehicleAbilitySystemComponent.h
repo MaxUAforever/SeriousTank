@@ -6,6 +6,8 @@
 class AST_EquippableAbilityItem;
 struct FST_GameplayAbilityInfo;
 
+DECLARE_MULTICAST_DELEGATE(FOnConfirmInputReleased);
+
 UENUM(BlueprintType)
 enum class EST_AbilityInputID : uint8
 {
@@ -35,8 +37,13 @@ class SERIOUSTANK_API UST_VehicleAbilitySystemComponent : public UAbilitySystemC
 	GENERATED_BODY()
 
 public:
+	FOnConfirmInputReleased OnConfirmInputReleased;
+
+public:
 	FGameplayAbilitySpecHandle GiveAbility(const FGameplayAbilitySpec& AbilitySpec);
 	FGameplayAbilitySpecHandle GiveAbility(const FST_GameplayAbilityInfo& AbilityInfo, UObject* SourceObject = nullptr, EST_AbilityInputID InputID = EST_AbilityInputID::None);
+
+	virtual void AbilityLocalInputReleased(int32 InputID) override;
 
 protected:
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;

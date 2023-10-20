@@ -3,10 +3,15 @@
 #include "Systems/GameplayAbilitySystem/Abilities/ST_EquippedItemAbility.h"
 #include "ST_GunFireGameplayAbility.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCooldownEffectAppliedDelegate, FActiveGameplayEffectHandle);
+
 UCLASS()
 class SERIOUSTANK_API UST_GunFireGameplayAbility : public UST_EquippedItemAbility
 {
 	GENERATED_BODY()
+
+public:
+	FOnCooldownEffectAppliedDelegate OnCooldownEffectAppliedDelegate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Cooldown")
@@ -20,6 +25,8 @@ private:
 	// This will be a union of our CooldownTags and the Cooldown GE's cooldown tags.
 	UPROPERTY(Transient)
 	FGameplayTagContainer TempCooldownTags;
+
+	FActiveGameplayEffectHandle CooldownEffectHandle;
 
 public:
 	UST_GunFireGameplayAbility();
@@ -41,7 +48,10 @@ private:
 	void OnAbilityChanged(UGameplayAbility* ActivatedAbility);
 
 	UFUNCTION()
-	void OnProjectileSpawned(AActor* SpawnedProjectile);
+	void OnConfirmTaskActivated();
 
+	UFUNCTION()
 	void RestartConfirmTask();
+
+	void OnCooldownEffectApplied(FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
 };

@@ -32,6 +32,8 @@ void UST_AbilityTask_SpawnProjectile::Activate()
 
 		OnSpawnProjectile.Broadcast(Projectile);
 	}
+
+	EndTask();
 }
 
 UST_AbilityTask_SpawnProjectile* UST_AbilityTask_SpawnProjectile::SpawnProjectile(UGameplayAbility* OwningAbility)

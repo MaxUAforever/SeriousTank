@@ -27,6 +27,17 @@ FGameplayAbilitySpecHandle UST_VehicleAbilitySystemComponent::GiveAbility(const 
 	return GiveAbility(AbilitySpec);
 }
 
+void UST_VehicleAbilitySystemComponent::AbilityLocalInputReleased(int32 InputID)
+{
+	// We didn't bound GenericConfirmInputID/GenericCancelInputID because in this case input event would be called twice.
+	if (InputID == static_cast<int32>(EST_AbilityInputID::ConfirmAbility))
+	{
+		OnConfirmInputReleased.Broadcast();
+	}
+
+	Super::AbilityLocalInputReleased(InputID);
+}
+
 void UST_VehicleAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 {
 	Super::OnGiveAbility(AbilitySpec);
