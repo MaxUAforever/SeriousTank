@@ -98,7 +98,10 @@ void AST_BaseVehicle::SetupEquipment() const
 		bool bHasCustomWeapon = Index < CustomWeaponClasses.Num() && CustomWeaponClasses[Index] != nullptr;
 		TSubclassOf<AST_WeaponBase> CurrentWeaponClass = bHasCustomWeapon ? CustomWeaponClasses[Index] : WeaponSocket->GetDefaultWeaponClass();
 		
-		EquipmentManagerComponent->EquipItemByIndex(CurrentWeaponClass, Index, WeaponSocket);
+		if (CurrentWeaponClass)
+		{
+			EquipmentManagerComponent->EquipItemByIndex(CurrentWeaponClass, Index, WeaponSocket);
+		}
 	}
 
 }

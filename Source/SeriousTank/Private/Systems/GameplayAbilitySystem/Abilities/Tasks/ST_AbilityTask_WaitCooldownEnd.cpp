@@ -39,16 +39,12 @@ UST_AbilityTask_WaitCooldownEnd* UST_AbilityTask_WaitCooldownEnd::WaitCooldownEn
 
 void UST_AbilityTask_WaitCooldownEnd::OnCooldownEffectRemoved(const FGameplayEffectRemovalInfo& InGameplayEffectRemovalInfo)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AbilityTask_RepeatTask::Activate: Task activate."));
-
 	OnCooldownEndedDelegate.Broadcast();
 	EndTask();
 }
 
 void UST_AbilityTask_WaitCooldownEnd::OnConfirmButtonReleased()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AbilityTask_RepeatTask::OnConfirmButtonReleased: Stop waiting."));
-
 	OnGameplayEffectRemovedDelegateHandle.Reset();
 
 	OnConfirmReleasedDelegate.Broadcast();

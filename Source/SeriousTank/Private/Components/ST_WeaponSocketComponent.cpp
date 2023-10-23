@@ -4,7 +4,7 @@
 
 void UST_WeaponSocketComponent::OnChildAttached(USceneComponent* ChildComponent)
 {
-	AST_WeaponBase* NewWeapon = Cast<AST_WeaponBase>(ChildComponent);
+	AST_WeaponBase* NewWeapon = ChildComponent ? ChildComponent->GetOwner<AST_WeaponBase>() : nullptr;
 	if (!NewWeapon)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ST_WeaponSocketComponent::OnChildAttached: Failed to cast child to weapon class."));
