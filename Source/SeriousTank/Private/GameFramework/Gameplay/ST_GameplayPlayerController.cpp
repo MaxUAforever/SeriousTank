@@ -4,8 +4,11 @@
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
 
 #include "Engine/World.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerInput.h"
+#include "InputAction.h"
 
 void AST_GameplayPlayerController::BeginPlay()
 {
@@ -22,13 +25,29 @@ void AST_GameplayPlayerController::BeginPlay()
 			GameState->OnGameIsOver.AddUObject(this, &ThisClass::SetOnlyUIInputEnabled, true);
 		}
 	}
+
+	if (UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		if (CommonGameplayInputContext && !EnhancedSubsystem->HasMappingContext(CommonGameplayInputContext))
+		{
+			EnhancedSubsystem->AddMappingContext(CommonGameplayInputContext, 0);
+		}
+	}
 }
 
 void AST_GameplayPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("PauseGame", EInputEvent::IE_Pressed, this, &ThisClass::OnPauseGameClicked).bExecuteWhenPaused = true;
+	if (UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		if (PauseInputAction)
+		{
+			PlayerEnhancedInputComponent->BindAction(PauseInputAction, ETriggerEvent::Started, this, &ThisClass::OnPauseGameClicked);
+		}
+	}
+
+	//InputComponent->BindAction("PauseGame", EInputEvent::IE_Pressed, this, &ThisClass::OnPauseGameClicked).bExecuteWhenPaused = true;
 }
 
 void AST_GameplayPlayerController::SetPawnInputEnabled(bool IsEnabled)

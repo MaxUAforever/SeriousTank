@@ -3,6 +3,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnrealMathUtility.h"
 
@@ -56,27 +57,27 @@ void AST_BaseTrackedVehicle::BeginPlay()
 	UpdateCameraViewArea();
 }
 
-void AST_BaseTrackedVehicle::MoveForward(const float Value)
+void AST_BaseTrackedVehicle::MoveForward(const FInputActionValue& ActionValue)
 {
 	if (Controller != nullptr)
 	{
-		TrackMovementComponent->MoveForward(Value);
+		TrackMovementComponent->MoveForward(ActionValue.Get<FInputActionValue::Axis1D>());
 	}
 }
 
-void AST_BaseTrackedVehicle::MoveRight(const float Value)
+void AST_BaseTrackedVehicle::MoveRight(const FInputActionValue& ActionValue)
 {
 	if (Controller != nullptr)
 	{
-		TrackMovementComponent->MoveRight(Value);
+		TrackMovementComponent->MoveRight(ActionValue.Get<FInputActionValue::Axis1D>());
 	}
 }
 
-void AST_BaseTrackedVehicle::RotateCamera(float Value)
+void AST_BaseTrackedVehicle::RotateCamera(const FInputActionValue& ActionValue)
 {
 	if (Controller != nullptr)
 	{
-		CameraSceneComponent->AddLocalRotation(FRotator{ 0, Value, 0 });
+		CameraSceneComponent->AddLocalRotation(FRotator{ 0, ActionValue.Get<FInputActionValue::Axis1D>(), 0 });
 	}
 }
 

@@ -3,6 +3,10 @@
 #include "GameFramework/Pawn.h"
 #include "ST_BaseVehicle.generated.h"
 
+class UInputAction;
+class UInputMappingContext;
+struct FInputActionValue;
+
 UCLASS(Abstract)
 class SERIOUSTANK_API AST_BaseVehicle : public APawn
 {
@@ -19,15 +23,51 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Camera");
     float MaxVisibleDistance;
     
+	/**
+	 * Common gameplay inputs
+	 */
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputMappingContext* CommonGameplayInputContext;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* MoveForwardInputAction;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* MoveRightInputAction;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* RotateCameraInputAction;
+
+	/**
+	 * Vehicle weapons inputs
+	 */
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputMappingContext* WeaponsInputContext;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* FireInputAction;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputAction* SwitchToFirstWeaponInputAction;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputAction* SwitchToSecondWeaponInputAction;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputAction* SwitchToThirdWeaponInputAction;
+
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void NotifyControllerChanged() override;
 
     FString GetDisplayName() const { return DisplayName; };
     float GetMaxVisibleDistance() const { return MaxVisibleDistance; };
     
-	virtual void MoveForward(float Value) {};
-	virtual void MoveRight(float Value) {};
-	virtual void RotateCamera(float Value) {};
+	virtual void MoveForward(const FInputActionValue& ActionValue) {};
+	virtual void MoveRight(const FInputActionValue& ActionValue) {};
+	virtual void RotateCamera(const FInputActionValue& ActionValue) {};
 
 	virtual void StartFire() {};
 	virtual void StopFire() {};

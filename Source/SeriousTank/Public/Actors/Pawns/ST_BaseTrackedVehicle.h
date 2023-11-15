@@ -10,6 +10,7 @@ class UCameraComponent;
 class UST_TrackMovementComponent;
 class UST_VehicleSoundsComponent;
 class UST_ViewAreaBoxComponent;
+struct FInputActionValue;
 
 UCLASS()
 class SERIOUSTANK_API AST_BaseTrackedVehicle : public AST_BaseVehicle
@@ -47,9 +48,9 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	virtual void MoveForward(float Value) override;
-	virtual void MoveRight(float Value) override;
-	virtual void RotateCamera(float Value) override;
+	virtual void MoveForward(const FInputActionValue& ActionValue) override;
+	virtual void MoveRight(const FInputActionValue& ActionValue) override;
+	virtual void RotateCamera(const FInputActionValue& ActionValue) override;
 
 	UFUNCTION()
 	void OnMovingTypeChanged(EMovingType NewMovingType);

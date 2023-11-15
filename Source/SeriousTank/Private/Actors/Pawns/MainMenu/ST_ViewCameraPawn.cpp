@@ -2,6 +2,8 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 AST_ViewCameraPawn::AST_ViewCameraPawn()
 {
@@ -29,24 +31,62 @@ void AST_ViewCameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(TEXT("RotateCamera"), this, &ThisClass::RotateCameraByXAxis);
-	PlayerInputComponent->BindAxis(TEXT("RotateCameraByYAxis"), this, &ThisClass::RotateCameraByYAxis);
-}
-
-void AST_ViewCameraPawn::RotateCameraByXAxis(float Value)
-{
-	if (Controller != nullptr)
+	if (UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		RootComponent->AddRelativeRotation(FRotator{ 0, Value, 0 });
+		if (RotateCameraByXAxisInputAction)
+		{
+			PlayerEnhancedInputComponent->BindAction(RotateCameraByXAxisInputAction, ETriggerEvent::Triggered, this, &ThisClass::RotateCameraByXAxis);
+		}
+
+		if (RotateCameraByYAxisInputAction)
+		{
+			PlayerEnhancedInputComponent->BindAction(RotateCameraByYAxisInputAction, ETriggerEvent::Triggered, this, &ThisClass::RotateCameraByYAxis);
+		}
 	}
 }
 
-void AST_ViewCameraPawn::RotateCameraByYAxis(float Value)
+void AST_ViewCameraPawn::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+
+	const bool bIsUnPossessed = Controller == nullptr;
+	
+	APlayerController* PC = Cast<APlayerController>(bIsUnPossessed ? PreviousController : Controller);
+	if (!PC)
+	{
+		return;
+	}
+
+	UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+	if (!EnhancedSubsystem)
+	{
+		return;
+	}
+
+	if (bIsUnPossessed)
+	{
+		EnhancedSubsystem->RemoveMappingContext(ViewCameraInputContext);
+	}
+	else
+	{
+		EnhancedSubsystem->AddMappingContext(ViewCameraInputContext, 0);
+	}
+}
+
+void AST_ViewCameraPawn::RotateCameraByXAxis(const FInputActionValue& ActionValue)
+{
+	if (Controller != nullptr)
+	{
+		RootComponent->AddRelativeRotation(FRotator{ 0, ActionValue.Get<FInputActionValue::Axis1D>(), 0 });
+	}
+}
+
+void AST_ViewCameraPawn::RotateCameraByYAxis(const FInputActionValue& ActionValue)
 {
 	if (Controller != nullptr)
 	{
 		const FRotator CameraRotation = CameraSceneComponent->GetRelativeRotation();
-		const float NewPitchRotation = FMath::Clamp(CameraRotation.Pitch + Value, MinPitchCameraAngle, MaxPitchCameraAngle);
+		const float NewPitchRotation = FMath::Clamp(CameraRotation.Pitch + ActionValue.Get<FInputActionValue::Axis1D>(), MinPitchCameraAngle, MaxPitchCameraAngle);
 
 		CameraSceneComponent->SetRelativeRotation(FRotator{ NewPitchRotation, CameraRotation.Yaw, CameraRotation.Roll });
 	}

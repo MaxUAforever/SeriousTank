@@ -4,6 +4,9 @@
 #include "ST_ViewCameraPawn.generated.h"
 
 class UCameraComponent;
+class UInputAction;
+class UInputMappingContext;
+struct FInputActionValue;
 
 UCLASS()
 class SERIOUSTANK_API AST_ViewCameraPawn : public APawn
@@ -26,6 +29,15 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float MaxPitchCameraAngle;
 
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputMappingContext* ViewCameraInputContext;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* RotateCameraByXAxisInputAction;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* RotateCameraByYAxisInputAction;
+
 private:
 	FRotator AddedRotation;
 
@@ -38,7 +50,9 @@ protected:
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void NotifyControllerChanged() override;
+
 private:
-	void RotateCameraByXAxis(float Value);
-	void RotateCameraByYAxis(float Value);
+	void RotateCameraByXAxis(const FInputActionValue& ActionValue);
+	void RotateCameraByYAxis(const FInputActionValue& ActionValue);
 };
