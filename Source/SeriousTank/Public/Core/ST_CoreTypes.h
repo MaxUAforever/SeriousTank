@@ -65,6 +65,14 @@ public:
 };
 
 UENUM(BlueprintType)
+enum class ECharacterMovingType : uint8
+{
+	Standing,
+	Walking,
+	Running
+};
+
+UENUM(BlueprintType)
 enum class EMovingType : uint8
 {
 	ForceMoving,
