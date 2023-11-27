@@ -10,10 +10,6 @@ class SERIOUSTANK_API UST_WeaponSocketComponent : public UArrowComponent
 {
 	GENERATED_BODY()
 
-public:
-	DECLARE_DELEGATE_OneParam(FWeaponAdded, AST_BaseWeapon*)
-    FWeaponAdded OnWeaponAdded;
-
 protected:
     UPROPERTY(EditAnywhere, Category = "Weapon")
     TSubclassOf<AST_BaseWeapon> DefaultWeaponClass;

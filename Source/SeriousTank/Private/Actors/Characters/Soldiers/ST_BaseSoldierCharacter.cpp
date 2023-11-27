@@ -2,6 +2,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
+#include "Components/Weapons/ST_SoldierWeaponManagerComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "UObject/UObjectGlobals.h"
@@ -15,11 +16,19 @@ AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& Obj
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(CameraSceneComponent);
+
+	WeaponManagerComponent = CreateDefaultSubobject<UST_SoldierWeaponManagerComponent>("WeaponManagerComponent");
 }
 
 void AST_BaseSoldierCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
+	if (AST_BaseWeapon* Weapon = WeaponManagerComponent->GetCurrentWeapon())
+	{
+		OnWeaponEquipped(WeaponManagerComponent->GetCurrentWeaponIndex(), Weapon);
+	}
 }
 
 void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -90,12 +99,22 @@ void AST_BaseSoldierCharacter::NotifyControllerChanged()
 	}
 }
 
+float AST_BaseSoldierCharacter::GetCameraYawAngle() const
+{
+	return CameraSceneComponent->GetComponentRotation().Yaw;
+}
+
 void AST_BaseSoldierCharacter::MoveForward(const FInputActionValue& ActionValue)
 {
 	FInputActionValue::Axis1D Value = ActionValue.Get<FInputActionValue::Axis1D>();
 
 	if (Controller && Value != 0)
 	{
+		if (!GetCharacterMovement()->bOrientRotationToMovement)
+		{
+			SetActorRotation(CameraSceneComponent->GetComponentRotation());
+		}
+
 		AddMovementInput(FRotationMatrix(CameraSceneComponent->GetComponentRotation()).GetScaledAxis(EAxis::X), Value);
 	}
 }
@@ -130,8 +149,28 @@ void AST_BaseSoldierCharacter::RotateCamera(const FInputActionValue& ActionValue
 {
 	FInputActionValue::Axis1D Value = ActionValue.Get<FInputActionValue::Axis1D>();
 
-	if (Controller && Value != 0)
+	if (!Controller || FMath::IsNearlyZero(Value))
 	{
-		CameraSceneComponent->AddLocalRotation(FRotator{ 0, Value, 0 });
+		return;
 	}
+		
+	CameraSceneComponent->AddLocalRotation(FRotator{ 0, Value, 0 });
+
+	// In case of character moving it is needed to rotate him in direction of camera.
+	if (!GetCharacterMovement()->bOrientRotationToMovement)
+	{
+		if (GetMovementComponent()->Velocity.SizeSquared2D() > 0)
+		{
+			SetActorRotation(CameraSceneComponent->GetComponentRotation());
+		}
+	}
+
+}
+
+void AST_BaseSoldierCharacter::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+{
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	
+	SetActorRotation(CameraSceneComponent->GetComponentRotation());
+	//CameraSceneComponent->SetUsingAbsoluteRotation(false);
 }

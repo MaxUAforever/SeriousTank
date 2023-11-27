@@ -1,11 +1,11 @@
 #pragma once
 
 #include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
+#include "Core/ST_CoreTypes.h"
 #include "GameFramework/PlayerState.h"
 #include "ST_MainMenuPlayerState.generated.h"
 
 class AST_BaseVehicle;
-struct FVehicleInfo;
 
 UCLASS()
 class SERIOUSTANK_API AST_MainMenuPlayerState : public APlayerState
@@ -21,6 +21,9 @@ protected:
     UPROPERTY(EditDefaultsOnly)
     TArray<FVehicleInfo> AvailableVehicles;
 	
+	UPROPERTY(EditDefaultsOnly)
+	FSoldierInfo SoldierInfo;
+
 private:
     int32 CurrentVehicleIndex = 0;
     
@@ -38,6 +41,8 @@ public:
     void SetVehicles(TArray<FVehicleInfo> Vehicles);
     void AddVehicle(FVehicleInfo VehicleInfo);
     void RemoveVehicle(FVehicleInfo VehicleInfo);
+
+	const FSoldierInfo& GetSoldierInfo() const { return SoldierInfo; };
     
 protected:
     virtual void CopyProperties(APlayerState* PlayerState) override;

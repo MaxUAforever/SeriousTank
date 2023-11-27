@@ -7,7 +7,7 @@ class UArrowComponent;
 class UAudioComponent;
 class USoundCue;
 class UST_WeaponSocketComponent;
-class UST_WeaponsManagerComponent;
+class UST_VehicleWeaponManagerComponent;
 
 UCLASS()
 class SERIOUSTANK_API AST_TrackedTank : public AST_BaseTrackedVehicle
@@ -31,7 +31,7 @@ protected:
 	UAudioComponent* TurretRotationSound;
 
 	UPROPERTY(VisibleAnywhere)
-	UST_WeaponsManagerComponent* WeaponsManagerComponent;
+	UST_VehicleWeaponManagerComponent* WeaponsManagerComponent;
 
 protected:
 	UPROPERTY(EditAnywhere)

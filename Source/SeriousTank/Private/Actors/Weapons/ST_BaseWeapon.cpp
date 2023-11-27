@@ -2,6 +2,7 @@
 
 #include "Components/ArrowComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Core/ST_CoreTypes.h"
 #include "TimerManager.h"
 
 AST_BaseWeapon::AST_BaseWeapon()
@@ -86,6 +87,17 @@ void AST_BaseWeapon::StopReloading()
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandler);
 
 	FinishReloading();
+}
+
+void AST_BaseWeapon::SetHidden(bool bIsHidden)
+{
+	if (WeaponOwnerType == EWeaponOwnerType::Vehicle)
+	{
+		return;
+	}
+
+	SetWeaponEnabled(!bIsHidden);
+	MeshComponent->SetVisibility(!bIsHidden);
 }
 
 bool AST_BaseWeapon::CanShoot() const

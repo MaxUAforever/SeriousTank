@@ -7,6 +7,7 @@
 
 class UArrowComponent;
 class USoundCue;
+enum class EWeaponOwnerType : uint8;
 
 UCLASS()
 class SERIOUSTANK_API AST_BaseWeapon : public AActor
@@ -33,6 +34,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
 	USoundCue* ShootSound;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	EWeaponOwnerType WeaponOwnerType;
+
 	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
 	FTimerHandle ReloadTimerHandler;
 
@@ -58,7 +62,9 @@ public:
 	int32 GetTotalAmmoCount() const { return TotalAmmoCount; };
 	void SetTotalAmmoCount(int32 NewAmmoCount);
     
- 	void StartFire();
+	EWeaponOwnerType GetWeaponOwnerType() const { return WeaponOwnerType; }
+ 	
+	void StartFire();
 	void StopFire();
 
 	void StartReloading();
@@ -66,6 +72,8 @@ public:
     virtual void AttachToVehicleComponent(USceneComponent* ParentVehicleComponent);
     virtual void SetWeaponEnabled(bool bIsEnabled) {};
     
+	void SetHidden(bool bIsHidden);
+
 protected:
 	void StopReloading();
 

@@ -1,7 +1,7 @@
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
-#include "Core/ST_CoreTypes.h"
+#include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
 #include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
 
 void AST_MainMenuPlayerState::BeginPlay()
@@ -68,5 +68,6 @@ void AST_MainMenuPlayerState::CopyProperties(APlayerState* PlayerState)
     if (AST_GameplayPlayerState* GameplayPlayerState = Cast<AST_GameplayPlayerState>(PlayerState))
     {
         GameplayPlayerState->SetVehicleInfo(GetCurrentVehicle());
+		GameplayPlayerState->SetSoldierInfo(SoldierInfo);
     }
 }

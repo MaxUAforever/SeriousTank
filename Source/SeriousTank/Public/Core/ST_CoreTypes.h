@@ -64,6 +64,22 @@ public:
     }
 };
 
+USTRUCT(BlueprintType)
+struct FSoldierInfo
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AST_BaseWeapon> WeaponClass;
+};
+
+UENUM(BlueprintType)
+enum class EWeaponOwnerType : uint8
+{
+	Soldier,
+	Vehicle
+};
+
 UENUM(BlueprintType)
 enum class ECharacterMovingType : uint8
 {

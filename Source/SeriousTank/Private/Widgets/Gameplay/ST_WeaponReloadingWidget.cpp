@@ -1,9 +1,11 @@
 #include "Widgets/Gameplay/ST_WeaponReloadingWidget.h"
 
+#include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Actors/Weapons/ST_MachineGunWeapon.h"
 #include "Components/ST_WeaponSocketComponent.h"
+#include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 
 #include "Components/Border.h"
 #include "Components/ProgressBar.h"
@@ -23,26 +25,38 @@ void UST_WeaponReloadingWidget::NativeConstruct()
     AmmoDelimiterBlock->SetVisibility(ESlateVisibility::Hidden);
     SelectionBorder->SetVisibility(WeaponIndex == 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
     
-	AST_BaseVehicle* BaseVehiclePawn = GetOwningPlayerPawn<AST_BaseVehicle>();
-	if (!BaseVehiclePawn)
+	APawn* OwnerPawn = GetOwningPlayerPawn();
+	if (AST_BaseVehicle* BaseVehiclePawn = Cast<AST_BaseVehicle>(OwnerPawn))
+	{
+		BaseVehiclePawn->OnWeaponSwitched.AddUObject(this, &ThisClass::OnWeaponSelected);
+	}
+	else if (AST_BaseSoldierCharacter* BaseSoldierCharacter = Cast<AST_BaseSoldierCharacter>(OwnerPawn))
+	{
+		BaseSoldierCharacter->OnWeaponSwitched.AddUObject(this, &ThisClass::OnWeaponSelected);
+	}
+	else
+	{
+		return;
+	}
+    
+    TArray<UActorComponent*> WeaponsManagerComponents;
+	OwnerPawn->GetComponents(UST_BaseWeaponsManagerComponent::StaticClass(), WeaponsManagerComponents);
+	if (WeaponsManagerComponents.Num() <= 0)
 	{
 		return;
 	}
 
-    BaseVehiclePawn->OnWeaponSwitched.AddUObject(this, &ThisClass::OnWeaponSelected);
-    
-    TArray<UActorComponent*> WeaponSocketComponents;
-	BaseVehiclePawn->GetComponents(UST_WeaponSocketComponent::StaticClass(), WeaponSocketComponents);
-	if (WeaponIndex >= 0 && WeaponIndex < WeaponSocketComponents.Num())
+	UST_BaseWeaponsManagerComponent* WeaponsManagerComponent = Cast<UST_BaseWeaponsManagerComponent>(WeaponsManagerComponents[0]);
+	if (WeaponsManagerComponent)
 	{
-		UST_WeaponSocketComponent* WeaponSocket = Cast<UST_WeaponSocketComponent>(WeaponSocketComponents[WeaponIndex]);
-		WeaponSocket->OnWeaponAdded.BindUObject(this, &ThisClass::OnWeaponAdded);
+		// TODO: Bind delegate to parent widget to preventing multiple broadcasting to each rloading widget
+		WeaponsManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponAdded);
 	}
 }
 
-void UST_WeaponReloadingWidget::OnWeaponAdded(AST_BaseWeapon* Weapon)
+void UST_WeaponReloadingWidget::OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapon* Weapon)
 {
-    if (!Weapon)
+    if (!Weapon || WeaponIndex != InWeaponIndex)
     {
         return;
     }

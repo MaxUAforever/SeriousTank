@@ -4,7 +4,7 @@
 #include "Components/AudioComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ST_WeaponSocketComponent.h"
-#include "Components/ST_WeaponsManagerComponent.h"
+#include "Components/Weapons/ST_VehicleWeaponManagerComponent.h"
 
 AST_TrackedTank::AST_TrackedTank()
 {
@@ -25,7 +25,7 @@ AST_TrackedTank::AST_TrackedTank()
 	SecondWeaponSocketComponent = CreateDefaultSubobject<UST_WeaponSocketComponent>("SecondWeaponSocketComponent");
 	SecondWeaponSocketComponent->SetupAttachment(TurretSceneComponent);
 
-	WeaponsManagerComponent = CreateDefaultSubobject<UST_WeaponsManagerComponent>("WeaponsManagerComponent");
+	WeaponsManagerComponent = CreateDefaultSubobject<UST_VehicleWeaponManagerComponent>("WeaponsManagerComponent");
 }
 
 void AST_TrackedTank::Tick(float DeltaTime)

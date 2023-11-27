@@ -12,8 +12,6 @@ AST_BaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<AST_BaseWeapon>
 
 	Weapon = World->SpawnActor<AST_BaseWeapon>(WeaponClass, GetComponentTransform());
 	Weapon->AttachToVehicleComponent(this);
-
-	OnWeaponAdded.ExecuteIfBound(Weapon);
 	
 	return Weapon;
 }

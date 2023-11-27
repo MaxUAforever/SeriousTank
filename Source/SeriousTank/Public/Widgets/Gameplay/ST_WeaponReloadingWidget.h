@@ -46,7 +46,7 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnWeaponAdded(AST_BaseWeapon* Weapon);
+	void OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 
 	UFUNCTION()
 	void OnWeaponReloadingStarted(AST_BaseWeapon* Weapon);

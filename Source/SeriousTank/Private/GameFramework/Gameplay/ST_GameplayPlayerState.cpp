@@ -7,5 +7,6 @@ void AST_GameplayPlayerState::CopyProperties(APlayerState* PlayerState)
 	if (AST_GameplayPlayerState* GameplayPlayerState = Cast<AST_GameplayPlayerState>(PlayerState))
 	{
 		GameplayPlayerState->SetVehicleInfo(VehicleInfo);
+		GameplayPlayerState->SetSoldierInfo(SoldierInfo);
 	}
 }
