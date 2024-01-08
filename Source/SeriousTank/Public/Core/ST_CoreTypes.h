@@ -89,6 +89,14 @@ enum class ECharacterMovingType : uint8
 };
 
 UENUM(BlueprintType)
+enum class ECharacterTurnSide : uint8
+{
+	None,
+	Left,
+	Right
+};
+
+UENUM(BlueprintType)
 enum class EMovingType : uint8
 {
 	ForceMoving,

@@ -80,4 +80,7 @@ protected:
 	void SwitchToFirstWeapon() { OnWeaponSwitched.Broadcast(0); };
 	void SwitchToSecondWeapon() { OnWeaponSwitched.Broadcast(1); };
 	void SwitchToThirdWeapon() { OnWeaponSwitched.Broadcast(2); };
+
+private:
+	void MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis);
 };

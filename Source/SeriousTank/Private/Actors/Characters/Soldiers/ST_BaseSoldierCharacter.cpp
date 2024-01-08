@@ -1,6 +1,7 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_SoldierWeaponManagerComponent.h"
 #include "EnhancedInputComponent.h"
@@ -106,27 +107,12 @@ float AST_BaseSoldierCharacter::GetCameraYawAngle() const
 
 void AST_BaseSoldierCharacter::MoveForward(const FInputActionValue& ActionValue)
 {
-	FInputActionValue::Axis1D Value = ActionValue.Get<FInputActionValue::Axis1D>();
-
-	if (Controller && Value != 0)
-	{
-		if (!GetCharacterMovement()->bOrientRotationToMovement)
-		{
-			SetActorRotation(CameraSceneComponent->GetComponentRotation());
-		}
-
-		AddMovementInput(FRotationMatrix(CameraSceneComponent->GetComponentRotation()).GetScaledAxis(EAxis::X), Value);
-	}
+	MoveByAxis(ActionValue, EAxis::X);
 }
 
 void AST_BaseSoldierCharacter::MoveRight(const FInputActionValue& ActionValue)
 {
-	FInputActionValue::Axis1D Value = ActionValue.Get<FInputActionValue::Axis1D>();
-
-	if (Controller && Value != 0)
-	{
-		AddMovementInput(FRotationMatrix(CameraSceneComponent->GetComponentRotation()).GetScaledAxis(EAxis::Y), Value);
-	}
+	MoveByAxis(ActionValue, EAxis::Y);
 }
 
 void AST_BaseSoldierCharacter::StartSprint()
@@ -164,7 +150,6 @@ void AST_BaseSoldierCharacter::RotateCamera(const FInputActionValue& ActionValue
 			SetActorRotation(CameraSceneComponent->GetComponentRotation());
 		}
 	}
-
 }
 
 void AST_BaseSoldierCharacter::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
@@ -173,4 +158,19 @@ void AST_BaseSoldierCharacter::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapo
 	
 	SetActorRotation(CameraSceneComponent->GetComponentRotation());
 	//CameraSceneComponent->SetUsingAbsoluteRotation(false);
+}
+
+void AST_BaseSoldierCharacter::MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis)
+{
+	FInputActionValue::Axis1D Value = ActionValue.Get<FInputActionValue::Axis1D>();
+
+	if (Controller && Value != 0)
+	{
+		if (!GetCharacterMovement()->bOrientRotationToMovement)
+		{
+			SetActorRotation(CameraSceneComponent->GetComponentRotation());
+		}
+
+		AddMovementInput(FRotationMatrix(CameraSceneComponent->GetComponentRotation()).GetScaledAxis(Axis), Value);
+	}
 }
