@@ -71,11 +71,25 @@ void UST_SoldierWeaponManagerComponent::BeginPlay()
 		{
 			Weapon->SetActorEnableCollision(false);
 			Weapon->AttachToComponent(CharacterSkeletalMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, RightHandSocketName);
+			Weapon->SetOwner(GetOwner());
+
 			Weapons.Add(Weapon);
 
 			OnWeaponAdded.Broadcast(0, Weapon);
+
+			Weapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
 		}
 	}
+}
+
+void UST_SoldierWeaponManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	for (AST_BaseWeapon* Weapon : Weapons)
+	{
+		Weapon->OnShootDone.Unbind();
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponIndex, const int32 NewWeaponIndex)
@@ -87,4 +101,9 @@ void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponI
 
 	Weapons[PrevWeaponIndex]->SetHidden(true);
 	Weapons[NewWeaponIndex]->SetHidden(false);
+}
+
+void UST_SoldierWeaponManagerComponent::OnWeaponFired()
+{
+	OnWeaponFiredDelegate.ExecuteIfBound(GetCurrentWeapon());
 }

@@ -11,6 +11,9 @@ class SERIOUSTANK_API UST_BaseWeaponsManagerComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	DECLARE_DELEGATE_OneParam(FOnWeaponFired, AST_BaseWeapon*)
+	FOnWeaponFired OnWeaponFiredDelegate;
+
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAdded, int32, AST_BaseWeapon*)
 	FWeaponAdded OnWeaponAdded;
 

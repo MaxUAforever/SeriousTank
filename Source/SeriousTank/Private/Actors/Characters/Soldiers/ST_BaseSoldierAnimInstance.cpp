@@ -30,6 +30,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 		if (UST_BaseWeaponsManagerComponent* WeaponManagerComponent = Cast<UST_BaseWeaponsManagerComponent>(WeaponManagerComponents[0]))
 		{
 			WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
+			WeaponManagerComponent->OnWeaponFiredDelegate.BindUObject(this, &ThisClass::OnWeaponFired);
 		}
 	}
 }
@@ -139,4 +140,12 @@ void UST_BaseSoldierAnimInstance::UpdateTurningAnimation(float DeltaTime)
 void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
 {
 	bIsWeaponEquipped = true;
+}
+
+void UST_BaseSoldierAnimInstance::OnWeaponFired(AST_BaseWeapon* Weapon)
+{
+	if (TwoHandsWeaponFireMontage)
+	{
+		Montage_Play(TwoHandsWeaponFireMontage);
+	}
 }

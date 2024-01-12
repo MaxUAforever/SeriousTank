@@ -32,6 +32,7 @@ AST_BaseTrackedVehicle::AST_BaseTrackedVehicle()
 
 	CameraViewAreaComponent = CreateDefaultSubobject<UST_ViewAreaBoxComponent>("CameraViewAreaComponent");
 	CameraViewAreaComponent->SetupAttachment(CameraSceneComponent);
+	CameraViewAreaComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	VehicleSoundComponent = CreateDefaultSubobject<UST_VehicleSoundsComponent>("AudioComponent");
 	VehicleSoundComponent->SetupAttachment(RootComponent);

@@ -30,8 +30,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UAudioComponent* TurretRotationSound;
 
-	UPROPERTY(VisibleAnywhere)
-	UST_VehicleWeaponManagerComponent* WeaponsManagerComponent;
+	UPROPERTY(EditDefaultsOnly)
+	UST_VehicleWeaponManagerComponent* WeaponManagerComponent;
 
 protected:
 	UPROPERTY(EditAnywhere)

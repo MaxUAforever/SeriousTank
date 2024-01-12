@@ -46,6 +46,25 @@ protected:
     UInputAction* RotateCameraInputAction;
 
 	/**
+	 * Soldier weapons inputs
+	 */
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputMappingContext* WeaponsInputContext;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* FireInputAction;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputAction* SwitchToFirstWeaponInputAction;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputAction* SwitchToSecondWeaponInputAction;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputAction* SwitchToThirdWeaponInputAction;
+
+	/**
 	 * Character gameplay inputs
 	 */
 
@@ -77,9 +96,12 @@ protected:
 
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 
-	void SwitchToFirstWeapon() { OnWeaponSwitched.Broadcast(0); };
-	void SwitchToSecondWeapon() { OnWeaponSwitched.Broadcast(1); };
-	void SwitchToThirdWeapon() { OnWeaponSwitched.Broadcast(2); };
+	virtual void StartFire();
+	virtual void StopFire();
+
+	virtual void SwitchToFirstWeapon();
+	virtual void SwitchToSecondWeapon();
+	virtual void SwitchToThirdWeapon();
 
 private:
 	void MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis);

@@ -17,6 +17,9 @@ protected:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void OnWeaponSwitched(int32 PrevWeaponIndex, int32 NewWeaponIndex) override;
+	
+	void OnWeaponFired();
 };

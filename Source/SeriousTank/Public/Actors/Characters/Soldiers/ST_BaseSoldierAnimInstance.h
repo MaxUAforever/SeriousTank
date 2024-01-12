@@ -20,6 +20,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* TurnRightMontage;
 
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* TwoHandsWeaponFireMontage;
+
 	UPROPERTY(BlueprintReadOnly)
 	ECharacterMovingType MovingType;
 
@@ -55,4 +58,5 @@ private:
 	FORCEINLINE void OnMovementTypeChanged(ECharacterMovingType InMovingType) { MovingType = InMovingType; };
 
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
+	void OnWeaponFired(AST_BaseWeapon* Weapon);
 };

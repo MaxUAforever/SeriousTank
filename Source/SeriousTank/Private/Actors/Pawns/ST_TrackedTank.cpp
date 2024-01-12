@@ -25,7 +25,7 @@ AST_TrackedTank::AST_TrackedTank()
 	SecondWeaponSocketComponent = CreateDefaultSubobject<UST_WeaponSocketComponent>("SecondWeaponSocketComponent");
 	SecondWeaponSocketComponent->SetupAttachment(TurretSceneComponent);
 
-	WeaponsManagerComponent = CreateDefaultSubobject<UST_VehicleWeaponManagerComponent>("WeaponsManagerComponent");
+	WeaponManagerComponent = CreateDefaultSubobject<UST_VehicleWeaponManagerComponent>("WeaponManagerComponent");
 }
 
 void AST_TrackedTank::Tick(float DeltaTime)
@@ -62,24 +62,24 @@ void AST_TrackedTank::RotateTurretToCamera(float DeltaTime)
 
 void AST_TrackedTank::StartFire()
 {
-	WeaponsManagerComponent->StartFire();
+	WeaponManagerComponent->StartFire();
 }
 
 void AST_TrackedTank::StopFire()
 {
-	WeaponsManagerComponent->StopFire();
+	WeaponManagerComponent->StopFire();
 }
 
 void AST_TrackedTank::SwitchToFirstWeapon()
 {
     Super::SwitchToFirstWeapon();
     
-	WeaponsManagerComponent->SwitchWeapon(0);
+	WeaponManagerComponent->SwitchWeapon(0);
 }
 
 void AST_TrackedTank::SwitchToSecondWeapon()
 {
     Super::SwitchToSecondWeapon();
     
-	WeaponsManagerComponent->SwitchWeapon(1);
+	WeaponManagerComponent->SwitchWeapon(1);
 }

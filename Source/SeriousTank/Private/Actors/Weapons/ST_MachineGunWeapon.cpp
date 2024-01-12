@@ -44,6 +44,7 @@ void AST_MachineGunWeapon::Shoot()
 		StartReloading();
 	}
 
+	OnShootDone.ExecuteIfBound();
 	OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
 }
 

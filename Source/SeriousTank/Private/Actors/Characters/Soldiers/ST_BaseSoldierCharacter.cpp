@@ -58,6 +58,27 @@ void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* Player
 			EnhancedComponent->BindAction(SprintInputAction, ETriggerEvent::Started, this, &ThisClass::StartSprint);
 			EnhancedComponent->BindAction(SprintInputAction, ETriggerEvent::Completed, this, &ThisClass::StopSprint);
 		}
+
+		if (FireInputAction)
+		{
+			EnhancedComponent->BindAction(FireInputAction, ETriggerEvent::Started, this, &ThisClass::StartFire);
+			EnhancedComponent->BindAction(FireInputAction, ETriggerEvent::Completed, this, &ThisClass::StopFire);
+		}
+
+		if (SwitchToFirstWeaponInputAction)
+		{
+			EnhancedComponent->BindAction(SwitchToFirstWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToFirstWeapon);
+		}
+
+		if (SwitchToSecondWeaponInputAction)
+		{
+			EnhancedComponent->BindAction(SwitchToSecondWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToSecondWeapon);
+		}
+
+		if (SwitchToThirdWeaponInputAction)
+		{
+			EnhancedComponent->BindAction(SwitchToThirdWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToThirdWeapon);
+		}
 	}
 }
 
@@ -85,12 +106,22 @@ void AST_BaseSoldierCharacter::NotifyControllerChanged()
 		{
 			EnhancedSubsystem->RemoveMappingContext(SoldierGameplayInputContext);
 		}
+
+		if (WeaponsInputContext)
+		{
+			EnhancedSubsystem->RemoveMappingContext(WeaponsInputContext);
+		}
 	}
 	else
 	{
 		if (CommonGameplayInputContext && !EnhancedSubsystem->HasMappingContext(CommonGameplayInputContext))
 		{
 			EnhancedSubsystem->AddMappingContext(CommonGameplayInputContext, 0);
+		}
+
+		if (WeaponsInputContext && !EnhancedSubsystem->HasMappingContext(WeaponsInputContext))
+		{
+			EnhancedSubsystem->AddMappingContext(WeaponsInputContext, 0);
 		}
 
 		if (SoldierGameplayInputContext && !EnhancedSubsystem->HasMappingContext(SoldierGameplayInputContext))
@@ -158,6 +189,31 @@ void AST_BaseSoldierCharacter::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapo
 	
 	SetActorRotation(CameraSceneComponent->GetComponentRotation());
 	//CameraSceneComponent->SetUsingAbsoluteRotation(false);
+}
+
+void AST_BaseSoldierCharacter::StartFire()
+{
+	WeaponManagerComponent->StartFire();
+}
+
+void AST_BaseSoldierCharacter::StopFire()
+{
+	WeaponManagerComponent->StopFire();
+}
+
+void AST_BaseSoldierCharacter::SwitchToFirstWeapon()
+{
+	WeaponManagerComponent->SwitchWeapon(0);
+}
+
+void AST_BaseSoldierCharacter::SwitchToSecondWeapon()
+{
+	WeaponManagerComponent->SwitchWeapon(1);
+}
+
+void AST_BaseSoldierCharacter::SwitchToThirdWeapon()
+{
+	WeaponManagerComponent->SwitchWeapon(2);
 }
 
 void AST_BaseSoldierCharacter::MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis)

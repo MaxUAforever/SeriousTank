@@ -15,12 +15,15 @@ class SERIOUSTANK_API AST_BaseWeapon : public AActor
 	GENERATED_BODY()
 	
 public:
+	DECLARE_DELEGATE(FOnShootDone)
+	FOnShootDone OnShootDone;
+
 	DECLARE_DELEGATE(FReloadingStarted)
 	FReloadingStarted OnReloadingStarted;
 
     DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmmoCountChanged, int32)
     FOnAmmoCountChanged OnAmmoCountChanged;
-    
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneComponent;

@@ -1,5 +1,6 @@
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 
+#include "Actors/Weapons/ST_BaseWeapon.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/ST_GameInstance.h"
 #include "GameFramework/Actor.h"

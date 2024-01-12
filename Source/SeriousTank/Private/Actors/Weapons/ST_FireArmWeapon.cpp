@@ -56,6 +56,13 @@ void AST_FireArmWeapon::Shoot()
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
 
+		FTransform SpawnTransform = ShootingArrowComponent->GetComponentTransform();
+		SpawnTransform.SetScale3D(FVector(1.f));
+		
+		FRotator SpawnRotator = SpawnTransform.Rotator();
+		SpawnRotator.Pitch = 0.f;
+		SpawnTransform.SetRotation(SpawnRotator.Quaternion());
+
 		World->SpawnActor<AST_BaseProjectile>(ProjectileClass, ShootingArrowComponent->GetComponentTransform(), SpawnParameters);
 
 		if (ShootSound)
@@ -64,6 +71,7 @@ void AST_FireArmWeapon::Shoot()
 		}
 	}
 
+	OnShootDone.ExecuteIfBound();
     OnAmmoCountChanged.Broadcast(--TotalAmmoCount);
 }
 
