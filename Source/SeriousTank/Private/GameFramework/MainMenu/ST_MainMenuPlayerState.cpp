@@ -1,6 +1,7 @@
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
+#include "Core/ST_CoreTypes.h"
 #include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
 #include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
 

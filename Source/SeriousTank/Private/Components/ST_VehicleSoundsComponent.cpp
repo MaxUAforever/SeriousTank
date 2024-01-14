@@ -9,7 +9,7 @@ DEFINE_LOG_CATEGORY(VehicleSoundsComponent);
 
 void UST_VehicleSoundsComponent::PlayMovingSound(EMovingType MovingType)
 {
-	USoundCue* NewSound = GetSound(MovingType);
+	USoundCue* NewSound = GetMovingSound(MovingType);
 	if (NewSound && CurrentSound != NewSound)
 	{
 		SetSound(NewSound);
@@ -19,7 +19,7 @@ void UST_VehicleSoundsComponent::PlayMovingSound(EMovingType MovingType)
 	}
 }
 
-USoundCue* UST_VehicleSoundsComponent::GetSound(EMovingType MovingType) const
+USoundCue* UST_VehicleSoundsComponent::GetMovingSound(EMovingType MovingType) const
 {
 	switch (MovingType)
 	{
