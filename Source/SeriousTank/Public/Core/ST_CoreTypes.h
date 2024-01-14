@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Templates/SubclassOf.h"
-
 #include "UObject/Object.h"
+
 #include "ST_CoreTypes.generated.h"
 
 class AST_BaseWeapon;
-class AST_BaseVehicle;
 class AST_ShootTarget;
 class AST_TargetSpawningVolume;
 

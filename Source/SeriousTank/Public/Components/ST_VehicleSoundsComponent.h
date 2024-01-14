@@ -36,5 +36,5 @@ public:
 	void PlayMovingSound(EMovingType MovingType);
 
 private:
-	USoundCue* GetSound(EMovingType MovingType) const;
+	USoundCue* GetMovingSound(EMovingType MovingType) const;
 };

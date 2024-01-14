@@ -2,6 +2,7 @@
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Core/ST_CoreTypes.h"
+#include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
 #include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
 
 void AST_MainMenuPlayerState::BeginPlay()
