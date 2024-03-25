@@ -17,6 +17,9 @@ public:
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAdded, int32, AST_BaseWeapon*)
 	FWeaponAdded OnWeaponAdded;
 
+    DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadingStartedDelegate, AST_BaseWeapon*)
+    FOnWeaponReloadingStartedDelegate OnWeaponReloadingStartedDelegate;
+    
 protected:
 	TArray<AST_BaseWeapon*> Weapons;
 	int32 CurrentWeaponIndex;
@@ -26,7 +29,8 @@ public:
 
 	void StartFire();
 	void StopFire();
-
+    void Reload();
+    
 	bool SwitchWeapon(int32 WeaponIndex);
 
 	AST_BaseWeapon* GetCurrentWeapon() const;
@@ -35,5 +39,7 @@ public:
 	FORCEINLINE int32 GetCurrentWeaponIndex() const { return CurrentWeaponIndex; }
 
 protected:
+    virtual void AddWeapon(AST_BaseWeapon* NewWeapon);
+    
 	virtual void OnWeaponSwitched(int32 PrevWeaponIndex, int32 NewWeaponIndex) {};
 };

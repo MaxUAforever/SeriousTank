@@ -78,7 +78,15 @@ void AST_BaseWeapon::StartReloading()
 	FTimerDelegate FireTimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::StopReloading);
 	GetWorldTimerManager().SetTimer(ReloadTimerHandler, FireTimerDelegate, ReloadingTime, false);
 
-	OnReloadingStarted.ExecuteIfBound();
+	OnReloadingStarted.Broadcast();
+}
+
+void AST_BaseWeapon::ForceReload()
+{
+    if (IsReloadingNeeded())
+    {
+        StartReloading();
+    }
 }
 
 void AST_BaseWeapon::StopReloading()

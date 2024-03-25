@@ -20,9 +20,14 @@ void AST_MachineGunWeapon::StartShooting()
 	}
 }
 
+bool AST_MachineGunWeapon::IsReloadingNeeded()
+{
+    return CurrentClipAmmoCount < MaxClipAmmoCount && TotalAmmoCount > MaxClipAmmoCount;
+}
+
 void AST_MachineGunWeapon::FinishReloading()
 {
-	CurrentClipAmmoCount = MaxClipAmmoCount;
+    CurrentClipAmmoCount = MaxClipAmmoCount < TotalAmmoCount ? MaxClipAmmoCount : TotalAmmoCount;
 	OnClipAmmoCountChanged.Broadcast(CurrentClipAmmoCount);
 
 	Super::FinishReloading();

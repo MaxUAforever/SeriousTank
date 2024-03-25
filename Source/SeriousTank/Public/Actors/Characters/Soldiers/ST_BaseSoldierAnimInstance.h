@@ -23,11 +23,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* TwoHandsWeaponFireMontage;
 
+    UPROPERTY(EditDefaultsOnly)
+    UAnimMontage* TwoHandsWeaponReloadingMontage;
+    
 	UPROPERTY(BlueprintReadOnly)
 	ECharacterMovingType MovingType;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsWeaponEquipped;
+    
+    UPROPERTY(BlueprintReadOnly)
+    bool bIsWeaponFiring;
 
 	UPROPERTY(BlueprintReadOnly)
 	float YawWalkOffset;
@@ -59,4 +65,5 @@ private:
 
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponFired(AST_BaseWeapon* Weapon);
+    void OnWeaponReloading(AST_BaseWeapon* Weapon);
 };

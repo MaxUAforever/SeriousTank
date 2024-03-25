@@ -18,7 +18,7 @@ public:
 	DECLARE_DELEGATE(FOnShootDone)
 	FOnShootDone OnShootDone;
 
-	DECLARE_DELEGATE(FReloadingStarted)
+	DECLARE_MULTICAST_DELEGATE(FReloadingStarted)
 	FReloadingStarted OnReloadingStarted;
 
     DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmmoCountChanged, int32)
@@ -69,7 +69,8 @@ public:
  	
 	void StartFire();
 	void StopFire();
-
+    
+    void ForceReload();
 	void StartReloading();
     
     virtual void AttachToVehicleComponent(USceneComponent* ParentVehicleComponent);
@@ -87,6 +88,7 @@ protected:
 	virtual void StartShooting() {};
 	virtual void StopShooting() {};
 
+    virtual bool IsReloadingNeeded() { return false; };
 	virtual void FinishReloading() {};
     
 private:

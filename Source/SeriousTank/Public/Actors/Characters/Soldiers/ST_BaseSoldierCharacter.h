@@ -55,6 +55,9 @@ protected:
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
     UInputAction* FireInputAction;
 
+    UPROPERTY(Category = "Input",  EditDefaultsOnly)
+    UInputAction* ReloadInputAction;
+    
 	UPROPERTY(Category = "Input", EditDefaultsOnly)
 	UInputAction* SwitchToFirstWeaponInputAction;
 
@@ -98,7 +101,8 @@ protected:
 
 	virtual void StartFire();
 	virtual void StopFire();
-
+    virtual void Reload();
+    
 	virtual void SwitchToFirstWeapon();
 	virtual void SwitchToSecondWeapon();
 	virtual void SwitchToThirdWeapon();

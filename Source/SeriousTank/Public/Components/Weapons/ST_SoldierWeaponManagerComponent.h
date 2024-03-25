@@ -15,11 +15,17 @@ protected:
 	UPROPERTY(EditdefaultsOnly)
 	FName LeftHandSocketName;
 
+    
+    
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+    virtual void AddWeapon(AST_BaseWeapon* NewWeapon) override;
 	virtual void OnWeaponSwitched(int32 PrevWeaponIndex, int32 NewWeaponIndex) override;
 	
 	void OnWeaponFired();
+    
+private:
+    void OnWeaponReloadingStarted();
 };

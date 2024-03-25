@@ -64,7 +64,7 @@ void UST_WeaponReloadingWidget::OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapo
     SetIsEnabled(true);
 	SetVisibility(ESlateVisibility::Visible);
     
-	Weapon->OnReloadingStarted.BindUObject(this, &ThisClass::OnWeaponReloadingStarted, Weapon);
+	Weapon->OnReloadingStarted.AddUObject(this, &ThisClass::OnWeaponReloadingStarted, Weapon);
     Weapon->OnAmmoCountChanged.AddUObject(this, &ThisClass::UpdateTotalAmmoCount);
     
     UpdateTotalAmmoCount(Weapon->GetTotalAmmoCount());

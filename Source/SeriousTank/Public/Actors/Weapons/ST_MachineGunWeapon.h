@@ -34,6 +34,7 @@ protected:
     
 	virtual void StartShooting() override;
 
+    virtual bool IsReloadingNeeded() override;
 	virtual void FinishReloading() override;
 	virtual void Shoot() override;
 

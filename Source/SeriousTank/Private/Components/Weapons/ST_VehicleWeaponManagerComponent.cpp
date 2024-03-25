@@ -54,10 +54,9 @@ void UST_VehicleWeaponManagerComponent::BeginPlay()
 		{
 			Weapon->SetWeaponEnabled(WeaponIndex == 0);
 
-			OnWeaponAdded.Broadcast(WeaponIndex, Weapon);
+            AddWeapon(Weapon);
 		}
-
-		Weapons.Add(Weapon);
+		
 		WeaponIndex++;
 	}
 }

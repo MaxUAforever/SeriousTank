@@ -27,6 +27,14 @@ void UST_BaseWeaponsManagerComponent::StopFire()
 	}
 }
 
+void UST_BaseWeaponsManagerComponent::Reload()
+{
+    if (Weapons.IsValidIndex(CurrentWeaponIndex))
+    {
+        Weapons[CurrentWeaponIndex]->ForceReload();
+    }
+}
+
 bool UST_BaseWeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
 {
 	if (WeaponIndex < 0 || WeaponIndex >= Weapons.Num() || Weapons[WeaponIndex] == nullptr)
@@ -56,4 +64,15 @@ AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetWeapon(int32 WeaponIndex) co
 	return (WeaponIndex >= 0 && WeaponIndex < Weapons.Num()) ? Weapons[CurrentWeaponIndex] : nullptr;
 }
 
+void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
+{
+    if (!NewWeapon)
+    {
+        return;
+    }
+    
+    NewWeapon->SetOwner(GetOwner());
+    Weapons.Add(NewWeapon);
 
+    OnWeaponAdded.Broadcast(0, NewWeapon);
+}

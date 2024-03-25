@@ -4,8 +4,10 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_SoldierWeaponManagerComponent.h"
+#include "Engine/LocalPlayer.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/PlayerController.h"
 #include "UObject/UObjectGlobals.h"
 
 AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& ObjectInitializer)
@@ -65,6 +67,11 @@ void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* Player
 			EnhancedComponent->BindAction(FireInputAction, ETriggerEvent::Completed, this, &ThisClass::StopFire);
 		}
 
+        if (ReloadInputAction)
+        {
+            EnhancedComponent->BindAction(ReloadInputAction, ETriggerEvent::Started, this, &ThisClass::Reload);
+        }
+        
 		if (SwitchToFirstWeaponInputAction)
 		{
 			EnhancedComponent->BindAction(SwitchToFirstWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToFirstWeapon);
@@ -199,6 +206,11 @@ void AST_BaseSoldierCharacter::StartFire()
 void AST_BaseSoldierCharacter::StopFire()
 {
 	WeaponManagerComponent->StopFire();
+}
+
+void AST_BaseSoldierCharacter::Reload()
+{
+    WeaponManagerComponent->Reload();
 }
 
 void AST_BaseSoldierCharacter::SwitchToFirstWeapon()

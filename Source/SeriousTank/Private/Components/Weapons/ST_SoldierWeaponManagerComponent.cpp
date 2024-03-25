@@ -62,22 +62,12 @@ void UST_SoldierWeaponManagerComponent::BeginPlay()
 	}
 
 	TSubclassOf<AST_BaseWeapon> CustomWeaponClass = GetPlayerSoldierWeaponClass(World->GetFirstPlayerController(), GetOwner());
-	USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner());
-
-	if (CustomWeaponClass && CharacterSkeletalMesh)
+	
+	if (CustomWeaponClass)
 	{
-		AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(CustomWeaponClass);
-		if (Weapon)
+		if (AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(CustomWeaponClass))
 		{
-			Weapon->SetActorEnableCollision(false);
-			Weapon->AttachToComponent(CharacterSkeletalMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, RightHandSocketName);
-			Weapon->SetOwner(GetOwner());
-
-			Weapons.Add(Weapon);
-
-			OnWeaponAdded.Broadcast(0, Weapon);
-
-			Weapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
+            AddWeapon(Weapon);
 		}
 	}
 }
@@ -90,6 +80,25 @@ void UST_SoldierWeaponManagerComponent::EndPlay(const EEndPlayReason::Type EndPl
 	}
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void UST_SoldierWeaponManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
+{
+    if (!NewWeapon)
+    {
+        return;
+    }
+    
+    Super::AddWeapon(NewWeapon);
+    
+    NewWeapon->SetActorEnableCollision(false);
+    NewWeapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
+    NewWeapon->OnReloadingStarted.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
+    
+    if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
+    {
+        NewWeapon->AttachToComponent(CharacterSkeletalMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, RightHandSocketName);
+    }
 }
 
 void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponIndex, const int32 NewWeaponIndex)
@@ -106,4 +115,9 @@ void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponI
 void UST_SoldierWeaponManagerComponent::OnWeaponFired()
 {
 	OnWeaponFiredDelegate.ExecuteIfBound(GetCurrentWeapon());
+}
+
+void UST_SoldierWeaponManagerComponent::OnWeaponReloadingStarted()
+{
+    OnWeaponReloadingStartedDelegate.Broadcast(GetCurrentWeapon());
 }

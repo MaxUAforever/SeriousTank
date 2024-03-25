@@ -1,6 +1,7 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierAnimInstance.h"
 
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
+#include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "Core/ST_CoreTypes.h"
@@ -31,6 +32,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 		{
 			WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
 			WeaponManagerComponent->OnWeaponFiredDelegate.BindUObject(this, &ThisClass::OnWeaponFired);
+            WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
 		}
 	}
 }
@@ -144,8 +146,15 @@ void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWe
 
 void UST_BaseSoldierAnimInstance::OnWeaponFired(AST_BaseWeapon* Weapon)
 {
-	if (TwoHandsWeaponFireMontage)
-	{
-		Montage_Play(TwoHandsWeaponFireMontage);
-	}
+    bIsWeaponFiring = true;
+    
+    if (TwoHandsWeaponFireMontage)
+    {
+        Montage_Play(TwoHandsWeaponFireMontage);
+    }
+}
+
+void UST_BaseSoldierAnimInstance::OnWeaponReloading(AST_BaseWeapon* Weapon)
+{
+    Montage_Play(TwoHandsWeaponReloadingMontage);
 }
