@@ -5,9 +5,10 @@
 
 class AST_BaseWeapon;
 class UCameraComponent;
-class UInputAction;
-class UInputMappingContext;
+class UCommonInputsDataAsset;
+class USoldierInputsDataAsset;
 class UST_SoldierWeaponManagerComponent;
+class UWeaponInputsDataAsset;
 struct FInputActionValue;
 
 UCLASS()
@@ -30,52 +31,17 @@ protected:
 	UST_SoldierWeaponManagerComponent* WeaponManagerComponent;
 
 	/**
-	 * Common gameplay inputs
+	 * Common gameplay and weapon inputs
 	 */
 
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputMappingContext* CommonGameplayInputContext;
+	UCommonInputsDataAsset* CommonInputsDataAsset;
 
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* MoveForwardInputAction;
+	UWeaponInputsDataAsset* WeaponInputsDataAsset;
 
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* MoveRightInputAction;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* RotateCameraInputAction;
-
-	/**
-	 * Soldier weapons inputs
-	 */
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputMappingContext* WeaponsInputContext;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* FireInputAction;
-
-    UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* ReloadInputAction;
-    
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* SwitchToFirstWeaponInputAction;
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* SwitchToSecondWeaponInputAction;
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* SwitchToThirdWeaponInputAction;
-
-	/**
-	 * Character gameplay inputs
-	 */
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputMappingContext* SoldierGameplayInputContext;
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* SprintInputAction;
+	USoldierInputsDataAsset* SoldierInputsDataAsset;
 
 protected:
 	virtual void BeginPlay() override;

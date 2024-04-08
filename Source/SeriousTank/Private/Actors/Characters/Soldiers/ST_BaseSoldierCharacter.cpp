@@ -8,6 +8,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/PlayerController.h"
+#include "Inputs/Data/CommonInputsDataAsset.h"
+#include "Inputs/Data/SoldierInputsDataAsset.h"
+#include "Inputs/Data/WeaponInputsDataAsset.h"
 #include "UObject/UObjectGlobals.h"
 
 AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& ObjectInitializer)
@@ -40,51 +43,28 @@ void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* Player
 
 	if (UEnhancedInputComponent* EnhancedComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		if (MoveForwardInputAction)
+		if (CommonInputsDataAsset)
 		{
-			EnhancedComponent->BindAction(MoveForwardInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveForward);
+			EnhancedComponent->BindAction(CommonInputsDataAsset->MoveForwardInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveForward);
+			EnhancedComponent->BindAction(CommonInputsDataAsset->MoveRightInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveRight);
+			EnhancedComponent->BindAction(CommonInputsDataAsset->RotateCameraInputAction, ETriggerEvent::Triggered, this, &ThisClass::RotateCamera);
 		}
 
-		if (MoveRightInputAction)
+		if (WeaponInputsDataAsset)
 		{
-			EnhancedComponent->BindAction(MoveRightInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveRight);
+			EnhancedComponent->BindAction(WeaponInputsDataAsset->FireInputAction, ETriggerEvent::Started, this, &ThisClass::StartFire);
+			EnhancedComponent->BindAction(WeaponInputsDataAsset->FireInputAction, ETriggerEvent::Completed, this, &ThisClass::StopFire);
+			EnhancedComponent->BindAction(WeaponInputsDataAsset->ReloadInputAction, ETriggerEvent::Started, this, &ThisClass::Reload);
+			
+			EnhancedComponent->BindAction(WeaponInputsDataAsset->SwitchToFirstWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToFirstWeapon);
+			EnhancedComponent->BindAction(WeaponInputsDataAsset->SwitchToSecondWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToSecondWeapon);
+			EnhancedComponent->BindAction(WeaponInputsDataAsset->SwitchToThirdWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToThirdWeapon);
 		}
 
-		if (RotateCameraInputAction)
+		if (SoldierInputsDataAsset)
 		{
-			EnhancedComponent->BindAction(RotateCameraInputAction, ETriggerEvent::Triggered, this, &ThisClass::RotateCamera);
-		}
-
-		if (SprintInputAction)
-		{
-			EnhancedComponent->BindAction(SprintInputAction, ETriggerEvent::Started, this, &ThisClass::StartSprint);
-			EnhancedComponent->BindAction(SprintInputAction, ETriggerEvent::Completed, this, &ThisClass::StopSprint);
-		}
-
-		if (FireInputAction)
-		{
-			EnhancedComponent->BindAction(FireInputAction, ETriggerEvent::Started, this, &ThisClass::StartFire);
-			EnhancedComponent->BindAction(FireInputAction, ETriggerEvent::Completed, this, &ThisClass::StopFire);
-		}
-
-        if (ReloadInputAction)
-        {
-            EnhancedComponent->BindAction(ReloadInputAction, ETriggerEvent::Started, this, &ThisClass::Reload);
-        }
-        
-		if (SwitchToFirstWeaponInputAction)
-		{
-			EnhancedComponent->BindAction(SwitchToFirstWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToFirstWeapon);
-		}
-
-		if (SwitchToSecondWeaponInputAction)
-		{
-			EnhancedComponent->BindAction(SwitchToSecondWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToSecondWeapon);
-		}
-
-		if (SwitchToThirdWeaponInputAction)
-		{
-			EnhancedComponent->BindAction(SwitchToThirdWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToThirdWeapon);
+			EnhancedComponent->BindAction(SoldierInputsDataAsset->SprintInputAction, ETriggerEvent::Started, this, &ThisClass::StartSprint);
+			EnhancedComponent->BindAction(SoldierInputsDataAsset->SprintInputAction, ETriggerEvent::Completed, this, &ThisClass::StopSprint);
 		}
 	}
 }
@@ -109,31 +89,31 @@ void AST_BaseSoldierCharacter::NotifyControllerChanged()
 
 	if (bIsUnPossessed)
 	{
-		if (SoldierGameplayInputContext)
+		if (SoldierInputsDataAsset)
 		{
-			EnhancedSubsystem->RemoveMappingContext(SoldierGameplayInputContext);
+			EnhancedSubsystem->RemoveMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext);
 		}
 
-		if (WeaponsInputContext)
+		if (WeaponInputsDataAsset)
 		{
-			EnhancedSubsystem->RemoveMappingContext(WeaponsInputContext);
+			EnhancedSubsystem->RemoveMappingContext(WeaponInputsDataAsset->WeaponsInputContext);
 		}
 	}
 	else
 	{
-		if (CommonGameplayInputContext && !EnhancedSubsystem->HasMappingContext(CommonGameplayInputContext))
+		if (CommonInputsDataAsset && !EnhancedSubsystem->HasMappingContext(CommonInputsDataAsset->CommonGameplayInputContext))
 		{
-			EnhancedSubsystem->AddMappingContext(CommonGameplayInputContext, 0);
+			EnhancedSubsystem->AddMappingContext(CommonInputsDataAsset->CommonGameplayInputContext, 0);
 		}
 
-		if (WeaponsInputContext && !EnhancedSubsystem->HasMappingContext(WeaponsInputContext))
+		if (WeaponInputsDataAsset && !EnhancedSubsystem->HasMappingContext(WeaponInputsDataAsset->WeaponsInputContext))
 		{
-			EnhancedSubsystem->AddMappingContext(WeaponsInputContext, 0);
+			EnhancedSubsystem->AddMappingContext(WeaponInputsDataAsset->WeaponsInputContext, 0);
 		}
 
-		if (SoldierGameplayInputContext && !EnhancedSubsystem->HasMappingContext(SoldierGameplayInputContext))
+		if (SoldierInputsDataAsset && !EnhancedSubsystem->HasMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext))
 		{
-			EnhancedSubsystem->AddMappingContext(SoldierGameplayInputContext, 0);
+			EnhancedSubsystem->AddMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext, 0);
 		}
 	}
 }

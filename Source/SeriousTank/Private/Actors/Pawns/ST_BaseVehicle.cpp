@@ -1,7 +1,8 @@
 #include "Actors/Pawns/ST_BaseVehicle.h"
 
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
-
+#include "Inputs/Data/CommonInputsDataAsset.h"
+#include "Inputs/Data/WeaponInputsDataAsset.h"
 #include "Components/InputComponent.h"
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
@@ -13,40 +14,21 @@ void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	if (UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		if (MoveForwardInputAction)
+		if (CommonInputsDataAsset)
 		{
-			PlayerEnhancedInputComponent->BindAction(MoveForwardInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveForward);
+			PlayerEnhancedInputComponent->BindAction(CommonInputsDataAsset->MoveForwardInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveForward);
+			PlayerEnhancedInputComponent->BindAction(CommonInputsDataAsset->MoveRightInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveRight);
+			PlayerEnhancedInputComponent->BindAction(CommonInputsDataAsset->RotateCameraInputAction, ETriggerEvent::Triggered, this, &ThisClass::RotateCamera);
 		}
 
-		if (MoveRightInputAction)
+		if (WeaponInputsDataAsset)
 		{
-			PlayerEnhancedInputComponent->BindAction(MoveRightInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveRight);
-		}
-
-		if (RotateCameraInputAction)
-		{
-			PlayerEnhancedInputComponent->BindAction(RotateCameraInputAction, ETriggerEvent::Triggered, this, &ThisClass::RotateCamera);
-		}
-
-		if (FireInputAction)
-		{
-			PlayerEnhancedInputComponent->BindAction(FireInputAction, ETriggerEvent::Started, this, &ThisClass::StartFire);
-			PlayerEnhancedInputComponent->BindAction(FireInputAction, ETriggerEvent::Completed, this, &ThisClass::StopFire);
-		}
-
-		if (SwitchToFirstWeaponInputAction)
-		{
-			PlayerEnhancedInputComponent->BindAction(SwitchToFirstWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToFirstWeapon);
-		}
-
-		if (SwitchToSecondWeaponInputAction)
-		{
-			PlayerEnhancedInputComponent->BindAction(SwitchToSecondWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToSecondWeapon);
-		}
-
-		if (SwitchToThirdWeaponInputAction)
-		{
-			PlayerEnhancedInputComponent->BindAction(SwitchToThirdWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToThirdWeapon);
+			PlayerEnhancedInputComponent->BindAction(WeaponInputsDataAsset->FireInputAction, ETriggerEvent::Started, this, &ThisClass::StartFire);
+			PlayerEnhancedInputComponent->BindAction(WeaponInputsDataAsset->FireInputAction, ETriggerEvent::Completed, this, &ThisClass::StopFire);
+		
+			PlayerEnhancedInputComponent->BindAction(WeaponInputsDataAsset->SwitchToFirstWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToFirstWeapon);
+			PlayerEnhancedInputComponent->BindAction(WeaponInputsDataAsset->SwitchToSecondWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToSecondWeapon);
+			PlayerEnhancedInputComponent->BindAction(WeaponInputsDataAsset->SwitchToThirdWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToThirdWeapon);
 		}
 	}
 }
@@ -69,20 +51,20 @@ void AST_BaseVehicle::NotifyControllerChanged()
 		return;
 	}
 
-	if (bIsUnPossessed)
+	if (bIsUnPossessed && WeaponInputsDataAsset)
 	{
-		EnhancedSubsystem->RemoveMappingContext(WeaponsInputContext);
+		EnhancedSubsystem->RemoveMappingContext(WeaponInputsDataAsset->WeaponsInputContext);
 	}
 	else
 	{
-		if (CommonGameplayInputContext && !EnhancedSubsystem->HasMappingContext(CommonGameplayInputContext))
+		if (CommonInputsDataAsset && !EnhancedSubsystem->HasMappingContext(CommonInputsDataAsset->CommonGameplayInputContext))
 		{
-			EnhancedSubsystem->AddMappingContext(CommonGameplayInputContext, 0);
+			EnhancedSubsystem->AddMappingContext(CommonInputsDataAsset->CommonGameplayInputContext, 0);
 		}
 		
-		if (WeaponsInputContext && !EnhancedSubsystem->HasMappingContext(WeaponsInputContext))
+		if (WeaponInputsDataAsset && !EnhancedSubsystem->HasMappingContext(WeaponInputsDataAsset->WeaponsInputContext))
 		{
-			EnhancedSubsystem->AddMappingContext(WeaponsInputContext, 0);
+			EnhancedSubsystem->AddMappingContext(WeaponInputsDataAsset->WeaponsInputContext, 0);
 		}
 	}
 }

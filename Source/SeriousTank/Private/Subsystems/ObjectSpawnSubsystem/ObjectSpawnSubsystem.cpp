@@ -1,6 +1,8 @@
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
+#include "Engine/EngineBaseTypes.h"
+#include "Engine/World.h"
 
 bool UObjectSpawnSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {

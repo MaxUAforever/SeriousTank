@@ -3,6 +3,8 @@
 #include "GameFramework/Pawn.h"
 #include "ST_BaseVehicle.generated.h"
 
+class UCommonInputsDataAsset;
+class UWeaponInputsDataAsset;
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
@@ -24,39 +26,14 @@ protected:
     float MaxVisibleDistance;
     
 	/**
-	 * Common gameplay inputs
+	 * Common gameplay and weapon inputs
 	 */
 
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputMappingContext* CommonGameplayInputContext;
+	UCommonInputsDataAsset* CommonInputsDataAsset;
 
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* MoveForwardInputAction;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* MoveRightInputAction;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* RotateCameraInputAction;
-
-	/**
-	 * Vehicle weapons inputs
-	 */
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputMappingContext* WeaponsInputContext;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-    UInputAction* FireInputAction;
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* SwitchToFirstWeaponInputAction;
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* SwitchToSecondWeaponInputAction;
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* SwitchToThirdWeaponInputAction;
+	UWeaponInputsDataAsset* WeaponInputsDataAsset;
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

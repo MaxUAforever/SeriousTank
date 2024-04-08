@@ -3,6 +3,7 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnVolume.h"
+#include "TimerManager.h"
 
 void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters)
 {
