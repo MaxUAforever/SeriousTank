@@ -4,9 +4,11 @@
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
+#include "Components/Weapons/ST_LeftHandAttachComponent.h"
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "TimerManager.h"
 
 void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 {
@@ -62,6 +64,11 @@ void UST_BaseSoldierAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		UpdateIdleAnimation();
 		UpdateTurningAnimation(DeltaTime);
 	}
+
+	if (bIsWeaponEquipped)
+	{
+		UpdateLeftHandWeaponPosition();
+	}
 }
 
 void UST_BaseSoldierAnimInstance::UpdateMovingAnimation()
@@ -91,7 +98,7 @@ void UST_BaseSoldierAnimInstance::UpdateIdleAnimation()
 		UAnimMontage* NeededAnimMontage = YawAimOffset > 0 ? TurnRightMontage : TurnLeftMontage;
 		if (OwningActor && NeededAnimMontage && !Montage_IsPlaying(NeededAnimMontage))
 		{
-			CurrentTurnDuration = Montage_Play(NeededAnimMontage);
+			CurrentTurnDuration = Montage_Play(NeededAnimMontage, 1.f, EMontagePlayReturnType::MontageLength, 0.0f, false);
 
 			TurningSide = YawAimOffset < 0 ? ECharacterTurnSide::Left : ECharacterTurnSide::Right;
 			StartingTurnYawAngle = OwningActor->GetRootComponent()->GetComponentRotation().Yaw;
@@ -139,6 +146,31 @@ void UST_BaseSoldierAnimInstance::UpdateTurningAnimation(float DeltaTime)
 	OwningActor->SetActorRotation(ActorRotation);
 }
 
+void UST_BaseSoldierAnimInstance::UpdateLeftHandWeaponPosition()
+{
+	const UST_BaseWeaponsManagerComponent* WeaponsManager = SoldierCharacter->GetComponentByClass<UST_BaseWeaponsManagerComponent>();
+	if (!WeaponsManager)
+	{
+		return;
+	}
+
+	const AST_BaseWeapon* Weapon = WeaponsManager->GetCurrentWeapon();
+	if (!Weapon)
+	{
+		return;
+	}
+
+	if (UST_LeftHandAttachComponent* LeftHandAttachComponent = Weapon->GetComponentByClass<UST_LeftHandAttachComponent>())
+	{
+		FVector OutLocation;
+		FRotator OutRotation;
+		SoldierCharacter->GetMesh()->TransformToBoneSpace(RightHandBoneName, LeftHandAttachComponent->GetComponentLocation(), FRotator::ZeroRotator, OutLocation, OutRotation);
+	
+		LeftHandTransform.SetLocation(OutLocation);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+	}
+}
+
 void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
 {
 	bIsWeaponEquipped = true;
@@ -146,9 +178,7 @@ void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWe
 
 void UST_BaseSoldierAnimInstance::OnWeaponFired(AST_BaseWeapon* Weapon)
 {
-    bIsWeaponFiring = true;
-    
-    if (TwoHandsWeaponFireMontage)
+    if (!bIsReloading && TwoHandsWeaponFireMontage)
     {
         Montage_Play(TwoHandsWeaponFireMontage);
     }
@@ -156,5 +186,19 @@ void UST_BaseSoldierAnimInstance::OnWeaponFired(AST_BaseWeapon* Weapon)
 
 void UST_BaseSoldierAnimInstance::OnWeaponReloading(AST_BaseWeapon* Weapon)
 {
-    Montage_Play(TwoHandsWeaponReloadingMontage);
+	if (bIsReloading)
+	{
+		return;
+	}
+
+	const float MontageLength = Montage_Play(TwoHandsWeaponReloadingMontage);
+
+	bIsReloading = true;
+	auto OnReloadingMontageFinished = [this]()
+	{
+		bIsReloading = false;
+	};
+
+	FTimerHandle ReloadingTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(ReloadingTimerHandle, FTimerDelegate::CreateLambda(OnReloadingMontageFinished), MontageLength, false);
 }

@@ -44,6 +44,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float MaxYawAimOffset;
 
+	UPROPERTY(BlueprintReadOnly)
+	FTransform LeftHandTransform;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName RightHandBoneName;
+
 private:
 	AST_BaseSoldierCharacter* SoldierCharacter;
 
@@ -51,6 +57,8 @@ private:
 	float CurrentTurnAngle;
 	float StartingTurnYawAngle;
 	ECharacterTurnSide TurningSide;
+
+	bool bIsReloading;
 
 public:
 	virtual void NativeInitializeAnimation() override;
@@ -60,6 +68,7 @@ private:
 	void UpdateMovingAnimation();
 	void UpdateIdleAnimation();
 	void UpdateTurningAnimation(float DeltaTime);
+	void UpdateLeftHandWeaponPosition();
 
 	FORCEINLINE void OnMovementTypeChanged(ECharacterMovingType InMovingType) { MovingType = InMovingType; };
 
