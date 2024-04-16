@@ -20,6 +20,9 @@ public:
     DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadingStartedDelegate, AST_BaseWeapon*)
     FOnWeaponReloadingStartedDelegate OnWeaponReloadingStartedDelegate;
     
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponSwitched, int32 /*PreviousWeaponIndex*/, int32 /*NewWeaponIndex*/)
+	FOnWeaponSwitched OnWeaponSwitchedDelegate;
+
 protected:
 	TArray<AST_BaseWeapon*> Weapons;
 	int32 CurrentWeaponIndex;

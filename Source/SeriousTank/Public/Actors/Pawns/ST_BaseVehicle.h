@@ -14,10 +14,6 @@ class SERIOUSTANK_API AST_BaseVehicle : public APawn
 {
 	GENERATED_BODY()
 
-public:
-    DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponSwitched, int32)
-    FOnWeaponSwitched OnWeaponSwitched;
-    
 protected:
     UPROPERTY(EditDefaultsOnly, Category = "Info")
     FString DisplayName;
@@ -49,7 +45,7 @@ public:
 	virtual void StartFire() {};
 	virtual void StopFire() {};
 
-    virtual void SwitchToFirstWeapon() { OnWeaponSwitched.Broadcast(0); };
-    virtual void SwitchToSecondWeapon() { OnWeaponSwitched.Broadcast(1); };
-    virtual void SwitchToThirdWeapon() { OnWeaponSwitched.Broadcast(2); };
+    virtual void SwitchToFirstWeapon() { };
+    virtual void SwitchToSecondWeapon() { };
+    virtual void SwitchToThirdWeapon() { };
 };

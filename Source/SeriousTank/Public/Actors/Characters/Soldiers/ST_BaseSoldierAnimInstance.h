@@ -84,10 +84,14 @@ private:
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponFired(AST_BaseWeapon* Weapon);
     void OnWeaponReloading(AST_BaseWeapon* Weapon);
+	void OnWeaponSwitched(int32 WeaponIndex);
 
+	/**
+	 * Animation notifies handlers 
+	 */
 	UFUNCTION()
 	void InternalAnimNotify_OnMagazineGrabbed();
-
+	
 	UFUNCTION()
 	void InternalAnimNotify_OnMagazineInserted();
 };

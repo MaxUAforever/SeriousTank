@@ -26,19 +26,11 @@ void UST_WeaponReloadingWidget::NativeConstruct()
     SelectionBorder->SetVisibility(WeaponIndex == 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
     
 	APawn* OwnerPawn = GetOwningPlayerPawn();
-	if (AST_BaseVehicle* BaseVehiclePawn = Cast<AST_BaseVehicle>(OwnerPawn))
-	{
-		BaseVehiclePawn->OnWeaponSwitched.AddUObject(this, &ThisClass::OnWeaponSelected);
-	}
-	else if (AST_BaseSoldierCharacter* BaseSoldierCharacter = Cast<AST_BaseSoldierCharacter>(OwnerPawn))
-	{
-		BaseSoldierCharacter->OnWeaponSwitched.AddUObject(this, &ThisClass::OnWeaponSelected);
-	}
-	else
+	if (!OwnerPawn)
 	{
 		return;
 	}
-    
+
     TArray<UActorComponent*> WeaponsManagerComponents;
 	OwnerPawn->GetComponents(UST_BaseWeaponsManagerComponent::StaticClass(), WeaponsManagerComponents);
 	if (WeaponsManagerComponents.Num() <= 0)
@@ -51,6 +43,7 @@ void UST_WeaponReloadingWidget::NativeConstruct()
 	{
 		// TODO: Bind delegate to parent widget to preventing multiple broadcasting to each rloading widget
 		WeaponsManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponAdded);
+		WeaponsManagerComponent->OnWeaponSwitchedDelegate.AddUObject(this, &ThisClass::OnWeaponSelected);
 	}
 }
 
@@ -89,9 +82,9 @@ void UST_WeaponReloadingWidget::OnWeaponReloadingStarted(AST_BaseWeapon* Weapon)
     ReloadingProgressbar->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UST_WeaponReloadingWidget::OnWeaponSelected(int32 Index)
+void UST_WeaponReloadingWidget::OnWeaponSelected(int32 PreviousWeaponIndex, int32 NewWeaponIndex)
 {
-    SelectionBorder->SetVisibility(WeaponIndex == Index ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+    SelectionBorder->SetVisibility(WeaponIndex == NewWeaponIndex ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 }
 
 void UST_WeaponReloadingWidget::UpdateTotalAmmoCount(int32 TotalAmmoCount)

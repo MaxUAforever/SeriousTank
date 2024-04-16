@@ -16,10 +16,6 @@ class SERIOUSTANK_API AST_BaseSoldierCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-public:
-	DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponSwitched, int32)
-	FOnWeaponSwitched OnWeaponSwitched;
-
 protected:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* CameraSceneComponent;

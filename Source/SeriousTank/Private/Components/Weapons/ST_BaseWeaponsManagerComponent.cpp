@@ -48,6 +48,7 @@ bool UST_BaseWeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
 	Weapons[WeaponIndex]->SetWeaponEnabled(true);
 
 	OnWeaponSwitched(CurrentWeaponIndex, WeaponIndex);
+	OnWeaponSwitchedDelegate.Broadcast(CurrentWeaponIndex, WeaponIndex);
 
 	CurrentWeaponIndex = WeaponIndex;
 
@@ -74,5 +75,5 @@ void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
     NewWeapon->SetOwner(GetOwner());
     Weapons.Add(NewWeapon);
 
-    OnWeaponAdded.Broadcast(0, NewWeapon);
+    OnWeaponAdded.Broadcast(Weapons.Num() - 1, NewWeapon);
 }
