@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Animation/AnimInstance.h"
+#include "Core/Animation/ST_AnimInstance.h"
 #include "ST_BaseSoldierAnimInstance.generated.h"
 
 class AST_BaseSoldierCharacter;
@@ -9,7 +9,7 @@ enum class ECharacterMovingType : uint8;
 enum class ECharacterTurnSide : uint8;
 
 UCLASS()
-class SERIOUSTANK_API UST_BaseSoldierAnimInstance : public UAnimInstance
+class SERIOUSTANK_API UST_BaseSoldierAnimInstance : public UST_AnimInstance
 {
 	GENERATED_BODY()
 
@@ -50,8 +50,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	FName RightHandBoneName;
 
+	UPROPERTY(EditDefaultsOnly)
+	FName RightHandSocketName;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName LeftHandSocketName;
+
 private:
 	AST_BaseSoldierCharacter* SoldierCharacter;
+	AST_BaseWeapon* CurrentWeapon;
+	UStaticMeshComponent* CurrentMagazineComponent;
+	FTransform CurrentMagazineTransform;
 
 	float CurrentTurnDuration;
 	float CurrentTurnAngle;
@@ -75,4 +84,10 @@ private:
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponFired(AST_BaseWeapon* Weapon);
     void OnWeaponReloading(AST_BaseWeapon* Weapon);
+
+	UFUNCTION()
+	void InternalAnimNotify_OnMagazineGrabbed();
+
+	UFUNCTION()
+	void InternalAnimNotify_OnMagazineInserted();
 };

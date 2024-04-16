@@ -3,6 +3,7 @@
 #include "UObject/Object.h"
 #include "ST_VehicleSpawnManager.generated.h"
 
+class AST_BaseVehicle;
 struct FVehicleInfo;
 
 UCLASS(BlueprintType)

@@ -1,10 +1,8 @@
 #pragma once
 
+#include "Core/ST_CoreTypes.h"
 #include "GameFramework/PlayerState.h"
 #include "ST_GameplayPlayerState.generated.h"
-
-struct FVehicleInfo;
-struct FSoldierInfo;
 
 UCLASS()
 class SERIOUSTANK_API AST_GameplayPlayerState : public APlayerState

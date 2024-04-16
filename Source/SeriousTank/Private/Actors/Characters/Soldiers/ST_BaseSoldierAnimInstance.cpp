@@ -5,6 +5,7 @@
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "Components/Weapons/ST_LeftHandAttachComponent.h"
+#include "Core/Animation/ST_AnimNotify.h"
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -25,7 +26,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 	{
 		MovementComponent->OnMovingTypeChanged.BindUObject(this, &ThisClass::OnMovementTypeChanged);
 	}
-	
+
 	TArray<UActorComponent*> WeaponManagerComponents;
 	SoldierCharacter->GetComponents(UST_BaseWeaponsManagerComponent::StaticClass(), WeaponManagerComponents);
 	if (WeaponManagerComponents.Num() > 0)
@@ -34,7 +35,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 		{
 			WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
 			WeaponManagerComponent->OnWeaponFiredDelegate.BindUObject(this, &ThisClass::OnWeaponFired);
-            WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
+			WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
 		}
 	}
 }
@@ -148,19 +149,18 @@ void UST_BaseSoldierAnimInstance::UpdateTurningAnimation(float DeltaTime)
 
 void UST_BaseSoldierAnimInstance::UpdateLeftHandWeaponPosition()
 {
-	const UST_BaseWeaponsManagerComponent* WeaponsManager = SoldierCharacter->GetComponentByClass<UST_BaseWeaponsManagerComponent>();
-	if (!WeaponsManager)
+	if (!CurrentWeapon)
 	{
 		return;
 	}
 
-	const AST_BaseWeapon* Weapon = WeaponsManager->GetCurrentWeapon();
-	if (!Weapon)
+	TArray<UActorComponent*> AttachComponents = CurrentWeapon->GetComponentsByTag(USceneComponent::StaticClass(), FName("LeftHandAttach"));
+	if (AttachComponents.Num() <= 0)
 	{
 		return;
 	}
-
-	if (UST_LeftHandAttachComponent* LeftHandAttachComponent = Weapon->GetComponentByClass<UST_LeftHandAttachComponent>())
+	
+	if (USceneComponent* LeftHandAttachComponent = Cast<USceneComponent>(AttachComponents[0]))
 	{
 		FVector OutLocation;
 		FRotator OutRotation;
@@ -174,6 +174,17 @@ void UST_BaseSoldierAnimInstance::UpdateLeftHandWeaponPosition()
 void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
 {
 	bIsWeaponEquipped = true;
+
+	CurrentWeapon = Weapon;
+	if (CurrentWeapon)
+	{
+		TArray<UActorComponent*> MagazineComponents = CurrentWeapon->GetComponentsByTag(UStaticMeshComponent::StaticClass(), FName("Magazine"));
+		if (MagazineComponents.Num() > 0)
+		{
+			CurrentMagazineComponent = Cast<UStaticMeshComponent>(MagazineComponents[0]);
+			CurrentMagazineTransform = CurrentMagazineComponent->GetRelativeTransform();
+		}
+	}
 }
 
 void UST_BaseSoldierAnimInstance::OnWeaponFired(AST_BaseWeapon* Weapon)
@@ -201,4 +212,37 @@ void UST_BaseSoldierAnimInstance::OnWeaponReloading(AST_BaseWeapon* Weapon)
 
 	FTimerHandle ReloadingTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(ReloadingTimerHandle, FTimerDelegate::CreateLambda(OnReloadingMontageFinished), MontageLength, false);
+}
+
+void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineGrabbed()
+{
+	if (!SoldierCharacter || !SoldierCharacter->GetMesh())
+	{
+		return;
+	}
+
+	if (!CurrentMagazineComponent)
+	{
+		return;
+	}
+
+	CurrentMagazineComponent->DetachFromParent();
+	CurrentMagazineComponent->AttachToComponent(SoldierCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, LeftHandSocketName);
+}
+
+void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineInserted()
+{
+	if (!CurrentWeapon)
+	{
+		return;
+	}
+
+	if (!CurrentMagazineComponent)
+	{
+		return;
+	}
+
+	CurrentMagazineComponent->DetachFromParent();
+	CurrentMagazineComponent->AttachToComponent(CurrentWeapon->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	CurrentMagazineComponent->SetRelativeTransform(CurrentMagazineTransform);
 }
