@@ -4,7 +4,6 @@
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
-#include "Components/Weapons/ST_LeftHandAttachComponent.h"
 #include "Core/Animation/ST_AnimNotify.h"
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/Character.h"
