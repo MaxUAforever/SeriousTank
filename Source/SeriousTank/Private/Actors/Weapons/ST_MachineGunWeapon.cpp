@@ -20,9 +20,14 @@ void AST_MachineGunWeapon::StartShooting()
 	}
 }
 
-bool AST_MachineGunWeapon::IsReloadingNeeded()
+bool AST_MachineGunWeapon::CanReload() const
 {
-    return CurrentClipAmmoCount < MaxClipAmmoCount && TotalAmmoCount > MaxClipAmmoCount;
+	return CurrentClipAmmoCount < MaxClipAmmoCount && TotalAmmoCount > MaxClipAmmoCount;
+}
+
+bool AST_MachineGunWeapon::IsReloadingNeeded() const
+{
+	return CurrentClipAmmoCount == 0 && TotalAmmoCount > 0;
 }
 
 void AST_MachineGunWeapon::FinishReloading()

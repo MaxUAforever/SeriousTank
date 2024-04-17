@@ -1,6 +1,7 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierAnimInstance.h"
 
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
+#include "Actors/Characters/Soldiers/ST_SoldierAnimDataAsset.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
@@ -21,6 +22,10 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 		return;
 	}
 
+	RightHandSocketName = SoldierCharacter->GetRightHandSocketName();
+	LeftHandSocketName = SoldierCharacter->GetLeftHandSocketName();
+	SecondWeaponSocketName = SoldierCharacter->GetSecondWeaponSocketName();
+
 	if (UST_SoldierMovementComponent* MovementComponent = Cast<UST_SoldierMovementComponent>(SoldierCharacter->GetMovementComponent()))
 	{
 		MovementComponent->OnMovingTypeChanged.BindUObject(this, &ThisClass::OnMovementTypeChanged);
@@ -30,11 +35,13 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 	SoldierCharacter->GetComponents(UST_BaseWeaponsManagerComponent::StaticClass(), WeaponManagerComponents);
 	if (WeaponManagerComponents.Num() > 0)
 	{
-		if (UST_BaseWeaponsManagerComponent* WeaponManagerComponent = Cast<UST_BaseWeaponsManagerComponent>(WeaponManagerComponents[0]))
+		WeaponManagerComponent = Cast<UST_BaseWeaponsManagerComponent>(WeaponManagerComponents[0]);
+		if (WeaponManagerComponent)
 		{
 			WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
 			WeaponManagerComponent->OnWeaponFiredDelegate.BindUObject(this, &ThisClass::OnWeaponFired);
 			WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
+			WeaponManagerComponent->OnWeaponSwitchedDelegate.AddUObject(this, &ThisClass::OnWeaponSwitched);
 		}
 	}
 }
@@ -48,12 +55,17 @@ void UST_BaseSoldierAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		return;
 	}
 		
+	if (!MontagesDataAsset)
+	{
+		return;
+	}
+
 	const bool bIsMoving = !SoldierCharacter->GetVelocity().IsNearlyZero();
 	if (bIsMoving)
 	{
 		UpdateMovingAnimation();
 
-		Montage_Stop(0, TurningSide == ECharacterTurnSide::Left ? TurnLeftMontage : TurnRightMontage);
+		Montage_Stop(0, TurningSide == ECharacterTurnSide::Left ? MontagesDataAsset->TurnLeftMontage : MontagesDataAsset->TurnRightMontage);
 		
 		TurningSide = ECharacterTurnSide::None;
 		CurrentTurnDuration = 0.f;
@@ -95,7 +107,7 @@ void UST_BaseSoldierAnimInstance::UpdateIdleAnimation()
 	if (FMath::Abs(YawAimOffset) > MaxYawAimOffset)
 	{
 		const AActor* OwningActor = GetOwningActor();
-		UAnimMontage* NeededAnimMontage = YawAimOffset > 0 ? TurnRightMontage : TurnLeftMontage;
+		UAnimMontage* NeededAnimMontage = YawAimOffset > 0 ? MontagesDataAsset->TurnRightMontage : MontagesDataAsset->TurnLeftMontage;
 		if (OwningActor && NeededAnimMontage && !Montage_IsPlaying(NeededAnimMontage))
 		{
 			CurrentTurnDuration = Montage_Play(NeededAnimMontage, 1.f, EMontagePlayReturnType::MontageLength, 0.0f, false);
@@ -113,7 +125,7 @@ void UST_BaseSoldierAnimInstance::UpdateTurningAnimation(float DeltaTime)
 		return;
 	}
 	
-	UAnimMontage* NeededAnimMontage = TurningSide == ECharacterTurnSide::Left ? TurnLeftMontage : TurnRightMontage;
+	UAnimMontage* NeededAnimMontage = TurningSide == ECharacterTurnSide::Left ? MontagesDataAsset->TurnLeftMontage : MontagesDataAsset->TurnRightMontage;
 	if (!Montage_IsPlaying(NeededAnimMontage))
 	{
 		TurningSide = ECharacterTurnSide::None;
@@ -170,11 +182,8 @@ void UST_BaseSoldierAnimInstance::UpdateLeftHandWeaponPosition()
 	}
 }
 
-void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+void UST_BaseSoldierAnimInstance::SetupCurrentWeapon()
 {
-	bIsWeaponEquipped = true;
-
-	CurrentWeapon = Weapon;
 	if (CurrentWeapon)
 	{
 		TArray<UActorComponent*> MagazineComponents = CurrentWeapon->GetComponentsByTag(UStaticMeshComponent::StaticClass(), FName("Magazine"));
@@ -186,22 +195,37 @@ void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWe
 	}
 }
 
+void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+{
+	bIsWeaponEquipped = true;
+
+	if (WeaponManagerComponent->GetCurrentWeaponIndex() == WeaponIndex)
+	{
+		CurrentWeapon = Weapon;
+		SetupCurrentWeapon();
+	}
+	else if (WeaponManagerComponent->GetWeapons().Num() == 2)
+	{
+		AdditionalWeapon = Weapon;
+	}
+}
+
 void UST_BaseSoldierAnimInstance::OnWeaponFired(AST_BaseWeapon* Weapon)
 {
-    if (!bIsReloading && TwoHandsWeaponFireMontage)
+    if (!bIsReloading && MontagesDataAsset && MontagesDataAsset->TwoHandsWeaponFireMontage)
     {
-        Montage_Play(TwoHandsWeaponFireMontage);
+        Montage_Play(MontagesDataAsset->TwoHandsWeaponFireMontage);
     }
 }
 
 void UST_BaseSoldierAnimInstance::OnWeaponReloading(AST_BaseWeapon* Weapon)
 {
-	if (bIsReloading)
+	if (bIsReloading || !MontagesDataAsset)
 	{
 		return;
 	}
 
-	const float MontageLength = Montage_Play(TwoHandsWeaponReloadingMontage);
+	const float MontageLength = Montage_Play(MontagesDataAsset->TwoHandsWeaponReloadingMontage);
 
 	bIsReloading = true;
 	auto OnReloadingMontageFinished = [this]()
@@ -211,6 +235,32 @@ void UST_BaseSoldierAnimInstance::OnWeaponReloading(AST_BaseWeapon* Weapon)
 
 	FTimerHandle ReloadingTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(ReloadingTimerHandle, FTimerDelegate::CreateLambda(OnReloadingMontageFinished), MontageLength, false);
+}
+
+void UST_BaseSoldierAnimInstance::OnWeaponSwitched(int32 PreviousWeaponIndex, int32 NewWeaponIndex)
+{
+	if (!MontagesDataAsset || !WeaponManagerComponent)
+	{
+		return;
+	}
+
+	SwitchingWeapon = WeaponManagerComponent->GetWeapon(NewWeaponIndex);
+	if (SwitchingWeapon)
+	{
+		if (bIsReloading)
+		{
+			Montage_Stop(0.f, MontagesDataAsset->TwoHandsWeaponReloadingMontage);
+			InternalAnimNotify_OnMagazineInserted();
+
+			CurrentWeapon->InterruptReloading();
+		}
+
+		const float MontageLength = Montage_Play(MontagesDataAsset->SwitchWeaponMontage);
+		
+		bIsWeaponSwitching = true;
+		FTimerHandle SwitchingTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(SwitchingTimerHandle, this, &ThisClass::OnWeaponEquippingAnimationFinished, MontageLength - 0.8f, false);
+	}
 }
 
 void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineGrabbed()
@@ -224,7 +274,7 @@ void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineGrabbed()
 	{
 		return;
 	}
-
+	
 	CurrentMagazineComponent->DetachFromParent();
 	CurrentMagazineComponent->AttachToComponent(SoldierCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, LeftHandSocketName);
 }
@@ -244,4 +294,40 @@ void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineInserted()
 	CurrentMagazineComponent->DetachFromParent();
 	CurrentMagazineComponent->AttachToComponent(CurrentWeapon->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	CurrentMagazineComponent->SetRelativeTransform(CurrentMagazineTransform);
+}
+
+void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnWeaponSwitched()
+{
+	if (!CurrentWeapon || !WeaponManagerComponent)
+	{
+		return;
+	}
+
+	CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+
+	if (AdditionalWeapon && SwitchingWeapon == AdditionalWeapon)
+	{	
+		AdditionalWeapon->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+		CurrentWeapon->AttachToComponent(SoldierCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SecondWeaponSocketName);
+		AdditionalWeapon->AttachToComponent(SoldierCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, RightHandSocketName);
+	
+		Swap(CurrentWeapon, AdditionalWeapon);
+	}
+	else
+	{
+		CurrentWeapon->SetHidden(true);
+		SwitchingWeapon->AttachToComponent(SoldierCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, RightHandSocketName);
+		SwitchingWeapon->SetHidden(false);
+
+		CurrentWeapon = SwitchingWeapon;
+	}
+
+	SetupCurrentWeapon();
+}
+
+void UST_BaseSoldierAnimInstance::OnWeaponEquippingAnimationFinished()
+{
+	bIsWeaponSwitching = false;
+
+	OnEqiupWeaponAnimationFinishedDelegate.ExecuteIfBound();
 }

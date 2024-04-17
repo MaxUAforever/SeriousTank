@@ -69,6 +69,16 @@ void UST_SoldierWeaponManagerComponent::BeginPlay()
 		{
             AddWeapon(Weapon);
 		}
+
+		if (AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(CustomWeaponClass))
+		{
+			AddWeapon(Weapon);
+		}
+
+		if (AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(CustomWeaponClass))
+		{
+			AddWeapon(Weapon);
+		}
 	}
 }
 
@@ -90,15 +100,24 @@ void UST_SoldierWeaponManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
     }
     
     Super::AddWeapon(NewWeapon);
-    
     NewWeapon->SetActorEnableCollision(false);
-    NewWeapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
-    NewWeapon->OnReloadingStarted.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
-    
-    if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
-    {
-        NewWeapon->AttachToComponent(CharacterSkeletalMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, RightHandSocketName);
-    }
+	NewWeapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
+	NewWeapon->OnReloadingStarted.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
+
+	if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
+	{
+		switch (Weapons.Num())
+		{ 
+			case 1:
+				NewWeapon->AttachToParentComponent(CharacterSkeletalMesh, RightHandSocketName);
+				break;
+			case 2:
+				NewWeapon->AttachToParentComponent(CharacterSkeletalMesh, SecondWeaponSocketName);
+				break;
+			default:
+				NewWeapon->SetHidden(true);
+		}
+	}
 }
 
 void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponIndex, const int32 NewWeaponIndex)
@@ -107,9 +126,13 @@ void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponI
 	{
 		return;
 	}
+}
 
-	Weapons[PrevWeaponIndex]->SetHidden(true);
-	Weapons[NewWeaponIndex]->SetHidden(false);
+void UST_SoldierWeaponManagerComponent::SetupSockets(const FName InRightHandSocketName, const FName InLeftHandSocketName, const FName InSecondWeaponSocketName)
+{
+	RightHandSocketName = InRightHandSocketName;
+	LeftHandSocketName = InLeftHandSocketName;
+	SecondWeaponSocketName = InSecondWeaponSocketName;
 }
 
 void UST_SoldierWeaponManagerComponent::OnWeaponFired()

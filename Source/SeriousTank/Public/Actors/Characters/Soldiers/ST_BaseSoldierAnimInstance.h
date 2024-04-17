@@ -5,27 +5,32 @@
 
 class AST_BaseSoldierCharacter;
 class AST_BaseWeapon;
+class UST_BaseWeaponsManagerComponent;
+class UST_SoldierAnimDataAsset;
 enum class ECharacterMovingType : uint8;
 enum class ECharacterTurnSide : uint8;
+
+DECLARE_DELEGATE(FOnEqiupWeaponAnimationFinished);
 
 UCLASS()
 class SERIOUSTANK_API UST_BaseSoldierAnimInstance : public UST_AnimInstance
 {
 	GENERATED_BODY()
 
+public:
+	FOnEqiupWeaponAnimationFinished OnEqiupWeaponAnimationFinishedDelegate;
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	UAnimMontage* TurnLeftMontage;
-
-	UPROPERTY(EditDefaultsOnly)
-	UAnimMontage* TurnRightMontage;
-
-	UPROPERTY(EditDefaultsOnly)
-	UAnimMontage* TwoHandsWeaponFireMontage;
-
-    UPROPERTY(EditDefaultsOnly)
-    UAnimMontage* TwoHandsWeaponReloadingMontage;
+	UST_SoldierAnimDataAsset* MontagesDataAsset;
     
+	UPROPERTY(BlueprintReadOnly)
+	FTransform LeftHandTransform;
+
+	UPROPERTY(EditDefaultsOnly)
+	FName RightHandBoneName;
+
+protected:
 	UPROPERTY(BlueprintReadOnly)
 	ECharacterMovingType MovingType;
 
@@ -45,20 +50,22 @@ protected:
 	float MaxYawAimOffset;
 
 	UPROPERTY(BlueprintReadOnly)
-	FTransform LeftHandTransform;
-
-	UPROPERTY(EditDefaultsOnly)
-	FName RightHandBoneName;
-
-	UPROPERTY(EditDefaultsOnly)
 	FName RightHandSocketName;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly)
 	FName LeftHandSocketName;
+
+	UPROPERTY(BlueprintReadOnly)
+	FName SecondWeaponSocketName;
 
 private:
 	AST_BaseSoldierCharacter* SoldierCharacter;
+	UST_BaseWeaponsManagerComponent* WeaponManagerComponent;
+	
 	AST_BaseWeapon* CurrentWeapon;
+	AST_BaseWeapon* AdditionalWeapon;
+	AST_BaseWeapon* SwitchingWeapon;
+	
 	UStaticMeshComponent* CurrentMagazineComponent;
 	FTransform CurrentMagazineTransform;
 
@@ -68,10 +75,13 @@ private:
 	ECharacterTurnSide TurningSide;
 
 	bool bIsReloading;
+	bool bIsWeaponSwitching;
 
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
+
+	bool IsWeaponSwitching() const { return bIsWeaponSwitching; };
 
 private:
 	void UpdateMovingAnimation();
@@ -81,10 +91,14 @@ private:
 
 	FORCEINLINE void OnMovementTypeChanged(ECharacterMovingType InMovingType) { MovingType = InMovingType; };
 
+	void SetupCurrentWeapon();
+
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponFired(AST_BaseWeapon* Weapon);
     void OnWeaponReloading(AST_BaseWeapon* Weapon);
-	void OnWeaponSwitched(int32 WeaponIndex);
+	void OnWeaponSwitched(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
+
+	void OnWeaponEquippingAnimationFinished();
 
 	/**
 	 * Animation notifies handlers 
@@ -94,4 +108,7 @@ private:
 	
 	UFUNCTION()
 	void InternalAnimNotify_OnMagazineInserted();
+
+	UFUNCTION()
+	void InternalAnimNotify_OnWeaponSwitched();
 };

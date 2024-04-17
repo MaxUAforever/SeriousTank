@@ -54,15 +54,17 @@ void AST_BaseWeapon::StopFire()
 	StopShooting();
 }
 
-void AST_BaseWeapon::AttachToVehicleComponent(USceneComponent* ParentVehicleComponent)
+void AST_BaseWeapon::AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName, bool bInShouldBeDestroyedWithActor)
 {
-	if (ParentVehicleComponent)
+	if (InParentComponent)
 	{
-		AttachToComponent(ParentVehicleComponent, FAttachmentTransformRules::KeepWorldTransform);
+		AttachToComponent(InParentComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketName);
+		
+		AActor* OwnerActor = InParentComponent->GetOwner();
+		SetOwner(OwnerActor);
 
-		AActor* OwnerVehicle = ParentVehicleComponent->GetOwner();
-		OwnerVehicle->OnDestroyed.AddDynamic(this, &ThisClass::OnVehicleDestroyed);
-		SetOwner(OwnerVehicle);
+		OwnerActor->OnDestroyed.AddDynamic(this, &ThisClass::OnParentDestroyed);
+		bShouldBeDestroyedWithActor = bInShouldBeDestroyedWithActor;
 	}
 }
 
@@ -81,9 +83,15 @@ void AST_BaseWeapon::StartReloading()
 	OnReloadingStarted.Broadcast();
 }
 
+void AST_BaseWeapon::InterruptReloading()
+{
+	bIsWeaponReloading = false;
+	GetWorldTimerManager().ClearTimer(ReloadTimerHandler);
+}
+
 void AST_BaseWeapon::ForceReload()
 {
-    if (IsReloadingNeeded())
+    if (CanReload())
     {
         StartReloading();
     }
@@ -105,7 +113,8 @@ void AST_BaseWeapon::SetHidden(bool bIsHidden)
 	}
 
 	SetWeaponEnabled(!bIsHidden);
-	MeshComponent->SetVisibility(!bIsHidden);
+
+	SceneComponent->SetVisibility(!bIsHidden, true);
 }
 
 bool AST_BaseWeapon::CanShoot() const
@@ -113,8 +122,15 @@ bool AST_BaseWeapon::CanShoot() const
 	return !bIsWeaponReloading && TotalAmmoCount > 0;
 }
 
-void AST_BaseWeapon::OnVehicleDestroyed(AActor* DestroyedOwnerVehicle)
+void AST_BaseWeapon::OnParentDestroyed(AActor* DestroyedOwner)
 {
-	Destroy();
+	if (bShouldBeDestroyedWithActor)
+	{
+		Destroy();
+	}
+	else
+	{
+		DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+	}
 }
 

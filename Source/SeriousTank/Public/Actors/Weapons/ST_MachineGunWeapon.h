@@ -29,12 +29,15 @@ private:
 	bool bIsInBurstPause;
 	int32 CurrentClipAmmoCount;
 
+public:
+	virtual bool IsReloadingNeeded() const override;
+
 protected:
     virtual void BeginPlay() override;
     
 	virtual void StartShooting() override;
 
-    virtual bool IsReloadingNeeded() override;
+	virtual bool CanReload() const override;
 	virtual void FinishReloading() override;
 	virtual void Shoot() override;
 

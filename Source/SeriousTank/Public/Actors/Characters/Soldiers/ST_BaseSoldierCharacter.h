@@ -39,6 +39,19 @@ protected:
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
 	USoldierInputsDataAsset* SoldierInputsDataAsset;
 
+	/**
+	 * Skeleton information
+	 */
+
+	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
+	FName RightHandSocketName;
+
+	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
+	FName LeftHandSocketName;
+
+	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
+	FName SecondWeaponSocketName;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -50,6 +63,12 @@ public:
 
 	float GetCameraYawAngle() const;
 
+	bool CanUseWeapon() const;
+
+	FName GetRightHandSocketName() const { return RightHandSocketName; };
+	FName GetLeftHandSocketName() const { return LeftHandSocketName; };
+	FName GetSecondWeaponSocketName() const { return SecondWeaponSocketName; };
+
 protected:
 	void MoveForward(const FInputActionValue& ActionValue);
 	void MoveRight(const FInputActionValue& ActionValue);
@@ -60,6 +79,7 @@ protected:
 	void RotateCamera(const FInputActionValue& ActionValue);
 
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
+	void OnWeaponEquippedFinished();
 
 	virtual void StartFire();
 	virtual void StopFire();

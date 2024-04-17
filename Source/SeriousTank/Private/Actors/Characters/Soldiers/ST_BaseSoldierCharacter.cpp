@@ -1,5 +1,7 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 
+#include "Actors/Characters/Soldiers/ST_BaseSoldierAnimInstance.h"
+#include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
@@ -30,10 +32,16 @@ void AST_BaseSoldierCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	WeaponManagerComponent->SetupSockets(RightHandSocketName, LeftHandSocketName, SecondWeaponSocketName);
 	WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
 	if (AST_BaseWeapon* Weapon = WeaponManagerComponent->GetCurrentWeapon())
 	{
 		OnWeaponEquipped(WeaponManagerComponent->GetCurrentWeaponIndex(), Weapon);
+	}
+
+	if (UST_BaseSoldierAnimInstance* SoldierAnimInstance = Cast<UST_BaseSoldierAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		SoldierAnimInstance->OnEqiupWeaponAnimationFinishedDelegate.BindUObject(this, &ThisClass::OnWeaponEquippedFinished);
 	}
 }
 
@@ -123,6 +131,16 @@ float AST_BaseSoldierCharacter::GetCameraYawAngle() const
 	return CameraSceneComponent->GetComponentRotation().Yaw;
 }
 
+bool AST_BaseSoldierCharacter::CanUseWeapon() const
+{
+	if (UST_BaseSoldierAnimInstance* SoldierAnimInstance = Cast<UST_BaseSoldierAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		return !SoldierAnimInstance->IsWeaponSwitching();
+	}
+
+	return true;
+}
+
 void AST_BaseSoldierCharacter::MoveForward(const FInputActionValue& ActionValue)
 {
 	MoveByAxis(ActionValue, EAxis::X);
@@ -178,9 +196,23 @@ void AST_BaseSoldierCharacter::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapo
 	//CameraSceneComponent->SetUsingAbsoluteRotation(false);
 }
 
+void AST_BaseSoldierCharacter::OnWeaponEquippedFinished()
+{
+	if (AST_BaseWeapon* CurrentWeapon = WeaponManagerComponent->GetCurrentWeapon())
+	{
+		if (CurrentWeapon->IsReloadingNeeded())
+		{
+			Reload();
+		}
+	}
+}
+
 void AST_BaseSoldierCharacter::StartFire()
 {
-	WeaponManagerComponent->StartFire();
+	if (CanUseWeapon())
+	{
+		WeaponManagerComponent->StartFire();
+	}
 }
 
 void AST_BaseSoldierCharacter::StopFire()

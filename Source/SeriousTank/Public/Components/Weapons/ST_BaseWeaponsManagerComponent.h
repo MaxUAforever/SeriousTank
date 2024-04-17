@@ -36,6 +36,7 @@ public:
     
 	bool SwitchWeapon(int32 WeaponIndex);
 
+	const TArray<AST_BaseWeapon*>& GetWeapons() const { return Weapons; }
 	AST_BaseWeapon* GetCurrentWeapon() const;
 	AST_BaseWeapon* GetWeapon(int32 WeaponIndex) const;
 

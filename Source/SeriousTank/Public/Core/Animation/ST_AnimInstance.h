@@ -13,4 +13,6 @@ class SERIOUSTANK_API UST_AnimInstance : public UAnimInstance
 public:
 	virtual void NativeInitializeAnimation() override;
 
+private:
+	void ParseAnimationProperties(UObject* Object);
 };

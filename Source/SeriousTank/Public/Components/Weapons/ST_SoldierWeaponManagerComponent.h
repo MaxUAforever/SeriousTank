@@ -14,9 +14,13 @@ protected:
 
 	UPROPERTY(EditdefaultsOnly)
 	FName LeftHandSocketName;
+    
+	UPROPERTY(EditdefaultsOnly)
+	FName SecondWeaponSocketName;
 
-    
-    
+public:
+	void SetupSockets(const FName InRightHandSocketName, const FName InLeftHandSocketName, const FName InSecondWeaponSocketName);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

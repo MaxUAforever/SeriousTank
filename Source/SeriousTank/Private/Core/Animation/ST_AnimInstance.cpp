@@ -1,23 +1,35 @@
 #include "Core/Animation/ST_AnimInstance.h"
 
+#include "Core/Animation/ST_AnimMontageDataAsset.h"
 #include "Core/Animation/ST_AnimNotify.h"
 
 void UST_AnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	for (TFieldIterator<FObjectPropertyBase> PropertyIt(this->GetClass()); PropertyIt; ++PropertyIt)
+	ParseAnimationProperties(this);
+}
+
+void UST_AnimInstance::ParseAnimationProperties(UObject* Object)
+{
+	for (TFieldIterator<FObjectPropertyBase> PropertyIt(Object->GetClass()); PropertyIt; ++PropertyIt)
 	{
 		FObjectPropertyBase* Property = *PropertyIt;
-		if (!Property || !Property->GetCPPType().Contains("UAnimMontage"))
+		if (!Property)
 		{
 			continue;
 		}
 
-		void* ValueAddress = Property->ContainerPtrToValuePtr<void>(this);
+		void* ValueAddress = Property->ContainerPtrToValuePtr<void>(Object);
 		UObject* PropertyObject = Property->GetObjectPropertyValue(ValueAddress);
 		if (!PropertyObject)
 		{
+			continue;
+		}
+
+		if (UST_AnimMontageDataAsset* MontagesDataAsset = Cast<UST_AnimMontageDataAsset>(PropertyObject))
+		{
+			ParseAnimationProperties(MontagesDataAsset);
 			continue;
 		}
 

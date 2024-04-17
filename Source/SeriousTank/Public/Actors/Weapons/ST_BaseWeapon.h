@@ -53,6 +53,8 @@ private:
 	bool bIsFireForced;
 	bool bIsWeaponReloading;
     
+	bool bShouldBeDestroyedWithActor = true;
+
 public:
 	AST_BaseWeapon();
 
@@ -72,27 +74,30 @@ public:
     
     void ForceReload();
 	void StartReloading();
-    
-    virtual void AttachToVehicleComponent(USceneComponent* ParentVehicleComponent);
+	void InterruptReloading();
+
+    virtual void AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName = NAME_None, bool bInShouldBeDestroyedWithActor = true);
     virtual void SetWeaponEnabled(bool bIsEnabled) {};
     
 	void SetHidden(bool bIsHidden);
 
+	bool CanShoot() const;
+	
+	virtual bool IsReloadingNeeded() const { return false; };
+
 protected:
 	void StopReloading();
-
-	bool CanShoot() const;
 
 	virtual void Shoot() {};
 
 	virtual void StartShooting() {};
 	virtual void StopShooting() {};
 
-    virtual bool IsReloadingNeeded() { return false; };
+	virtual bool CanReload() const { return false; };
 	virtual void FinishReloading() {};
     
 private:
     UFUNCTION()
-    void OnVehicleDestroyed(AActor* DestroyedOwnerVehicle);
+    void OnParentDestroyed(AActor* DestroyedOwner);
 
 };

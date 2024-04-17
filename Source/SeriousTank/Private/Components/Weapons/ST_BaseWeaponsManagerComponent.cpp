@@ -62,7 +62,7 @@ AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetCurrentWeapon() const
 
 AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetWeapon(int32 WeaponIndex) const
 {
-	return (WeaponIndex >= 0 && WeaponIndex < Weapons.Num()) ? Weapons[CurrentWeaponIndex] : nullptr;
+	return (WeaponIndex >= 0 && WeaponIndex < Weapons.Num()) ? Weapons[WeaponIndex] : nullptr;
 }
 
 void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)

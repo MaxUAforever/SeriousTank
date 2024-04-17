@@ -11,7 +11,7 @@ AST_BaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<AST_BaseWeapon>
     DestroyWeapon();
 
 	Weapon = World->SpawnActor<AST_BaseWeapon>(WeaponClass, GetComponentTransform());
-	Weapon->AttachToVehicleComponent(this);
+	Weapon->AttachToParentComponent(this);
 	
 	return Weapon;
 }
