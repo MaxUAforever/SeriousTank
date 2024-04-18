@@ -6,6 +6,7 @@
 class UProjectileMovementComponent;
 class USphereComponent;
 class USoundCue;
+class UST_DamageDealingComponent;
 
 UCLASS()
 class SERIOUSTANK_API AST_BaseProjectile : public AActor
@@ -24,6 +25,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* ExplosionSound;
+
+	UPROPERTY(EditAnywhere)
+	UST_DamageDealingComponent* DamageDealingComponent;
 
 public:	
 	AST_BaseProjectile();

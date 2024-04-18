@@ -13,6 +13,7 @@
 #include "Inputs/Data/CommonInputsDataAsset.h"
 #include "Inputs/Data/SoldierInputsDataAsset.h"
 #include "Inputs/Data/WeaponInputsDataAsset.h"
+#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 #include "UObject/UObjectGlobals.h"
 
 AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& ObjectInitializer)
@@ -26,6 +27,7 @@ AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& Obj
 	CameraComponent->SetupAttachment(CameraSceneComponent);
 
 	WeaponManagerComponent = CreateDefaultSubobject<UST_SoldierWeaponManagerComponent>("WeaponManagerComponent");
+	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
 }
 
 void AST_BaseSoldierCharacter::BeginPlay()

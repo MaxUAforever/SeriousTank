@@ -1,7 +1,5 @@
 #include "Actors/Projectiles/ST_BaseProjectile.h"
 
-#include "Actors/GameplayActors/ST_ShootTarget.h"
-
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Pawn.h"
@@ -10,6 +8,7 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Subsystems/HealthSubsystem/ST_DamageDealingComponent.h"
 
 AST_BaseProjectile::AST_BaseProjectile()
 {
@@ -20,6 +19,7 @@ AST_BaseProjectile::AST_BaseProjectile()
 	MeshComponent->SetupAttachment(RootComponent);
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComponent");
+	DamageDealingComponent = CreateDefaultSubobject<UST_DamageDealingComponent>("DamageDealingComponent");
 }
 
 void AST_BaseProjectile::BeginPlay()
@@ -50,12 +50,9 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 
 	// Prevent errors in case of spawning target on projectile location.
 	SetActorEnableCollision(false);
-
-	if (AST_ShootTarget* ShootingTargetActor = Cast<AST_ShootTarget>(OtherActor))
-	{
-		OtherActor->Destroy();
-	}
 	
+	DamageDealingComponent->StartDealingDamage(OtherActor, SweepResult.ImpactPoint);
+
 	if (ExplosionSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(World, ExplosionSound, GetActorLocation());

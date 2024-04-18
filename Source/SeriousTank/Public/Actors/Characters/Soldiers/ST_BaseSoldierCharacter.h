@@ -7,6 +7,7 @@ class AST_BaseWeapon;
 class UCameraComponent;
 class UCommonInputsDataAsset;
 class USoldierInputsDataAsset;
+class UST_HealthComponent;
 class UST_SoldierWeaponManagerComponent;
 class UWeaponInputsDataAsset;
 struct FInputActionValue;
@@ -25,6 +26,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UST_SoldierWeaponManagerComponent* WeaponManagerComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UST_HealthComponent* HealthComponent;
 
 	/**
 	 * Common gameplay and weapon inputs

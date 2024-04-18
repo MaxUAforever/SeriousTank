@@ -4,6 +4,7 @@
 #include "Inputs/Data/CommonInputsDataAsset.h"
 #include "Inputs/Data/WeaponInputsDataAsset.h"
 #include "Components/InputComponent.h"
+#include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
