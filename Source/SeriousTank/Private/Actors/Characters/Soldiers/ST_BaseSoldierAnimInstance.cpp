@@ -186,6 +186,8 @@ void UST_BaseSoldierAnimInstance::SetupCurrentWeapon()
 {
 	if (CurrentWeapon)
 	{
+		CurrentWeapon->SetWeaponEnabled(true);
+
 		TArray<UActorComponent*> MagazineComponents = CurrentWeapon->GetComponentsByTag(UStaticMeshComponent::StaticClass(), FName("Magazine"));
 		if (MagazineComponents.Num() > 0)
 		{
@@ -247,6 +249,8 @@ void UST_BaseSoldierAnimInstance::OnWeaponSwitched(int32 PreviousWeaponIndex, in
 	SwitchingWeapon = WeaponManagerComponent->GetWeapon(NewWeaponIndex);
 	if (SwitchingWeapon)
 	{
+		SwitchingWeapon->SetWeaponEnabled(false);
+
 		if (bIsReloading)
 		{
 			Montage_Stop(0.f, MontagesDataAsset->TwoHandsWeaponReloadingMontage);

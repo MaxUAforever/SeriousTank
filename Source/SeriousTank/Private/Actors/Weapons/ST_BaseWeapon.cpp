@@ -112,7 +112,7 @@ void AST_BaseWeapon::SetHidden(bool bIsHidden)
 		return;
 	}
 
-	SetWeaponEnabled(!bIsHidden);
+	//SetWeaponEnabled(!bIsHidden);
 
 	SceneComponent->SetVisibility(!bIsHidden, true);
 }

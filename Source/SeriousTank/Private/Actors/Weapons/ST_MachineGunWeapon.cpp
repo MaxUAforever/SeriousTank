@@ -22,7 +22,7 @@ void AST_MachineGunWeapon::StartShooting()
 
 bool AST_MachineGunWeapon::CanReload() const
 {
-	return CurrentClipAmmoCount < MaxClipAmmoCount && TotalAmmoCount > MaxClipAmmoCount;
+	return CurrentClipAmmoCount < MaxClipAmmoCount && TotalAmmoCount > CurrentClipAmmoCount;
 }
 
 bool AST_MachineGunWeapon::IsReloadingNeeded() const
