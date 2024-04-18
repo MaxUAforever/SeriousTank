@@ -13,7 +13,7 @@
 namespace 
 {
 	
-TSubclassOf<AST_BaseWeapon> GetPlayerSoldierWeaponClass(const APlayerController* PlayerController, const AActor* OwnerActor)
+TSubclassOf<AST_BaseWeapon> GetPlayerSoldierMainWeaponClass(const APlayerController* PlayerController, const AActor* OwnerActor)
 {
 	TSubclassOf<AST_BaseWeapon> Result;
 	if (!PlayerController)
@@ -23,13 +23,36 @@ TSubclassOf<AST_BaseWeapon> GetPlayerSoldierWeaponClass(const APlayerController*
 
 	if (const AST_MainMenuPlayerState* MenuPlayerState = PlayerController->GetPlayerState<AST_MainMenuPlayerState>())
 	{
-		Result = MenuPlayerState->GetSoldierInfo().WeaponClass;
+		Result = MenuPlayerState->GetSoldierInfo().MainWeaponClass;
 	}
 	else if (const AST_GameplayPlayerState* GameplayPlayerState = PlayerController->GetPlayerState<AST_GameplayPlayerState>())
 	{
 		if (PlayerController->GetPawn() == OwnerActor)
 		{
-			Result = GameplayPlayerState->GetSoldierInfo().WeaponClass;
+			Result = GameplayPlayerState->GetSoldierInfo().MainWeaponClass;
+		}
+	}
+
+	return Result;
+}
+
+TSubclassOf<AST_BaseWeapon> GetPlayerSoldierSecondWeaponClass(const APlayerController* PlayerController, const AActor* OwnerActor)
+{
+	TSubclassOf<AST_BaseWeapon> Result;
+	if (!PlayerController)
+	{
+		return Result;
+	}
+
+	if (const AST_MainMenuPlayerState* MenuPlayerState = PlayerController->GetPlayerState<AST_MainMenuPlayerState>())
+	{
+		Result = MenuPlayerState->GetSoldierInfo().SecondWeaponClass;
+	}
+	else if (const AST_GameplayPlayerState* GameplayPlayerState = PlayerController->GetPlayerState<AST_GameplayPlayerState>())
+	{
+		if (PlayerController->GetPawn() == OwnerActor)
+		{
+			Result = GameplayPlayerState->GetSoldierInfo().SecondWeaponClass;
 		}
 	}
 
@@ -61,21 +84,19 @@ void UST_SoldierWeaponManagerComponent::BeginPlay()
 		return;
 	}
 
-	TSubclassOf<AST_BaseWeapon> CustomWeaponClass = GetPlayerSoldierWeaponClass(World->GetFirstPlayerController(), GetOwner());
-	
+	TSubclassOf<AST_BaseWeapon> CustomWeaponClass = GetPlayerSoldierMainWeaponClass(World->GetFirstPlayerController(), GetOwner());
 	if (CustomWeaponClass)
 	{
 		if (AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(CustomWeaponClass))
 		{
             AddWeapon(Weapon);
 		}
+	}
 
-		if (AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(CustomWeaponClass))
-		{
-			AddWeapon(Weapon);
-		}
-
-		if (AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(CustomWeaponClass))
+	TSubclassOf<AST_BaseWeapon> SecondWeaponClass = GetPlayerSoldierSecondWeaponClass(World->GetFirstPlayerController(), GetOwner());
+	if (SecondWeaponClass)
+	{
+		if (AST_BaseWeapon* Weapon = World->SpawnActor<AST_BaseWeapon>(SecondWeaponClass))
 		{
 			AddWeapon(Weapon);
 		}

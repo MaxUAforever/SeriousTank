@@ -70,7 +70,10 @@ struct FSoldierInfo
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AST_BaseWeapon> WeaponClass;
+	TSubclassOf<AST_BaseWeapon> MainWeaponClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AST_BaseWeapon> SecondWeaponClass;
 };
 
 UENUM(BlueprintType)
