@@ -41,6 +41,9 @@ protected:
     bool bIsWeaponFiring;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bIsDead;
+
+	UPROPERTY(BlueprintReadOnly)
 	float YawWalkOffset;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -99,6 +102,8 @@ private:
 	void OnWeaponSwitched(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
 
 	void OnWeaponEquippingAnimationFinished();
+	
+	void OnDamageDealed(float CurrentHealthValue);
 
 	/**
 	 * Animation notifies handlers 

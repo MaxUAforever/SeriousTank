@@ -9,6 +9,7 @@
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 #include "TimerManager.h"
 
 void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
@@ -43,6 +44,12 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 			WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
 			WeaponManagerComponent->OnWeaponSwitchedDelegate.AddUObject(this, &ThisClass::OnWeaponSwitched);
 		}
+	}
+
+	UST_HealthComponent* HealthComponent = SoldierCharacter->GetComponentByClass<UST_HealthComponent>();
+	if (HealthComponent)
+	{
+		HealthComponent->OnDamageDealedDelegate.AddUObject(this, &ThisClass::OnDamageDealed);
 	}
 }
 
@@ -264,6 +271,23 @@ void UST_BaseSoldierAnimInstance::OnWeaponSwitched(int32 PreviousWeaponIndex, in
 		bIsWeaponSwitching = true;
 		FTimerHandle SwitchingTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(SwitchingTimerHandle, this, &ThisClass::OnWeaponEquippingAnimationFinished, MontageLength - 0.8f, false);
+	}
+}
+
+void UST_BaseSoldierAnimInstance::OnDamageDealed(float CurrentHealthValue)
+{
+	if (bIsReloading || !MontagesDataAsset)
+	{
+		return;
+	}
+
+	if (FMath::IsNearlyZero(CurrentHealthValue))
+	{
+		bIsDead = true;
+	}
+	else if (!Montage_IsPlaying(MontagesDataAsset->HitReactionMontage) && CurrentHealthValue > 0)
+	{
+		Montage_Play(MontagesDataAsset->HitReactionMontage);
 	}
 }
 

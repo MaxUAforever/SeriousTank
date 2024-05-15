@@ -20,8 +20,12 @@ void UST_HealthComponent::AddHealthValue(float Value)
 	const float OldHealthValue = CurrentHealthValue;
 	CurrentHealthValue = FMath::Clamp(CurrentHealthValue + Value, 0.f, MaxHealthvalue);
 
-	if (CurrentHealthValue != OldHealthValue)
+	if (CurrentHealthValue < OldHealthValue)
 	{
-		OnHealthValueChanged.Broadcast(CurrentHealthValue);
+		OnDamageDealedDelegate.Broadcast(CurrentHealthValue);
+	}
+	else if (CurrentHealthValue > OldHealthValue)
+	{
+		OnHealedDelegate.Broadcast(CurrentHealthValue);
 	}
 }

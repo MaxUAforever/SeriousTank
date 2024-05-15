@@ -25,4 +25,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
     UAnimMontage* SwitchWeaponMontage;
+
+	UPROPERTY(EditDefaultsOnly)
+    UAnimMontage* HitReactionMontage;
 };
