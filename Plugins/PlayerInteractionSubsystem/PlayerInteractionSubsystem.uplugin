@@ -1,0 +1,29 @@
+{
+	"FileVersion": 1,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "PlayerInteractionSubsystem",
+	"Description": "Subsystem that can be used for set up an interaction of player with different objects.",
+	"Category": "Other",
+	"CreatedBy": "Maksym Tytskyi",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "PlayerInteractionSubsystem",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+        	{
+          		"Name": "EnhancedInput",
+          		"Enabled": true
+        	}
+	]
+}
