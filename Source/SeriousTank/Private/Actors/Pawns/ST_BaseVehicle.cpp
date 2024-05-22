@@ -1,13 +1,30 @@
 #include "Actors/Pawns/ST_BaseVehicle.h"
 
-#include "GameFramework/Gameplay/ST_GameplayGameState.h"
-#include "Inputs/Data/CommonInputsDataAsset.h"
-#include "Inputs/Data/WeaponInputsDataAsset.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/Gameplay/ST_GameplayGameState.h"
+#include "GameFramework/Gameplay/ST_GameplayPlayerController.h"
+#include "Inputs/Data/CommonInputsDataAsset.h"
+#include "Inputs/Data/VehicleInputsDataAsset.h"
+#include "Inputs/Data/WeaponInputsDataAsset.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "PlayerInteractionSubsystem/Public/InteractionComponent.h"
+
+AST_BaseVehicle::AST_BaseVehicle()
+{
+	PrimaryActorTick.bCanEverTick = true;
+
+	BaseCollisionComponent = CreateDefaultSubobject<UBoxComponent>("CollisionComponent");
+	SetRootComponent(BaseCollisionComponent);
+
+	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>("InteractionComponent");
+	InteractionComponent->SetupAttachment(BaseCollisionComponent);
+}
 
 void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -20,6 +37,11 @@ void AST_BaseVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 			PlayerEnhancedInputComponent->BindAction(CommonInputsDataAsset->MoveForwardInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveForward);
 			PlayerEnhancedInputComponent->BindAction(CommonInputsDataAsset->MoveRightInputAction, ETriggerEvent::Triggered, this, &ThisClass::MoveRight);
 			PlayerEnhancedInputComponent->BindAction(CommonInputsDataAsset->RotateCameraInputAction, ETriggerEvent::Triggered, this, &ThisClass::RotateCamera);
+		}
+
+		if (VehicleInputsDataAsset)
+		{
+			PlayerEnhancedInputComponent->BindAction(VehicleInputsDataAsset->ExitVehicleInputAction, ETriggerEvent::Started, this, &ThisClass::ExitVehicle);
 		}
 
 		if (WeaponInputsDataAsset)
@@ -38,9 +60,7 @@ void AST_BaseVehicle::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
 
-	const bool bIsUnPossessed = Controller == nullptr;
-
-	APlayerController* PC = Cast<APlayerController>(bIsUnPossessed ? PreviousController : Controller);
+	APlayerController* PC = Cast<APlayerController>(Controller);
 	if (!PC)
 	{
 		return;
@@ -52,20 +72,118 @@ void AST_BaseVehicle::NotifyControllerChanged()
 		return;
 	}
 
-	if (bIsUnPossessed && WeaponInputsDataAsset)
+	if (CommonInputsDataAsset && !EnhancedSubsystem->HasMappingContext(CommonInputsDataAsset->CommonGameplayInputContext))
 	{
-		EnhancedSubsystem->RemoveMappingContext(WeaponInputsDataAsset->WeaponsInputContext);
+		EnhancedSubsystem->AddMappingContext(CommonInputsDataAsset->CommonGameplayInputContext, 0);
 	}
-	else
+	
+	if (VehicleInputsDataAsset && !EnhancedSubsystem->HasMappingContext(VehicleInputsDataAsset->VehicleInputContext))
 	{
-		if (CommonInputsDataAsset && !EnhancedSubsystem->HasMappingContext(CommonInputsDataAsset->CommonGameplayInputContext))
+		EnhancedSubsystem->AddMappingContext(VehicleInputsDataAsset->VehicleInputContext, 0);
+	}
+
+	if (WeaponInputsDataAsset && !EnhancedSubsystem->HasMappingContext(WeaponInputsDataAsset->WeaponsInputContext))
+	{
+		EnhancedSubsystem->AddMappingContext(WeaponInputsDataAsset->WeaponsInputContext, 0);
+	}
+}
+
+void AST_BaseVehicle::UnPossessed()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
-			EnhancedSubsystem->AddMappingContext(CommonInputsDataAsset->CommonGameplayInputContext, 0);
+			if (WeaponInputsDataAsset)
+			{
+				EnhancedSubsystem->RemoveMappingContext(WeaponInputsDataAsset->WeaponsInputContext);
+			}
+
+			if (VehicleInputsDataAsset)
+			{
+				EnhancedSubsystem->RemoveMappingContext(VehicleInputsDataAsset->VehicleInputContext);
+			}
 		}
-		
-		if (WeaponInputsDataAsset && !EnhancedSubsystem->HasMappingContext(WeaponInputsDataAsset->WeaponsInputContext))
+	}
+
+	Super::UnPossessed();
+}
+
+void AST_BaseVehicle::ExitVehicle()
+{
+	auto SetActorLocationIfPossible = [this](AActor* Actor, const float ActorCollisionRadius, const float ActorCollisionHelfheight, const FVector& Location) -> bool
+	{
+		if (!Actor)
 		{
-			EnhancedSubsystem->AddMappingContext(WeaponInputsDataAsset->WeaponsInputContext, 0);
+			return false;
 		}
+
+		TArray<AActor*> OutActors;
+		if (!UKismetSystemLibrary::CapsuleOverlapActors(this, Location, ActorCollisionRadius, ActorCollisionHelfheight, {}, nullptr, {}, OutActors))
+		{
+			Actor->SetActorLocation(Location, true);
+			return true;
+		}
+
+		return false;
+	};
+
+	auto TrySetLocationForExit = [this, SetActorLocationIfPossible](APawn* SoldierPawn) -> bool
+	{
+		if (!SoldierPawn)
+		{
+			return false;
+		}
+
+		FVector VehicleLocation = GetActorLocation();
+
+		float SoldierCollisionRadius;
+		float SoldierCollisionHalfLength;
+		UCapsuleComponent* CapsuleComponent = Cast<UCapsuleComponent>(SoldierPawn->GetRootComponent());
+		if (!CapsuleComponent)
+		{
+			return false;
+		}
+
+		CapsuleComponent->GetScaledCapsuleSize(SoldierCollisionRadius, SoldierCollisionHalfLength);
+
+		const FVector RightExitLocation = GetActorLocation() + (GetActorRightVector() * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 1.f));
+		const FVector LeftExitLocation = GetActorLocation() + (GetActorRightVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 1.f));
+		const FVector BackExitLocation = GetActorLocation() + (GetActorForwardVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 1.f));
+		const FVector ForwardExitLocation = GetActorLocation() + (GetActorForwardVector() * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 1.f));
+
+		const TArray<FVector>& ExitLocations{ RightExitLocation ,LeftExitLocation , BackExitLocation , ForwardExitLocation };
+
+		for (const FVector ExitLocation : ExitLocations)
+		{
+			if (SetActorLocationIfPossible(SoldierPawn, SoldierCollisionRadius, SoldierCollisionHalfLength, ExitLocation))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+
+	if (AST_GameplayPlayerController* PlayerController = Cast<AST_GameplayPlayerController>(GetController()))
+	{
+		APawn* SoldierPawn = PlayerController->GetPreviousPawn();
+		if (!TrySetLocationForExit(SoldierPawn))
+		{
+			return;
+		}
+
+		FInputActionValue::Axis1D ZeroInput = 0.f;
+		MoveForward(ZeroInput);
+		MoveRight(ZeroInput);
+		StopFire();
+	
+		PlayerController->UnPossess();
+	
+		SoldierPawn->GetRootComponent()->SetVisibility(true, true);
+		SoldierPawn->SetActorEnableCollision(true);
+	
+		PlayerController->Possess(SoldierPawn);
 	}
 }

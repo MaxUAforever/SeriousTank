@@ -6,6 +6,7 @@
 class AST_BaseWeapon;
 class UCameraComponent;
 class UCommonInputsDataAsset;
+class UInteractingComponent;
 class USoldierInputsDataAsset;
 class UST_HealthComponent;
 class UST_SoldierWeaponManagerComponent;
@@ -29,6 +30,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UST_HealthComponent* HealthComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UInteractingComponent* InteractingComponent;
 
 	/**
 	 * Common gameplay and weapon inputs
@@ -72,7 +76,7 @@ public:
 	FName GetRightHandSocketName() const { return RightHandSocketName; };
 	FName GetLeftHandSocketName() const { return LeftHandSocketName; };
 	FName GetSecondWeaponSocketName() const { return SecondWeaponSocketName; };
-
+	
 protected:
 	void MoveForward(const FInputActionValue& ActionValue);
 	void MoveRight(const FInputActionValue& ActionValue);
@@ -95,4 +99,6 @@ protected:
 
 private:
 	void MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis);
+
+	void OnDamageDealed(float CurrentHealthValue);
 };

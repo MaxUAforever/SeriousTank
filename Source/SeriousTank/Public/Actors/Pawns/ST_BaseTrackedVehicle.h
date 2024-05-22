@@ -19,9 +19,6 @@ class SERIOUSTANK_API AST_BaseTrackedVehicle : public AST_BaseVehicle
 
 protected:
 	UPROPERTY(EditAnywhere)
-	UBoxComponent* BaseCollisionComponent;
-
-	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* BaseStaticMeshComponent;
 
 	UPROPERTY(EditAnywhere)

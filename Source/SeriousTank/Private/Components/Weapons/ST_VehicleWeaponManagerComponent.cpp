@@ -1,7 +1,9 @@
 #include "Components/Weapons/ST_VehicleWeaponManagerComponent.h"
 
+#include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Components/ST_WeaponSocketComponent.h"
 #include "Core/ST_CoreTypes.h"
+#include "GameFramework/Controller.h"
 #include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 #include "GameFramework/PlayerController.h"
@@ -53,10 +55,27 @@ void UST_VehicleWeaponManagerComponent::BeginPlay()
 		if (Weapon)
 		{
 			Weapon->SetWeaponEnabled(WeaponIndex == 0);
+			Weapon->SetActorEnableCollision(false);
 
             AddWeapon(Weapon);
 		}
 		
 		WeaponIndex++;
 	}
+}
+
+void UST_VehicleWeaponManagerComponent::OnOwnerPawnPossessed(AController* NewController)
+{
+	for (AST_BaseWeapon* Weapon : Weapons)
+	{
+		if (Weapon->IsReloadingNeeded())
+		{
+			Weapon->ForceReload();
+		}
+	}
+}
+
+void UST_VehicleWeaponManagerComponent::OnOwnerPawnUnPossessed(AController* OldController)
+{
+	InterruptReloading();
 }

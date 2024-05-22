@@ -50,6 +50,13 @@ void AST_GameplayPlayerController::SetupInputComponent()
 	//InputComponent->BindAction("PauseGame", EInputEvent::IE_Pressed, this, &ThisClass::OnPauseGameClicked).bExecuteWhenPaused = true;
 }
 
+void AST_GameplayPlayerController::OnUnPossess()
+{
+	PreviousPawn = GetPawn();
+
+	Super::OnUnPossess();
+}
+
 void AST_GameplayPlayerController::SetPawnInputEnabled(bool IsEnabled)
 {
 	APawn* ControlledPawn = GetPawn();

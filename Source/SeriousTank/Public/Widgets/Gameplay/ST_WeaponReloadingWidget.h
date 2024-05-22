@@ -41,12 +41,20 @@ protected:
 private:
 	float ReloadingRefreshRate = 0.02f;
 
+	FDelegateHandle OnWeaponAddedDelegateHandle;
+	FDelegateHandle OnWeaponSwitchedDelegateHandle;
+
+	FDelegateHandle OnReloadingStartedDelegateHandle;
+	FDelegateHandle OnAmmoCountChangedDelegateHandle;
+	FDelegateHandle OnClipAmmoCountChangedDelegateHandle;
+
 protected:
 	virtual void NativeConstruct() override;
 
 private:
 	UFUNCTION()
 	void OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
+	void OnWeaponRemoved(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 
 	UFUNCTION()
 	void OnWeaponReloadingStarted(AST_BaseWeapon* Weapon);
@@ -60,5 +68,8 @@ private:
     UFUNCTION()
     void UpdateClipAmmoCount(int32 ClipAmmoCount);
     
+	UFUNCTION()
+	void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);
+
 	void UpdateReloadingProgressbar(AST_BaseWeapon* Weapon);
 };

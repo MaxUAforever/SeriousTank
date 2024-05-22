@@ -18,14 +18,21 @@ protected:
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
     UInputAction* PauseInputAction;
 
+private:
+	APawn* PreviousPawn;
+
 public:
 	UFUNCTION()
 	void OnPauseGameClicked();
+
+	APawn* GetPreviousPawn() const { return PreviousPawn; }
 
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void SetupInputComponent() override;
+
+	virtual void OnUnPossess() override;
 
 private:
 	UFUNCTION()

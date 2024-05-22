@@ -3,7 +3,10 @@
 #include "GameFramework/Pawn.h"
 #include "ST_BaseVehicle.generated.h"
 
+class UBoxComponent;
 class UCommonInputsDataAsset;
+class UInteractionComponent;
+class UVehicleInputsDataAsset;
 class UWeaponInputsDataAsset;
 class UInputAction;
 class UInputMappingContext;
@@ -15,6 +18,16 @@ class SERIOUSTANK_API AST_BaseVehicle : public APawn
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* BaseCollisionComponent;
+
+	UPROPERTY(EditAnywhere)
+	UInteractionComponent* InteractionComponent;
+
+	/**
+	 * Gameplay information
+	 */
+
     UPROPERTY(EditDefaultsOnly, Category = "Info")
     FString DisplayName;
     
@@ -29,11 +42,17 @@ protected:
 	UCommonInputsDataAsset* CommonInputsDataAsset;
 
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
+	UVehicleInputsDataAsset* VehicleInputsDataAsset;
+
+	UPROPERTY(Category = "Input",  EditDefaultsOnly)
 	UWeaponInputsDataAsset* WeaponInputsDataAsset;
 
 public:
+	AST_BaseVehicle();
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void NotifyControllerChanged() override;
+	virtual void UnPossessed() override;
 
     FString GetDisplayName() const { return DisplayName; };
     float GetMaxVisibleDistance() const { return MaxVisibleDistance; };
@@ -48,4 +67,6 @@ public:
     virtual void SwitchToFirstWeapon() { };
     virtual void SwitchToSecondWeapon() { };
     virtual void SwitchToThirdWeapon() { };
+
+	void ExitVehicle();
 };

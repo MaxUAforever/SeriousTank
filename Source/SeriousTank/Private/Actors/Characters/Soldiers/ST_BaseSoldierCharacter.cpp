@@ -13,6 +13,7 @@
 #include "Inputs/Data/CommonInputsDataAsset.h"
 #include "Inputs/Data/SoldierInputsDataAsset.h"
 #include "Inputs/Data/WeaponInputsDataAsset.h"
+#include "PlayerInteractionSubsystem/Public/InteractingComponent.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 #include "UObject/UObjectGlobals.h"
 
@@ -28,6 +29,7 @@ AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& Obj
 
 	WeaponManagerComponent = CreateDefaultSubobject<UST_SoldierWeaponManagerComponent>("WeaponManagerComponent");
 	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
+	InteractingComponent = CreateDefaultSubobject<UInteractingComponent>("InteractingComponent");
 }
 
 void AST_BaseSoldierCharacter::BeginPlay()
@@ -45,6 +47,8 @@ void AST_BaseSoldierCharacter::BeginPlay()
 	{
 		SoldierAnimInstance->OnEqiupWeaponAnimationFinishedDelegate.BindUObject(this, &ThisClass::OnWeaponEquippedFinished);
 	}
+
+	HealthComponent->OnDamageDealedDelegate.AddUObject(this, &ThisClass::OnDamageDealed);
 }
 
 void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -255,4 +259,9 @@ void AST_BaseSoldierCharacter::MoveByAxis(const FInputActionValue& ActionValue, 
 
 		AddMovementInput(FRotationMatrix(CameraSceneComponent->GetComponentRotation()).GetScaledAxis(Axis), Value);
 	}
+}
+
+void AST_BaseSoldierCharacter::OnDamageDealed(float CurrentHealthValue)
+{
+	
 }

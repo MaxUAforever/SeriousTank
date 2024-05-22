@@ -3,6 +3,8 @@
 #include "Components/ActorComponent.h"
 #include "ST_BaseWeaponsManagerComponent.generated.h"
 
+class AController;
+class APawn;
 class AST_BaseWeapon;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -30,10 +32,16 @@ protected:
 public:
 	UST_BaseWeaponsManagerComponent();
 
+protected:
+	virtual void BeginPlay() override;
+
+public:
 	void StartFire();
 	void StopFire();
+
     void Reload();
-    
+	void InterruptReloading();
+
 	bool SwitchWeapon(int32 WeaponIndex);
 
 	const TArray<AST_BaseWeapon*>& GetWeapons() const { return Weapons; }
@@ -46,4 +54,11 @@ protected:
     virtual void AddWeapon(AST_BaseWeapon* NewWeapon);
     
 	virtual void OnWeaponSwitched(int32 PrevWeaponIndex, int32 NewWeaponIndex) {};
+
+	virtual void OnOwnerPawnPossessed(AController* NewController) {};
+	virtual void OnOwnerPawnUnPossessed(AController* OldController) {};
+
+private:
+	UFUNCTION()
+	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
 };

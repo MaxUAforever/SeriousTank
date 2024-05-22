@@ -4,11 +4,22 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/ST_GameInstance.h"
 #include "GameFramework/Actor.h"
+#include "Engine/World.h"
 
 
 UST_BaseWeaponsManagerComponent::UST_BaseWeaponsManagerComponent()
 {
 	CurrentWeaponIndex = 0;
+}
+
+void UST_BaseWeaponsManagerComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
+	{
+		PawnOwner->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnControllerChanged);
+	}
 }
 
 void UST_BaseWeaponsManagerComponent::StartFire()
@@ -33,6 +44,14 @@ void UST_BaseWeaponsManagerComponent::Reload()
     {
         Weapons[CurrentWeaponIndex]->ForceReload();
     }
+}
+
+void UST_BaseWeaponsManagerComponent::InterruptReloading()
+{
+	for (AST_BaseWeapon* Weapon : Weapons)
+	{
+		Weapon->InterruptReloading();
+	}
 }
 
 bool UST_BaseWeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
@@ -76,4 +95,16 @@ void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
     Weapons.Add(NewWeapon);
 
     OnWeaponAdded.Broadcast(Weapons.Num() - 1, NewWeapon);
+}
+
+void UST_BaseWeaponsManagerComponent::OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
+{
+	if (NewController)
+	{
+		OnOwnerPawnPossessed(NewController);
+	}
+	else
+	{
+		OnOwnerPawnUnPossessed(OldController);
+	}
 }

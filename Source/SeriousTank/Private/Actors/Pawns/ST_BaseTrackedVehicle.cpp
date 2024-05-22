@@ -15,11 +15,6 @@ DEFINE_LOG_CATEGORY_STATIC(BaseTrackLog, Display, All);
 
 AST_BaseTrackedVehicle::AST_BaseTrackedVehicle()
 {
-	PrimaryActorTick.bCanEverTick = true;
-	
-	BaseCollisionComponent = CreateDefaultSubobject<UBoxComponent>("CollisionComponent");
-	SetRootComponent(BaseCollisionComponent);
-
 	BaseStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	BaseStaticMeshComponent->SetupAttachment(RootComponent);
 

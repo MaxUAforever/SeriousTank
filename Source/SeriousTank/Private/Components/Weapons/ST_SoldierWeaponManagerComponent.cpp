@@ -149,6 +149,22 @@ void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponI
 	}
 }
 
+void UST_SoldierWeaponManagerComponent::OnOwnerPawnPossessed(AController* NewController)
+{
+	if (Weapons.IsValidIndex(CurrentWeaponIndex))
+	{
+		if (Weapons[CurrentWeaponIndex]->IsReloadingNeeded())
+		{
+			Weapons[CurrentWeaponIndex]->ForceReload();
+		}
+	}
+}
+
+void UST_SoldierWeaponManagerComponent::OnOwnerPawnUnPossessed(AController* OldController)
+{
+	InterruptReloading();
+}
+
 void UST_SoldierWeaponManagerComponent::SetupSockets(const FName InRightHandSocketName, const FName InLeftHandSocketName, const FName InSecondWeaponSocketName)
 {
 	RightHandSocketName = InRightHandSocketName;
@@ -165,3 +181,5 @@ void UST_SoldierWeaponManagerComponent::OnWeaponReloadingStarted()
 {
     OnWeaponReloadingStartedDelegate.Broadcast(GetCurrentWeapon());
 }
+
+
