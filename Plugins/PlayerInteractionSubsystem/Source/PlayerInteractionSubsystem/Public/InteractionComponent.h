@@ -5,7 +5,10 @@
 
 class UBaseInteractionAction;
 class UInteractingComponent;
+class UInteractionUserWidget;
+class UInteractionWidgetComponent;
 class UPlayerInteractionSubsystem;
+
 
 /**
  * Component that should be added to actors that should provide interaction action.
@@ -18,20 +21,34 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractionComponent : public USphereCompo
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TSubclassOf<UBaseInteractionAction> InteractionActionClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	bool bIsWidgetEnabled = true;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings", meta = (EditCondition = "bIsWidgetEnabled"))
+	TSubclassOf<UInteractionUserWidget> InteractionWidgetClass;
 
 private:
 	UPROPERTY()
 	UBaseInteractionAction* InteractionAction;
-
 	UPlayerInteractionSubsystem* PlayerInteractionSubsystem;
+
+	UPROPERTY()
+	UInteractionWidgetComponent* InteractionWidgetComponent;
+
+	bool bIsActive = true;
 
 protected:
 	virtual void BeginPlay() override;
 
 public:
+	const UBaseInteractionAction* GetAction() const { return InteractionAction; };
 	void ActivateAction(UInteractingComponent* InteractingComponent);
+
+	// Allows to control if component should trigger action on request. 
+	void SetIsComponentActive(bool bInIsActive);
 
 protected:
 	UFUNCTION()

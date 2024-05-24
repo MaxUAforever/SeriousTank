@@ -17,5 +17,7 @@ class PLAYERINTERACTIONSUBSYSTEM_API UPossessVehicleAction : public UBaseInterac
 public:
 	virtual void Activate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) override;
 
-	virtual bool CanBeActivated(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) override;
+	virtual bool CanBeActivated(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) const override;
+
+	virtual FText GetActionDescription() const override;
 };

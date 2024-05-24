@@ -22,9 +22,11 @@ void UPossessVehicleAction::Activate(UInteractingComponent* InteractingComponent
 	
 	// TODO: add SetViewTargetWithBlend for new camera
 	CharacterController->Possess(VehiclePawn);
+
+	InteractionComponent->SetIsComponentActive(false);
 }
 
-bool UPossessVehicleAction::CanBeActivated(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)
+bool UPossessVehicleAction::CanBeActivated(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) const
 {
 	if (!InteractingComponent || !InteractionComponent)
 	{
@@ -45,6 +47,11 @@ bool UPossessVehicleAction::CanBeActivated(UInteractingComponent* InteractingCom
 	{
 		return false;
 	}
-
+	
 	return true;
+}
+
+FText UPossessVehicleAction::GetActionDescription() const
+{
+	return FText::FromString(TEXT("Possess vehicle"));
 }

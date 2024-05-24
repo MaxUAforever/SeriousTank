@@ -6,6 +6,10 @@
 class UInputAction;
 class UInputMappingContext;
 class UPlayerInteractionSubsystem;
+class UWidgetComponent;
+
+DECLARE_MULTICAST_DELEGATE(FOnInteractionActionBoundDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractingStateChangedDelegate, bool);
 
 /*
 * Component that should be added to pawns that should initiate interaction process.
@@ -17,7 +21,19 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractingComponent : public UActorCompon
 {
 	GENERATED_BODY()
 
+public:
+	// Delegate that should fire when an opportynity to interract appeared or disappeared 
+	// for the current component.
+	FOnInteractingStateChangedDelegate OnInteractingStateChanged;
+
+	// Delegate that should fire when action is bound to EnhancedComponent.
+	FOnInteractionActionBoundDelegate OnInteractionActionBoundDelegate;
+
 protected:
+	/**
+	 * Interaction inputs
+	 */
+
 	UPROPERTY(Category = "Input", EditDefaultsOnly)
 	UInputMappingContext* InteractionInputContext;
 
@@ -26,6 +42,9 @@ protected:
 
 private:
 	UPlayerInteractionSubsystem* PlayerInteractionSubsystem;
+
+public:
+	const UInputAction* GetInputAction() const { return InteractInputAction; };
 
 protected:
 	virtual void BeginPlay() override;	

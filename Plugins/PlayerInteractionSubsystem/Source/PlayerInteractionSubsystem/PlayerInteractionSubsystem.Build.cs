@@ -28,7 +28,8 @@ public class PlayerInteractionSubsystem: ModuleRules
 				"Core",
 				"CoreUObject",
 				"Engine",
-				"InputCore"
+				"InputCore",
+				"UMG"
 			}
 			);
 			

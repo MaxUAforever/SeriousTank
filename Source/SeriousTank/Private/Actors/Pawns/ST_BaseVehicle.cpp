@@ -119,7 +119,7 @@ void AST_BaseVehicle::ExitVehicle()
 		}
 
 		TArray<AActor*> OutActors;
-		if (!UKismetSystemLibrary::CapsuleOverlapActors(this, Location, ActorCollisionRadius, ActorCollisionHelfheight, {}, nullptr, {}, OutActors))
+		if (!UKismetSystemLibrary::CapsuleOverlapActors(this, Location, ActorCollisionRadius, ActorCollisionHelfheight, {}, nullptr, { this }, OutActors))
 		{
 			Actor->SetActorLocation(Location, true);
 			return true;
@@ -147,10 +147,10 @@ void AST_BaseVehicle::ExitVehicle()
 
 		CapsuleComponent->GetScaledCapsuleSize(SoldierCollisionRadius, SoldierCollisionHalfLength);
 
-		const FVector RightExitLocation = GetActorLocation() + (GetActorRightVector() * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 1.f));
-		const FVector LeftExitLocation = GetActorLocation() + (GetActorRightVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 1.f));
-		const FVector BackExitLocation = GetActorLocation() + (GetActorForwardVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 1.f));
-		const FVector ForwardExitLocation = GetActorLocation() + (GetActorForwardVector() * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 1.f));
+		const FVector RightExitLocation = GetActorLocation() + (GetActorRightVector() * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 10.f));
+		const FVector LeftExitLocation = GetActorLocation() + (GetActorRightVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 10.f));
+		const FVector BackExitLocation = GetActorLocation() + (GetActorForwardVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 10.f));
+		const FVector ForwardExitLocation = GetActorLocation() + (GetActorForwardVector() * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 10.f));
 
 		const TArray<FVector>& ExitLocations{ RightExitLocation ,LeftExitLocation , BackExitLocation , ForwardExitLocation };
 
@@ -179,6 +179,8 @@ void AST_BaseVehicle::ExitVehicle()
 		MoveRight(ZeroInput);
 		StopFire();
 	
+		InteractionComponent->SetIsComponentActive(true);
+
 		PlayerController->UnPossess();
 	
 		SoldierPawn->GetRootComponent()->SetVisibility(true, true);

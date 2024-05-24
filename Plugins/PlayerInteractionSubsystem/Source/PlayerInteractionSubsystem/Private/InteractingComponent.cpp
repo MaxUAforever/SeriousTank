@@ -69,7 +69,12 @@ void UInteractingComponent::OnControllerChanged(APawn* Pawn, AController* OldCon
 		PlayerInteractionSubsystem = GetWorld() ? GetWorld()->GetSubsystem<UPlayerInteractionSubsystem>() : nullptr;
 
 		EnhancedComponent->BindAction(InteractInputAction, ETriggerEvent::Started, this, &ThisClass::Interact);
-		EnhancedSubsystem->AddMappingContext(InteractionInputContext, 0);
+		
+		FModifyContextOptions ModifyContextOptions;
+		ModifyContextOptions.bForceImmediately = true;
+		EnhancedSubsystem->AddMappingContext(InteractionInputContext, 0, ModifyContextOptions);
+
+		OnInteractionActionBoundDelegate.Broadcast();
 	}
 	else
 	{
