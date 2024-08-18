@@ -50,34 +50,60 @@ void UPlayerInteractionSubsystem::RemoveInteraction(UInteractionComponent* Inter
 	}
 }
 
-void UPlayerInteractionSubsystem::StartInteractionAction(UInteractingComponent* InteractingComponent)
+bool UPlayerInteractionSubsystem::StartInteractionAction(UInteractingComponent* InteractingComponent)
 {
 	InteractionComponentInfo* InteractionComponentInfo = InteractionMap.Find(InteractingComponent);
 	if (!InteractionComponentInfo || !InteractionComponentInfo->InteractionComponent)
 	{
-		return;
+		return false;
 	}
 
-	InteractionComponentInfo->InteractionComponent->ActivateAction(InteractingComponent);
-}
-
-void UPlayerInteractionSubsystem::UpdateInteractionStatuses()
-{
-	for (TTuple<UInteractingComponent*, InteractionComponentInfo> InteractionInfo : InteractionMap)
+	const bool bSuccessfulAction = InteractionComponentInfo->InteractionComponent->ActivateAction(InteractingComponent);
+	const UBaseInteractionAction* Action = InteractionComponentInfo->InteractionComponent->GetAction();
+	if (bSuccessfulAction && Action && Action->ShouldBeDeactivated())
 	{
-		UInteractingComponent* InteractingComponent = InteractionInfo.Key;
-		UInteractionComponent* InteractionComponent = InteractionInfo.Value.InteractionComponent;
-		if (!InteractionComponent || !InteractionComponent->GetAction())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PlayerInteractionSubsystem::UpdateInteractionStatuses: failed to get InteractionComponent"));
-			continue;
-		}
+		ActiveInteractionsMap.Add(InteractingComponent, InteractionComponentInfo->InteractionComponent);
 
-		const bool bNewCanBeActivated = InteractionComponent->GetAction()->CanBeActivated(InteractingComponent, InteractionComponent);
-		if (InteractionInfo.Value.bCanBeActivated != bNewCanBeActivated)
-		{
-			InteractionInfo.Value.bCanBeActivated = bNewCanBeActivated;
-			InteractingComponent->OnInteractingStateChanged.Broadcast(bNewCanBeActivated);
-		}
+		return Action->ShouldBeDeactivated();
 	}
+
+	return false;
 }
+
+bool UPlayerInteractionSubsystem::StopInteractionAction(UInteractingComponent* InteractingComponent)
+{
+	UInteractionComponent** InteractionComponent = ActiveInteractionsMap.Find(InteractingComponent);
+	if (!InteractionComponent || !(*InteractionComponent))
+	{
+		return false;
+	}
+
+	const bool bSuccess = (*InteractionComponent)->DeactivateAction(InteractingComponent);
+	if (bSuccess)
+	{
+		ActiveInteractionsMap.Remove(InteractingComponent);
+	}
+
+	return bSuccess;
+}
+
+//void UPlayerInteractionSubsystem::UpdateInteractionStatuses()
+//{
+//	for (TTuple<UInteractingComponent*, InteractionComponentInfo> InteractionInfo : InteractionMap)
+//	{
+//		UInteractingComponent* InteractingComponent = InteractionInfo.Key;
+//		UInteractionComponent* InteractionComponent = InteractionInfo.Value.InteractionComponent;
+//		if (!InteractionComponent || !InteractionComponent->GetAction())
+//		{
+//			UE_LOG(LogTemp, Warning, TEXT("PlayerInteractionSubsystem::UpdateInteractionStatuses: failed to get InteractionComponent"));
+//			continue;
+//		}
+//
+//		const bool bNewCanBeActivated = InteractionComponent->GetAction()->CanBeActivated(InteractingComponent, InteractionComponent);
+//		if (InteractionInfo.Value.bCanBeActivated != bNewCanBeActivated)
+//		{
+//			InteractionInfo.Value.bCanBeActivated = bNewCanBeActivated;
+//			InteractingComponent->OnInteractingStateChanged.Broadcast(bNewCanBeActivated);
+//		}
+//	}
+//}

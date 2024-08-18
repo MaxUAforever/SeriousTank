@@ -28,6 +28,8 @@ class PLAYERINTERACTIONSUBSYSTEM_API UPlayerInteractionSubsystem : public UWorld
 private:
 	TMap<UInteractingComponent*, InteractionComponentInfo> InteractionMap;
 
+	TMap<UInteractingComponent*, UInteractionComponent*> ActiveInteractionsMap;
+
 	FTimerHandle InteractionsUpdateTimerHandle;
 	float RefreshRate = 0.5f;
 
@@ -35,9 +37,25 @@ public:
 	void RegisterInteraction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent);
 	void RemoveInteraction(UInteractingComponent* InteractingComponent);
 	void RemoveInteraction(UInteractionComponent* InteractingComponent);
+	
+	/**
+	* Allow to start interaction action with interaction component for interacting component, 
+	* if it's already registered in this subsystem.
+	*
+	* @param InteractingComponent - pointer to component that request interaction.
+	* @return true if action is continuous and can be stopped after activation.
+	*/ 
+	bool StartInteractionAction(UInteractingComponent* InteractingComponent);
 
-	void StartInteractionAction(UInteractingComponent* InteractingComponent);
+	/**
+	* Allow to stop interaction action with interaction component,  if continuous action 
+	* was started earlier for this component.
+	*
+	* @param InteractingComponent - pointer to component that request interaction.
+	* @return true if action was stopped successfully.
+	*/
+	bool StopInteractionAction(UInteractingComponent* InteractingComponent);
 
-private:
-	void UpdateInteractionStatuses();
+//private:
+//	void UpdateInteractionStatuses();
 };

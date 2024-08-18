@@ -26,11 +26,29 @@ void UInteractingComponent::BeginPlay()
 
 void UInteractingComponent::Interact()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UInteractingComponent::Interact called"));
-
-	if (PlayerInteractionSubsystem)
+	if (!PlayerInteractionSubsystem)
 	{
-		PlayerInteractionSubsystem->StartInteractionAction(this);
+		UE_LOG(LogTemp, Warning, TEXT("UInteractingComponent::Interact: failed to get PlayerInteractionSubsystem"));
+		return;
+	}
+
+	if (!bIsInteracting)
+	{
+		bIsInteracting = PlayerInteractionSubsystem->StartInteractionAction(this);
+	}
+}
+
+void UInteractingComponent::StopInteraction()
+{
+	if (!PlayerInteractionSubsystem)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UInteractingComponent::Interact: failed to get PlayerInteractionSubsystem"));
+		return;
+	}
+
+	if (bIsInteracting)
+	{
+		bIsInteracting = !PlayerInteractionSubsystem->StopInteractionAction(this);
 	}
 }
 

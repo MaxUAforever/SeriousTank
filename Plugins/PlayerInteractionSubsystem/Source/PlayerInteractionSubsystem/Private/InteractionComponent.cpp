@@ -3,6 +3,7 @@
 #include "Actions/BaseInteractionAction.h"
 #include "Components/WidgetComponent.h"
 #include "InteractingComponent.h"
+#include "InteractionPointComponent.h"
 #include "InteractionUserWidget.h"
 #include "InteractionWidgetComponent.h"
 #include "PlayerInteractionSubsystem.h"
@@ -23,6 +24,16 @@ void UInteractionComponent::BeginPlay()
 	PlayerInteractionSubsystem = GetWorld() ? GetWorld()->GetSubsystem<UPlayerInteractionSubsystem>() : nullptr;
 	InteractionAction = NewObject<UBaseInteractionAction>(this, InteractionActionClass.Get());
 
+	if (ActionMontage)
+	{
+		InteractionAction->SetActionMontage(ActionMontage);
+	}
+
+	if (DeactivationMontage)
+	{
+		InteractionAction->SetDeactivationMontage(DeactivationMontage);
+	}
+
 	if (InteractionWidgetClass)
 	{
 		InteractionWidgetComponent = NewObject<UInteractionWidgetComponent>(GetOwner(), UInteractionWidgetComponent::StaticClass(), TEXT("InteractionWidget"));
@@ -39,20 +50,43 @@ void UInteractionComponent::BeginPlay()
 			InteractionWidgetComponent->UpdateWidgetData();
 		}
 	}
+
+	TArray<USceneComponent*> ChildComponents;
+	GetChildrenComponents(false, ChildComponents);
+	for (USceneComponent* ChildComponent : ChildComponents)
+	{
+		if (UInteractionPointComponent* InteractionPoint = Cast<UInteractionPointComponent>(ChildComponent))
+		{
+			InteractionPoints.Add(InteractionPoint);
+		}
+	}
 }
 
-void UInteractionComponent::ActivateAction(UInteractingComponent* InteractingComponent)
+bool UInteractionComponent::ActivateAction(UInteractingComponent* InteractingComponent)
 {
 	if (!InteractionAction)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractionComponent::ActivateAction: Action isn't set for component!"));
-		return;
+		return false;
 	}
 		
 	if (bIsActive)
 	{
-		InteractionAction->Activate(InteractingComponent, this);
+		return InteractionAction->Activate(InteractingComponent, this);
 	}
+
+	return false;
+}
+
+bool UInteractionComponent::DeactivateAction(UInteractingComponent* InteractingComponent)
+{
+	if (!InteractionAction)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractionComponent::ActivateAction: Action isn't set for component!"));
+		return false;
+	}
+
+	return InteractionAction->Deactivate(InteractingComponent, this);
 }
 
 void UInteractionComponent::SetIsComponentActive(bool bInIsActive)
@@ -86,6 +120,24 @@ void UInteractionComponent::SetIsComponentActive(bool bInIsActive)
 	{
 		InteractionWidgetComponent->SetVisibility(bIsActive);
 	}
+}
+
+const UInteractionPointComponent* UInteractionComponent::GetClosestInteractionPoint(const FVector& Location) const
+{
+	float MinDistance = MAX_flt;
+	UInteractionPointComponent* ClosestPoint = nullptr;
+	
+	for (UInteractionPointComponent* InteractionPoint : InteractionPoints)
+	{
+		const float Distance = FVector::Dist2D(Location, InteractionPoint->GetComponentLocation());
+		if (Distance < MinDistance)
+		{
+			MinDistance = Distance;
+			ClosestPoint = InteractionPoint;
+		}
+	}
+
+	return ClosestPoint;
 }
 
 void UInteractionComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

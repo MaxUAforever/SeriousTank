@@ -3,12 +3,13 @@
 #include "Components/SphereComponent.h"
 #include "InteractionComponent.generated.h"
 
+class UAnimMontage;
 class UBaseInteractionAction;
 class UInteractingComponent;
+class UInteractionPointComponent;
 class UInteractionUserWidget;
 class UInteractionWidgetComponent;
 class UPlayerInteractionSubsystem;
-
 
 /**
  * Component that should be added to actors that should provide interaction action.
@@ -21,13 +22,19 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractionComponent : public USphereCompo
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Actions")
 	TSubclassOf<UBaseInteractionAction> InteractionActionClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	UPROPERTY(EditAnywhere, Category = "Settings|Actions")
+	UAnimMontage* ActionMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Actions")
+	UAnimMontage* DeactivationMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Widget")
 	bool bIsWidgetEnabled = true;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Settings", meta = (EditCondition = "bIsWidgetEnabled"))
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Widget", meta = (EditCondition = "bIsWidgetEnabled"))
 	TSubclassOf<UInteractionUserWidget> InteractionWidgetClass;
 
 private:
@@ -38,6 +45,8 @@ private:
 	UPROPERTY()
 	UInteractionWidgetComponent* InteractionWidgetComponent;
 
+	TArray<UInteractionPointComponent*> InteractionPoints;
+	
 	bool bIsActive = true;
 
 protected:
@@ -45,10 +54,15 @@ protected:
 
 public:
 	const UBaseInteractionAction* GetAction() const { return InteractionAction; };
-	void ActivateAction(UInteractingComponent* InteractingComponent);
+	bool ActivateAction(UInteractingComponent* InteractingComponent);
+	bool DeactivateAction(UInteractingComponent* InteractingComponent);
 
 	// Allows to control if component should trigger action on request. 
 	void SetIsComponentActive(bool bInIsActive);
+
+	const TArray<UInteractionPointComponent*>& GetInteractionPoints() const { return InteractionPoints; };
+	
+	const UInteractionPointComponent* GetClosestInteractionPoint(const FVector& Location) const;
 
 protected:
 	UFUNCTION()

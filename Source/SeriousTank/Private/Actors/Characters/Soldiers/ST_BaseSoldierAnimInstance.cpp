@@ -67,6 +67,12 @@ void UST_BaseSoldierAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		return;
 	}
 
+	// If Montage from default slot is playing at the moment - we don't need to update anything else;
+	if (GetCurrentActiveMontage() && GetCurrentActiveMontage()->SlotAnimTracks[0].SlotName == FName("DefaultSlot"))
+	{
+		return;
+	}
+
 	const bool bIsMoving = !SoldierCharacter->GetVelocity().IsNearlyZero();
 	if (bIsMoving)
 	{

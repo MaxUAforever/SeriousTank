@@ -14,6 +14,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PlayerInteractionSubsystem/Public/InteractionComponent.h"
+#include "PlayerInteractionSubsystem/Public/InteractingComponent.h"
 
 AST_BaseVehicle::AST_BaseVehicle()
 {
@@ -111,81 +112,26 @@ void AST_BaseVehicle::UnPossessed()
 
 void AST_BaseVehicle::ExitVehicle()
 {
-	auto SetActorLocationIfPossible = [this](AActor* Actor, const float ActorCollisionRadius, const float ActorCollisionHelfheight, const FVector& Location) -> bool
-	{
-		if (!Actor)
-		{
-			return false;
-		}
-
-		TArray<AActor*> OutActors;
-		if (!UKismetSystemLibrary::CapsuleOverlapActors(this, Location, ActorCollisionRadius, ActorCollisionHelfheight, {}, nullptr, { this }, OutActors))
-		{
-			Actor->SetActorLocation(Location, true);
-			return true;
-		}
-
-		return false;
-	};
-
-	auto TrySetLocationForExit = [this, SetActorLocationIfPossible](APawn* SoldierPawn) -> bool
-	{
-		if (!SoldierPawn)
-		{
-			return false;
-		}
-
-		FVector VehicleLocation = GetActorLocation();
-
-		float SoldierCollisionRadius;
-		float SoldierCollisionHalfLength;
-		UCapsuleComponent* CapsuleComponent = Cast<UCapsuleComponent>(SoldierPawn->GetRootComponent());
-		if (!CapsuleComponent)
-		{
-			return false;
-		}
-
-		CapsuleComponent->GetScaledCapsuleSize(SoldierCollisionRadius, SoldierCollisionHalfLength);
-
-		const FVector RightExitLocation = GetActorLocation() + (GetActorRightVector() * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 10.f));
-		const FVector LeftExitLocation = GetActorLocation() + (GetActorRightVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().Y + SoldierCollisionRadius + 10.f));
-		const FVector BackExitLocation = GetActorLocation() + (GetActorForwardVector() * (-1.f) * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 10.f));
-		const FVector ForwardExitLocation = GetActorLocation() + (GetActorForwardVector() * (BaseCollisionComponent->GetScaledBoxExtent().X + SoldierCollisionRadius + 10.f));
-
-		const TArray<FVector>& ExitLocations{ RightExitLocation ,LeftExitLocation , BackExitLocation , ForwardExitLocation };
-
-		for (const FVector ExitLocation : ExitLocations)
-		{
-			if (SetActorLocationIfPossible(SoldierPawn, SoldierCollisionRadius, SoldierCollisionHalfLength, ExitLocation))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	};
-
+	DisableVehicle();
 
 	if (AST_GameplayPlayerController* PlayerController = Cast<AST_GameplayPlayerController>(GetController()))
 	{
 		APawn* SoldierPawn = PlayerController->GetPreviousPawn();
-		if (!TrySetLocationForExit(SoldierPawn))
+
+		if (SoldierPawn && InteractionComponent)
 		{
-			return;
+			if (UInteractingComponent* InteractingComponent = SoldierPawn->GetComponentByClass<UInteractingComponent>())
+			{
+				InteractingComponent->StopInteraction();
+			}
 		}
-
-		FInputActionValue::Axis1D ZeroInput = 0.f;
-		MoveForward(ZeroInput);
-		MoveRight(ZeroInput);
-		StopFire();
-	
-		InteractionComponent->SetIsComponentActive(true);
-
-		PlayerController->UnPossess();
-	
-		SoldierPawn->GetRootComponent()->SetVisibility(true, true);
-		SoldierPawn->SetActorEnableCollision(true);
-	
-		PlayerController->Possess(SoldierPawn);
 	}
+}
+
+void AST_BaseVehicle::DisableVehicle()
+{
+	FInputActionValue::Axis1D ZeroInput = 0.f;
+	MoveForward(ZeroInput);
+	MoveRight(ZeroInput);
+	StopFire();
 }

@@ -69,4 +69,7 @@ public:
     virtual void SwitchToThirdWeapon() { };
 
 	void ExitVehicle();
+
+private:
+	void DisableVehicle();
 };

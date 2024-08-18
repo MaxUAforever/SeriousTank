@@ -43,14 +43,18 @@ protected:
 private:
 	UPlayerInteractionSubsystem* PlayerInteractionSubsystem;
 
+	// Defines if component is now interacting and current interraction can be interrupted. 
+	bool bIsInteracting = false;
+
 public:
 	const UInputAction* GetInputAction() const { return InteractInputAction; };
 
-protected:
-	virtual void BeginPlay() override;	
-	
 	UFUNCTION()
 	void Interact();
+	void StopInteraction();
+
+protected:
+	virtual void BeginPlay() override;	
 
 	UFUNCTION()
 	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
