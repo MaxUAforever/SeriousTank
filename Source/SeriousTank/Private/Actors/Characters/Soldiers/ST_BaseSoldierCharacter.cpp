@@ -1,5 +1,6 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 
+#include "AIController.h"
 #include "Actors/Characters/Soldiers/ST_BaseSoldierAnimInstance.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Camera/CameraComponent.h"
@@ -49,6 +50,22 @@ void AST_BaseSoldierCharacter::BeginPlay()
 	}
 
 	HealthComponent->OnDamageDealedDelegate.AddUObject(this, &ThisClass::OnDamageDealed);
+}
+
+void AST_BaseSoldierCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (AAIController* AIController = Cast<AAIController>(NewController))
+	{
+		bUseControllerRotationYaw = false;
+		if (UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(GetMovementComponent()))
+		{
+			MovementComp->bUseControllerDesiredRotation = true;
+		}
+
+		CameraSceneComponent->SetUsingAbsoluteRotation(false);
+	}
 }
 
 void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

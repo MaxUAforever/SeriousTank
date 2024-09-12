@@ -20,6 +20,24 @@ void UST_BaseWeaponsManagerComponent::BeginPlay()
 	{
 		PawnOwner->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnControllerChanged);
 	}
+
+#if WITH_EDITOR
+	if (OverriddenFirstWeapon)
+	{
+		if (AST_BaseWeapon* Weapon = GetWorld()->SpawnActor<AST_BaseWeapon>(OverriddenFirstWeapon))
+		{
+			AddWeapon(Weapon);
+		}
+	}
+
+	if (OverriddenSecondWeapon)
+	{
+		if (AST_BaseWeapon* Weapon = GetWorld()->SpawnActor<AST_BaseWeapon>(OverriddenSecondWeapon))
+		{
+			AddWeapon(Weapon);
+		}
+	}
+#endif
 }
 
 void UST_BaseWeaponsManagerComponent::StartFire()

@@ -11,7 +11,8 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"UMG",
-				"CoreUObject"
+				"CoreUObject",
+				"AIModule"
 			]
 		}
 	],
@@ -20,6 +21,9 @@
 		"Mac",
 		"Switch",
 		"Windows",
-		"WindowsNoEditor"
+		"WindowsNoEditor",
+		"Android",
+		"HoloLens",
+		"IOS"
 	]
 }

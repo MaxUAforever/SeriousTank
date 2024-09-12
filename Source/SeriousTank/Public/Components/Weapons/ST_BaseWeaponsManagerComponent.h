@@ -29,6 +29,14 @@ protected:
 	TArray<AST_BaseWeapon*> Weapons;
 	int32 CurrentWeaponIndex;
 
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AST_BaseWeapon> OverriddenFirstWeapon;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AST_BaseWeapon> OverriddenSecondWeapon;
+#endif
+
 public:
 	UST_BaseWeaponsManagerComponent();
 

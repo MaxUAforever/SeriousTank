@@ -63,6 +63,8 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void PossessedBy(AController* NewController) override;
+
 public:	
 	AST_BaseSoldierCharacter(const class FObjectInitializer& ObjectInitializer);
 

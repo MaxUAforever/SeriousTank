@@ -84,6 +84,17 @@ void UST_SoldierWeaponManagerComponent::BeginPlay()
 		return;
 	}
 
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	if (!Pawn)
+	{
+		return;
+	}
+
+	if (!Cast<APlayerController>(Pawn->GetController()))
+	{
+		return;
+	}
+
 	TSubclassOf<AST_BaseWeapon> CustomWeaponClass = GetPlayerSoldierMainWeaponClass(World->GetFirstPlayerController(), GetOwner());
 	if (CustomWeaponClass)
 	{
