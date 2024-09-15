@@ -53,6 +53,8 @@ private:
 	bool bIsFireForced;
 	bool bIsWeaponReloading;
     
+	bool bIsEnabled;
+
 	bool bShouldBeDestroyedWithActor = true;
 
 public:
@@ -71,14 +73,15 @@ public:
  	
 	void StartFire();
 	void StopFire();
-    
+
     void ForceReload();
 	void StartReloading();
 	void InterruptReloading();
 
     virtual void AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName = NAME_None, bool bInShouldBeDestroyedWithActor = true);
-    virtual void SetWeaponEnabled(bool bIsEnabled) {};
-    
+
+	bool IsEnabled() const { return bIsEnabled; }
+	void SetEnabled(bool bInIsEnabled);
 	void SetHidden(bool bIsHidden);
 
 	bool CanShoot() const;
@@ -92,6 +95,8 @@ protected:
 
 	virtual void StartShooting() {};
 	virtual void StopShooting() {};
+
+	virtual void OnSetWeaponEnabled(bool bInIsEnabled) {};
 
 	virtual bool CanReload() const { return false; };
 	virtual void FinishReloading() {};

@@ -81,8 +81,8 @@ bool UST_BaseWeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
 
 	StopFire();
 
-	Weapons[CurrentWeaponIndex]->SetWeaponEnabled(false);
-	Weapons[WeaponIndex]->SetWeaponEnabled(true);
+	Weapons[CurrentWeaponIndex]->SetEnabled(false);
+	Weapons[WeaponIndex]->SetEnabled(true);
 
 	OnWeaponSwitched(CurrentWeaponIndex, WeaponIndex);
 	OnWeaponSwitchedDelegate.Broadcast(CurrentWeaponIndex, WeaponIndex);
@@ -110,6 +110,13 @@ void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
     }
     
     NewWeapon->SetOwner(GetOwner());
+	NewWeapon->SetActorEnableCollision(false);
+
+	if (Weapons.Num() == 0)
+	{
+		NewWeapon->SetEnabled(true);
+	}
+
     Weapons.Add(NewWeapon);
 
     OnWeaponAdded.Broadcast(Weapons.Num() - 1, NewWeapon);

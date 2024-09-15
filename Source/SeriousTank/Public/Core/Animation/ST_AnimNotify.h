@@ -3,15 +3,10 @@
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "ST_AnimNotify.generated.h"
 
-DECLARE_DELEGATE(FOnAnimNotifyTriggered);
-
 UCLASS()
 class SERIOUSTANK_API UST_AnimNotify : public UAnimNotify
 {
 	GENERATED_BODY()
-	
-public:
-	FOnAnimNotifyTriggered OnAnimNotifyTriggered;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimNotify")

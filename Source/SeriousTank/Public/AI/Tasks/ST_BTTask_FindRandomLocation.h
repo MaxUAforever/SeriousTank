@@ -10,7 +10,7 @@ class SERIOUSTANK_API UST_BTTask_FindRandomLocation : public UBTTask_BlackboardB
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	explicit UST_BTTask_FindRandomLocation(const FObjectInitializer& ObjectInitializer);
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 

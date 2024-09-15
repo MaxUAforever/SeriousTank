@@ -39,9 +39,9 @@ void AST_FireArmWeapon::AttachToParentComponent(USceneComponent* InParentCompone
     }
 }
 
-void AST_FireArmWeapon::SetWeaponEnabled(bool bIsEnabled)
+void AST_FireArmWeapon::OnSetWeaponEnabled(bool bInIsEnabled)
 {
-    AimMesh->SetVisibility(bIsEnabled);
+	AimMesh->SetVisibility(bInIsEnabled);
 }
 
 void AST_FireArmWeapon::Shoot()

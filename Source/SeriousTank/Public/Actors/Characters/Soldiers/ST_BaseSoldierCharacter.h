@@ -10,7 +10,11 @@ class UInteractingComponent;
 class USoldierInputsDataAsset;
 class UST_HealthComponent;
 class UST_SoldierWeaponManagerComponent;
+class UST_ViewAreaBoxComponent;
 class UWeaponInputsDataAsset;
+
+enum class EHealthChangingType : uint8;
+
 struct FInputActionValue;
 
 UCLASS()
@@ -24,6 +28,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UCameraComponent* CameraComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UST_ViewAreaBoxComponent* CameraViewAreaComponent;
 
 	UPROPERTY(EditDefaultsOnly)
 	UST_SoldierWeaponManagerComponent* WeaponManagerComponent;
@@ -102,5 +109,5 @@ protected:
 private:
 	void MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis);
 
-	void OnDamageDealed(float CurrentHealthValue);
+	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
 };

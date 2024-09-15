@@ -27,6 +27,11 @@ void UInteractionWidgetComponent::UpdateWidgetData()
 	InteractionWidget->SetActionNameCaption(InteractionComponent->GetAction()->GetActionDescription());
 
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (!IsValid(PlayerController) || !IsValid(PlayerController->GetPawn()))
+	{
+		return;
+	}
+
 	UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
 	UEnhancedInputComponent* EnhancedComponent = PlayerController->GetComponentByClass<UEnhancedInputComponent>();
 	if (!EnhancedSubsystem || !EnhancedComponent)

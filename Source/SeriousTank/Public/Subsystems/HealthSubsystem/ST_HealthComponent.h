@@ -3,9 +3,13 @@
 #include "Components/ActorComponent.h"
 #include "ST_HealthComponent.generated.h"
 
-// TODO: In the future there should be different signatures of this events, so they are splitted.
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageDealed, float /*CurrentHealthValue*/);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealed, float /*CurrentHealthValue*/);
+enum class EHealthChangingType : uint8
+{
+	Damage,
+	Healing
+};
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthValueChanged, float /*CurrentHealthValue*/, EHealthChangingType /*HealthChangingType*/);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_HealthComponent : public UActorComponent
@@ -13,8 +17,7 @@ class SERIOUSTANK_API UST_HealthComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	FOnDamageDealed OnDamageDealedDelegate;
-	FOnHealed OnHealedDelegate;
+	FOnHealthValueChanged OnHealthValueChangedDelegate;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.1"));
@@ -24,6 +27,7 @@ private:
 	float CurrentHealthValue;
 
 public:	
+	float GetCurrentHealth() { return CurrentHealthValue; }
 	void AddHealthValue(float Value);
 
 protected:

@@ -9,6 +9,7 @@ class UST_BaseWeaponsManagerComponent;
 class UST_SoldierAnimDataAsset;
 enum class ECharacterMovingType : uint8;
 enum class ECharacterTurnSide : uint8;
+enum class EHealthChangingType : uint8;
 
 DECLARE_DELEGATE(FOnEqiupWeaponAnimationFinished);
 
@@ -103,7 +104,7 @@ private:
 
 	void OnWeaponEquippingAnimationFinished();
 	
-	void OnDamageDealed(float CurrentHealthValue);
+	void OnDamageDealed(float CurrentHealthValue, EHealthChangingType HealthChangingType);
 
 	/**
 	 * Animation notifies handlers 

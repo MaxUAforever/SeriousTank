@@ -9,10 +9,5 @@ UCLASS()
 class SERIOUSTANK_API UST_AnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-	
-public:
-	virtual void NativeInitializeAnimation() override;
 
-private:
-	void ParseAnimationProperties(UObject* Object);
 };

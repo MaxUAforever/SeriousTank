@@ -28,7 +28,7 @@ public:
     AST_FireArmWeapon();
     
     virtual void AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName = NAME_None, bool bInShouldBeDestroyedWithActor = true) override;
-    virtual void SetWeaponEnabled(bool bIsEnabled) override;
+    virtual void OnSetWeaponEnabled(bool bIsEnabled) override;
     
 protected:
 	virtual void Shoot() override;

@@ -2,6 +2,7 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "DrawDebugHelpers.h" 
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -26,6 +27,7 @@ void AST_BaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ActorsToIgnore.Add(AST_BaseProjectile::StaticClass());
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnBeginOverlap);
 }
 
@@ -43,7 +45,7 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
         return;
     }
     
-	if (OtherActor == this || OtherActor == GetOwner() || OtherActor == PC->GetPawn())
+	if (OtherActor == this || OtherActor == GetOwner() || ActorsToIgnore.Contains(OtherActor->GetClass()))
 	{
 		return;
 	}
@@ -56,6 +58,11 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	if (ExplosionSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(World, ExplosionSound, GetActorLocation());
+	}
+
+	if (bDrawDebug)
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), 3.f, 12, FColor::Red, false, 3.f, 0U, 3.f);
 	}
 
 	Destroy();

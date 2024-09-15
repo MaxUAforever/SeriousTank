@@ -14,20 +14,26 @@ class SERIOUSTANK_API AST_BaseProjectile : public AActor
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	USphereComponent* CollisionComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* MeshComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* ExplosionSound;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UST_DamageDealingComponent* DamageDealingComponent;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<AActor>> ActorsToIgnore;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bDrawDebug = false;
 
 public:	
 	AST_BaseProjectile();
@@ -37,5 +43,4 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
 };

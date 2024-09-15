@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
+#include "Components/ST_ViewAreaBoxComponent.h"
 #include "Components/Weapons/ST_SoldierWeaponManagerComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "EnhancedInputComponent.h"
@@ -28,6 +29,9 @@ AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& Obj
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(CameraSceneComponent);
 
+	CameraViewAreaComponent = CreateDefaultSubobject<UST_ViewAreaBoxComponent>("CameraViewAreaComponent");
+	CameraViewAreaComponent->SetupAttachment(CameraSceneComponent);
+	
 	WeaponManagerComponent = CreateDefaultSubobject<UST_SoldierWeaponManagerComponent>("WeaponManagerComponent");
 	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
 	InteractingComponent = CreateDefaultSubobject<UInteractingComponent>("InteractingComponent");
@@ -49,7 +53,7 @@ void AST_BaseSoldierCharacter::BeginPlay()
 		SoldierAnimInstance->OnEqiupWeaponAnimationFinishedDelegate.BindUObject(this, &ThisClass::OnWeaponEquippedFinished);
 	}
 
-	HealthComponent->OnDamageDealedDelegate.AddUObject(this, &ThisClass::OnDamageDealed);
+	HealthComponent->OnHealthValueChangedDelegate.AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 void AST_BaseSoldierCharacter::PossessedBy(AController* NewController)
@@ -278,7 +282,7 @@ void AST_BaseSoldierCharacter::MoveByAxis(const FInputActionValue& ActionValue, 
 	}
 }
 
-void AST_BaseSoldierCharacter::OnDamageDealed(float CurrentHealthValue)
+void AST_BaseSoldierCharacter::OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType)
 {
 	
 }

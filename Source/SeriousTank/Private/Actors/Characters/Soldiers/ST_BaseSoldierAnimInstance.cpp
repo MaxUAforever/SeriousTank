@@ -49,7 +49,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 	UST_HealthComponent* HealthComponent = SoldierCharacter->GetComponentByClass<UST_HealthComponent>();
 	if (HealthComponent)
 	{
-		HealthComponent->OnDamageDealedDelegate.AddUObject(this, &ThisClass::OnDamageDealed);
+		HealthComponent->OnHealthValueChangedDelegate.AddUObject(this, &ThisClass::OnDamageDealed);
 	}
 }
 
@@ -199,7 +199,7 @@ void UST_BaseSoldierAnimInstance::SetupCurrentWeapon()
 {
 	if (CurrentWeapon)
 	{
-		CurrentWeapon->SetWeaponEnabled(true);
+		CurrentWeapon->SetHidden(false);
 
 		TArray<UActorComponent*> MagazineComponents = CurrentWeapon->GetComponentsByTag(UStaticMeshComponent::StaticClass(), FName("Magazine"));
 		if (MagazineComponents.Num() > 0)
@@ -262,7 +262,7 @@ void UST_BaseSoldierAnimInstance::OnWeaponSwitched(int32 PreviousWeaponIndex, in
 	SwitchingWeapon = WeaponManagerComponent->GetWeapon(NewWeaponIndex);
 	if (SwitchingWeapon)
 	{
-		SwitchingWeapon->SetWeaponEnabled(false);
+		SwitchingWeapon->SetEnabled(false);
 
 		if (bIsReloading)
 		{
@@ -280,9 +280,14 @@ void UST_BaseSoldierAnimInstance::OnWeaponSwitched(int32 PreviousWeaponIndex, in
 	}
 }
 
-void UST_BaseSoldierAnimInstance::OnDamageDealed(float CurrentHealthValue)
+void UST_BaseSoldierAnimInstance::OnDamageDealed(float CurrentHealthValue, EHealthChangingType HealthChangingType)
 {
 	if (bIsReloading || !MontagesDataAsset)
+	{
+		return;
+	}
+
+	if (HealthChangingType == EHealthChangingType::Healing)
 	{
 		return;
 	}
@@ -332,7 +337,7 @@ void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineInserted()
 
 void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnWeaponSwitched()
 {
-	if (!CurrentWeapon || !WeaponManagerComponent)
+	if (!CurrentWeapon || !WeaponManagerComponent || !SwitchingWeapon)
 	{
 		return;
 	}
@@ -362,6 +367,11 @@ void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnWeaponSwitched()
 void UST_BaseSoldierAnimInstance::OnWeaponEquippingAnimationFinished()
 {
 	bIsWeaponSwitching = false;
+	
+	if (SwitchingWeapon)
+	{
+		SwitchingWeapon->SetEnabled(true);
+	}
 
 	OnEqiupWeaponAnimationFinishedDelegate.ExecuteIfBound();
 }

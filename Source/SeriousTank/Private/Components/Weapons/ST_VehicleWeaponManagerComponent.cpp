@@ -54,7 +54,7 @@ void UST_VehicleWeaponManagerComponent::BeginPlay()
 		AST_BaseWeapon* Weapon = CurrentWeaponClass ? WeaponSocket->SetWeapon(CurrentWeaponClass) : nullptr;
 		if (Weapon)
 		{
-			Weapon->SetWeaponEnabled(WeaponIndex == 0);
+			Weapon->SetEnabled(WeaponIndex == 0);
 			Weapon->SetActorEnableCollision(false);
 
             AddWeapon(Weapon);
