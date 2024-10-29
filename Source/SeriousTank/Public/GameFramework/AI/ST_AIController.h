@@ -3,6 +3,7 @@
 #include "AIController.h"
 #include "ST_AIController.generated.h"
 
+class AST_BaseWeapon;
 enum class EHealthChangingType : uint8;
 
 UENUM(BlueprintType)
@@ -25,6 +26,7 @@ protected:
 private:
 	void SetupPerception(APawn* InPawn);
 	void SetupHealthSubsystem(APawn* InPawn);
+	void SetupWeaponsComponent(APawn* InPawn);
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -36,8 +38,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	FName BBSightPerceptionTypeKey = FName("SightPerseptionType");
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	FName BBAttackTargetKey = FName("AttackTarget");
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FName BBCanAttackKey = FName("CanAttack");
 
 private:
 	UFUNCTION()
@@ -46,6 +51,8 @@ private:
 	UFUNCTION()
 	void OnTargetEndOverlapViewBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	void OnWeaponAdded(int32 WeaponIndex, AST_BaseWeapon* Weapon);
+	
 	void OnTargetDetected(AActor* Target);
 	void OnLostTarget(AActor* OtherActor);
 

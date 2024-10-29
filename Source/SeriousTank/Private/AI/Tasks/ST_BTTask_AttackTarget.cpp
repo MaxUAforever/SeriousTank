@@ -44,7 +44,8 @@ EBTNodeResult::Type UST_BTTask_AttackTarget::ExecuteTask(UBehaviorTreeComponent&
 
 	if (!CheckAvailableWeapon(WeaponComponent))
 	{
-		return EBTNodeResult::Failed;
+		OwnerComp.GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, false);
+		return EBTNodeResult::Succeeded;
 	}
 
 	WeaponComponent->StartFire();
@@ -77,17 +78,18 @@ void UST_BTTask_AttackTarget::TickTask(UBehaviorTreeComponent& OwnerComp, uint8*
 		return;
 	}
 		
-	if (CheckAvailableWeapon(CurrentMemory->OwnerWeaponsManagerComponent))
-	{
-		return;
-	}
+	const bool bCanShoot = CheckAvailableWeapon(CurrentMemory->OwnerWeaponsManagerComponent);
+	const bool bHasTarget = OwnerComp.GetBlackboardComponent()->GetValueAsObject(GetSelectedBlackboardKey()) != nullptr;
 
-	if (AAIController* AIController = OwnerComp.GetAIOwner())
+	if (!bCanShoot || !bHasTarget)
 	{
-		AIController->ClearFocus(EAIFocusPriority::Gameplay);
+		if (AAIController* AIController = OwnerComp.GetAIOwner())
+		{
+			AIController->ClearFocus(EAIFocusPriority::Gameplay);
+			CurrentMemory->OwnerWeaponsManagerComponent->StopFire();
 
-		CurrentMemory->OwnerWeaponsManagerComponent->StopFire();
-		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		}
 	}
 }
 

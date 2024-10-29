@@ -1,8 +1,10 @@
 #include "GameFramework/AI/ST_AIController.h"
 
+#include "Actors/Weapons/ST_BaseWeapon.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/ST_ViewAreaBoxComponent.h"
+#include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 
 void AST_AIController::BeginPlay()
@@ -26,6 +28,7 @@ void AST_AIController::OnPossess(APawn* InPawn)
 
 	SetupPerception(InPawn);
 	SetupHealthSubsystem(InPawn);
+	SetupWeaponsComponent(InPawn);
 }
 
 void AST_AIController::SetupPerception(APawn* InPawn)
@@ -58,6 +61,30 @@ void AST_AIController::SetupHealthSubsystem(APawn* InPawn)
 	}
 }
 
+void AST_AIController::SetupWeaponsComponent(APawn* InPawn)
+{
+	if (!IsValid(InPawn))
+	{
+		return;
+	}
+
+	UST_BaseWeaponsManagerComponent* WeaponsManagerComponent = InPawn->GetComponentByClass<UST_BaseWeaponsManagerComponent>();
+	if (!WeaponsManagerComponent)
+	{
+		return;
+	}
+		
+	WeaponsManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponAdded);
+	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
+	{
+		if (Weapon->GetTotalAmmoCount() > 0)
+		{
+			GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, true);
+			return;
+		}
+	}
+}
+
 void AST_AIController::OnTargetOverlapViewBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (APawn* TargetPawn = Cast<APawn>(OtherActor))
@@ -77,6 +104,19 @@ void AST_AIController::OnTargetEndOverlapViewBox(UPrimitiveComponent* Overlapped
 		{
 			OnLostTarget(OtherActor);
 		}
+	}
+}
+
+void AST_AIController::OnWeaponAdded(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+{
+	if (!Weapon || !GetBlackboardComponent())
+	{
+		return;
+	}
+
+	if (Weapon->GetTotalAmmoCount() > 0)
+	{
+		GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, true);
 	}
 }
 

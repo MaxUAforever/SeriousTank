@@ -31,4 +31,8 @@ protected:
 
 private:
 	bool CheckAvailableWeapon(UST_BaseWeaponsManagerComponent* WeaponComponent);
+
+protected:
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FName BBCanAttackKey;
 };
