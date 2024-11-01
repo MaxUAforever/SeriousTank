@@ -70,6 +70,9 @@ void UST_ViewAreaBoxComponent::UpdateViewArea()
 	SetWorldLocation(FVector{ ExpandedSideViewPoint.X + HalfLength, ExpandedSideViewPoint.Y + HalfWidth, ViewAreaHight });
 	SetBoxExtent(FVector{ HalfLength, HalfWidth, ViewAreaHight });
 
+	FrontViewDistance = HalfLength * 2;
+	OnFrontViewDistanceChanged.Broadcast(FrontViewDistance);
+
 	if (bDrawDebug)
 	{
 		DrawDebugSphere(GetWorld(), GetComponentLocation(), 10.f, 12, FColor::Green, false, 30.f, 0U, 5.f);

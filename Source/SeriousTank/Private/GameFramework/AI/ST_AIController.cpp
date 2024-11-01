@@ -6,6 +6,15 @@
 #include "Components/ST_ViewAreaBoxComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISenseConfig.h"
+#include "Perception/AISenseConfig_Sight.h"
+
+AST_AIController::AST_AIController()
+{
+	PerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>("PerceptionComponent");
+}
 
 void AST_AIController::BeginPlay()
 {
@@ -20,6 +29,9 @@ void AST_AIController::BeginPlay()
 	{
 		RunBehaviorTree(DefaultBehaviourTree);
 	}
+
+	SetPerceptionComponent(*PerceptionComp);
+	GetPerceptionComponent()->Deactivate();
 }
 
 void AST_AIController::OnPossess(APawn* InPawn)
@@ -45,6 +57,28 @@ void AST_AIController::SetupPerception(APawn* InPawn)
 			ViewAreaBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnTargetOverlapViewBox);
 			ViewAreaBoxComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnTargetEndOverlapViewBox);
 		}
+	}
+	else if (ViewPerceptionType == EViewPerceptionType::AIPerception)
+	{
+		if (!GetPerceptionComponent())
+		{
+			return;
+		}
+			
+		UAISenseConfig_Sight* SightConfig = Cast<UAISenseConfig_Sight>(GetPerceptionComponent()->GetSenseConfig(UAISense::GetSenseID<UAISense_Sight>()));
+		if (!SightConfig)
+		{
+			return;
+		}
+
+		if (UST_ViewAreaBoxComponent* ViewAreaBoxComponent = Cast<UST_ViewAreaBoxComponent>(InPawn->GetComponentByClass(UST_ViewAreaBoxComponent::StaticClass())))
+		{
+			ChangeSightRadius(ViewAreaBoxComponent->GetFrontViewDistance());
+			ViewAreaBoxComponent->OnFrontViewDistanceChanged.AddUObject(this, &ThisClass::ChangeSightRadius);
+		}
+
+		GetPerceptionComponent()->Activate();
+		GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ThisClass::OnSensePerceptionTriggered);
 	}
 }
 
@@ -87,22 +121,35 @@ void AST_AIController::SetupWeaponsComponent(APawn* InPawn)
 
 void AST_AIController::OnTargetOverlapViewBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (APawn* TargetPawn = Cast<APawn>(OtherActor))
-	{
-		if (TargetPawn->IsPlayerControlled())
-		{
-			OnTargetDetected(OtherActor);
-		}
-	}
+	OnTargetDetected(OtherActor);
 }
 
 void AST_AIController::OnTargetEndOverlapViewBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (APawn* TargetPawn = Cast<APawn>(OtherActor))
+	OnTargetLost(OtherActor);
+}
+
+void AST_AIController::OnSensePerceptionTriggered(AActor* Actor, FAIStimulus Stimulus)
+{
+	if (Stimulus.WasSuccessfullySensed())
 	{
-		if (TargetPawn->IsPlayerControlled())
+		OnTargetDetected(Actor);
+	}
+	else
+	{
+		OnTargetLost(Actor);
+	}
+}
+
+void AST_AIController::ChangeSightRadius(float InSightRadius)
+{
+	if (GetPerceptionComponent())
+	{
+		if (UAISenseConfig_Sight* SightConfig = Cast<UAISenseConfig_Sight>(GetPerceptionComponent()->GetSenseConfig(UAISense::GetSenseID<UAISense_Sight>())))
 		{
-			OnLostTarget(OtherActor);
+			SightConfig->SightRadius = InSightRadius * PerceptionSightRadiusScale;
+			SightConfig->LoseSightRadius = SightConfig->SightRadius * 1.2f;
+			GetPerceptionComponent()->ConfigureSense(*SightConfig);
 		}
 	}
 }
@@ -122,17 +169,33 @@ void AST_AIController::OnWeaponAdded(int32 WeaponIndex, AST_BaseWeapon* Weapon)
 
 void AST_AIController::OnTargetDetected(AActor* Target)
 {
-	if (GetBlackboardComponent())
+	if (!GetBlackboardComponent())
 	{
-		GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+		return;
+	}
+
+	if (APawn* TargetPawn = Cast<APawn>(Target))
+	{
+		if (TargetPawn->IsPlayerControlled())
+		{
+			GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+		}
 	}
 }
 
-void AST_AIController::OnLostTarget(AActor* Target)
+void AST_AIController::OnTargetLost(AActor* Target)
 {
-	if (GetBlackboardComponent())
+	if (!GetBlackboardComponent())
 	{
-		GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, nullptr);
+		return;
+	}
+
+	if (APawn* TargetPawn = Cast<APawn>(Target))
+	{
+		if (TargetPawn->IsPlayerControlled())
+		{
+			GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, nullptr);
+		}
 	}
 }
 

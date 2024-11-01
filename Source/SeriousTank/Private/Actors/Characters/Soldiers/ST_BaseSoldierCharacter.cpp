@@ -15,6 +15,8 @@
 #include "Inputs/Data/CommonInputsDataAsset.h"
 #include "Inputs/Data/SoldierInputsDataAsset.h"
 #include "Inputs/Data/WeaponInputsDataAsset.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 #include "PlayerInteractionSubsystem/Public/InteractingComponent.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 #include "UObject/UObjectGlobals.h"
@@ -35,6 +37,7 @@ AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& Obj
 	WeaponManagerComponent = CreateDefaultSubobject<UST_SoldierWeaponManagerComponent>("WeaponManagerComponent");
 	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
 	InteractingComponent = CreateDefaultSubobject<UInteractingComponent>("InteractingComponent");
+	PerceptionStimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("PerceptionStimuliSourceComponent");
 }
 
 void AST_BaseSoldierCharacter::BeginPlay()
@@ -54,6 +57,9 @@ void AST_BaseSoldierCharacter::BeginPlay()
 	}
 
 	HealthComponent->OnHealthValueChangedDelegate.AddUObject(this, &ThisClass::OnHealthChanged);
+
+	PerceptionStimuliSourceComponent->RegisterForSense(UAISense_Sight::StaticClass());
+	PerceptionStimuliSourceComponent->RegisterWithPerceptionSystem();
 }
 
 void AST_BaseSoldierCharacter::PossessedBy(AController* NewController)

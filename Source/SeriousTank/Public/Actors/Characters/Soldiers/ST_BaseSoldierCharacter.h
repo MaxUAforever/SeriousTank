@@ -13,8 +13,8 @@ class UST_SoldierWeaponManagerComponent;
 class UST_ViewAreaBoxComponent;
 class UWeaponInputsDataAsset;
 
+class UAIPerceptionStimuliSourceComponent;
 enum class EHealthChangingType : uint8;
-
 struct FInputActionValue;
 
 UCLASS()
@@ -41,6 +41,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UInteractingComponent* InteractingComponent;
 
+	UPROPERTY()
+	UAIPerceptionStimuliSourceComponent* PerceptionStimuliSourceComponent;
+
 	/**
 	 * Common gameplay and weapon inputs
 	 */
@@ -66,6 +69,7 @@ protected:
 
 	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
 	FName SecondWeaponSocketName;
+	
 
 protected:
 	virtual void BeginPlay() override;
