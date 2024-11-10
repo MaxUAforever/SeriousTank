@@ -5,6 +5,7 @@
 #include "ST_AIController.generated.h"
 
 class AST_BaseWeapon;
+class UAIPatrollingComponent;
 class UAIPerceptionComponent;
 enum class EHealthChangingType : uint8;
 
@@ -44,6 +45,8 @@ private:
 
 	void ChangeSightRadius(float InSightRadius);
 
+	void OnPatrollingStateChaned(bool bIsActive);
+
 	void OnWeaponAdded(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnTargetDetected(AActor* Target);
 	void OnTargetLost(AActor* OtherActor);
@@ -55,6 +58,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UAIPerceptionComponent* PerceptionComp;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAIPatrollingComponent* PatrollingComponent;
 
 	UPROPERTY(EditDefaultsOnly)
 	EViewPerceptionType ViewPerceptionType = EViewPerceptionType::PlayerView;
@@ -73,4 +79,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Blackboard)
 	FName BBCanAttackKey = FName("CanAttack");
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FName BBCanPatrol = FName("CanPatrol");
 };

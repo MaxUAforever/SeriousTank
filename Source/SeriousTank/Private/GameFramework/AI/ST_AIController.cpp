@@ -1,6 +1,7 @@
 #include "GameFramework/AI/ST_AIController.h"
 
 #include "Actors/Weapons/ST_BaseWeapon.h"
+#include "AIPatrollingSubsystem/Public/Components/AIPatrollingComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/ST_ViewAreaBoxComponent.h"
@@ -14,6 +15,7 @@
 AST_AIController::AST_AIController()
 {
 	PerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>("PerceptionComponent");
+	PatrollingComponent = CreateDefaultSubobject<UAIPatrollingComponent>("PatrollingComponent");
 }
 
 void AST_AIController::BeginPlay()
@@ -32,6 +34,12 @@ void AST_AIController::BeginPlay()
 
 	SetPerceptionComponent(*PerceptionComp);
 	GetPerceptionComponent()->Deactivate();
+
+	if (PatrollingComponent)
+	{
+		OnPatrollingStateChaned(PatrollingComponent->IsPatrollingActive());
+		PatrollingComponent->OnIsActiveChanged.AddUObject(this, &ThisClass::OnPatrollingStateChaned);
+	}
 }
 
 void AST_AIController::OnPossess(APawn* InPawn)
@@ -151,6 +159,14 @@ void AST_AIController::ChangeSightRadius(float InSightRadius)
 			SightConfig->LoseSightRadius = SightConfig->SightRadius * 1.2f;
 			GetPerceptionComponent()->ConfigureSense(*SightConfig);
 		}
+	}
+}
+
+void AST_AIController::OnPatrollingStateChaned(bool bIsActive)
+{
+	if (GetBlackboardComponent())
+	{
+		GetBlackboardComponent()->SetValueAsBool(BBCanPatrol, bIsActive);
 	}
 }
 
