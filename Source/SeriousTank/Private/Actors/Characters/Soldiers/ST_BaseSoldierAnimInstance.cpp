@@ -3,6 +3,8 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 #include "Actors/Characters/Soldiers/ST_SoldierAnimDataAsset.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "Core/Animation/ST_AnimNotify.h"
