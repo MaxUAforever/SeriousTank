@@ -17,6 +17,9 @@ struct FBaseGameData
 
 	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "0", ClampMax = "5"))
 	int32 PreStartCountdownTime = 3;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Game")
+	bool bShouldGameStopAfterDeath = true;
 };
 
 USTRUCT(BlueprintType)

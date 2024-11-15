@@ -2,6 +2,7 @@
 
 #include "Actors/Pawns/ST_BaseTrackedVehicle.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
+#include "GameFramework/Gameplay/ST_GameplayPlayerController.h"
 #include "GameFramework/Gameplay/ST_GameplayPlayerState.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 
@@ -24,6 +25,8 @@ void AST_GameplayGameMode::BeginPlay()
 			ObjectSpawnSubsystem->AddObjectSpawnManager(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
 		}
 	}
+
+	SetupDeathHandling();
 }
 
 UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
@@ -74,5 +77,32 @@ void AST_GameplayGameMode::InitGameState()
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
 		GameplayGameState->SetPreStartCountdownTime(BaseGameData.PreStartCountdownTime);
+	}
+}
+
+void AST_GameplayGameMode::SetupDeathHandling()
+{
+	if (!BaseGameData.bShouldGameStopAfterDeath)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+		
+	if (AST_GameplayPlayerController* GameplayPlayerController = Cast<AST_GameplayPlayerController>(World->GetFirstPlayerController()))
+	{
+		GameplayPlayerController->OnMainCharacterDiedDelegate.AddUObject(this, &ThisClass::TriggerGameFinish);
+	}
+}
+
+void AST_GameplayGameMode::TriggerGameFinish()
+{
+	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
+	{
+		GameplayGameState->OnGameIsOver.Broadcast();
 	}
 }

@@ -6,6 +6,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/ST_ViewAreaBoxComponent.h"
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
+#include "GameFramework/Gameplay/ST_GameplayGameState.h"
+#include "Kismet/GameplayStatics.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
@@ -46,9 +48,21 @@ void AST_AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	SetupPerception(InPawn);
-	SetupHealthSubsystem(InPawn);
-	SetupWeaponsComponent(InPawn);
+	if (GetWorld()->HasBegunPlay())
+	{
+		SetupPawnSettings();
+	}
+	else if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(UGameplayStatics::GetGameState(this)))
+	{
+		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::SetupPawnSettings);
+	}
+}
+
+void AST_AIController::SetupPawnSettings()
+{
+	SetupPerception(GetPawn());
+	SetupHealthSubsystem(GetPawn());
+	SetupWeaponsComponent(GetPawn());
 }
 
 void AST_AIController::SetupPerception(APawn* InPawn)

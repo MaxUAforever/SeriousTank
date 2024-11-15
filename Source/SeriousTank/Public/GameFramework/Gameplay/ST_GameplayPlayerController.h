@@ -5,11 +5,17 @@
 
 class UInputAction;
 class UInputMappingContext;
+enum class EHealthChangingType : uint8;
+
+DECLARE_MULTICAST_DELEGATE(FOnMainCharacterDiedDelegate);
 
 UCLASS()
 class SERIOUSTANK_API AST_GameplayPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+public:
+	FOnMainCharacterDiedDelegate OnMainCharacterDiedDelegate;
 
 protected:
 	UPROPERTY(Category = "Input",  EditDefaultsOnly)
@@ -20,6 +26,9 @@ protected:
 
 private:
 	APawn* PreviousPawn;
+	APawn* MainGameplayPawn;
+
+	FDelegateHandle HealthChangeDelegateHandle;
 
 public:
 	UFUNCTION()
@@ -32,6 +41,7 @@ protected:
 
 	virtual void SetupInputComponent() override;
 
+	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
 private:
@@ -40,4 +50,7 @@ private:
 
 	UFUNCTION()
 	void SetOnlyUIInputEnabled(bool IsEnabled);
+
+	void SetupHealthComponent(APawn* InPawn);
+	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
 };

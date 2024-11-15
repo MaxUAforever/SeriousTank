@@ -5,6 +5,7 @@
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/ST_ViewAreaBoxComponent.h"
 #include "Components/Weapons/ST_SoldierWeaponManagerComponent.h"
@@ -290,5 +291,8 @@ void AST_BaseSoldierCharacter::MoveByAxis(const FInputActionValue& ActionValue, 
 
 void AST_BaseSoldierCharacter::OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType)
 {
-	
+	if (FMath::IsNearlyZero(CurrentHealthValue))
+	{
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }

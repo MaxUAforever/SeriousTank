@@ -173,6 +173,7 @@ bool UAIPatrollingSubsystem::AssignAgentToPath(UAIPatrollingComponent* Patrollin
 	if (AActor* Agent = PatrollingComponent->GetOwner())
 	{
 		PatrollingComponent->SetPatrolPath(AssignedPatrolPath);
+		PatrollingComponent->SetCurrentDirection(AssignedPatrolPath->GetInitialDirectionType());
 		PatrollingComponent->SetCurrentPathPointIndex(FindNearestPointOfPath(Agent->GetActorLocation(), AssignedPatrolPath));
 	}
 

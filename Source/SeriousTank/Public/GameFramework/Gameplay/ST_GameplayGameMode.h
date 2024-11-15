@@ -35,4 +35,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void InitGameState() override;
+
+private:
+	void SetupDeathHandling();
+
+	void TriggerGameFinish();
 };

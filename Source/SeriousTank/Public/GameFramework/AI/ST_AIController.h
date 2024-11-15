@@ -30,6 +30,8 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
 private:
+	void SetupPawnSettings();
+
 	void SetupPerception(APawn* InPawn);
 	void SetupHealthSubsystem(APawn* InPawn);
 	void SetupWeaponsComponent(APawn* InPawn);

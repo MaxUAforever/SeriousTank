@@ -53,7 +53,7 @@ void AST_GameplayGameState::OnPreStartCountdownTimerFired()
 
 	if (RemainingCountdownTime == 0)
 	{
-		OnPreStartCountdownEnded.ExecuteIfBound();
+		OnPreStartCountdownEndedDelegate.Broadcast();
 
 		if (UWorld* World = GetWorld())
 		{
