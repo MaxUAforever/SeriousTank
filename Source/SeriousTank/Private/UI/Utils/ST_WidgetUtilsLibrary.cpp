@@ -1,4 +1,4 @@
-#include "Widgets/Utils/ST_WidgetUtilsLibrary.h"
+#include "UI/Utils/ST_WidgetUtilsLibrary.h"
 
 FText UST_WidgetUtilsLibrary::ConvertTimeToText(const float Time)
 {

@@ -1,8 +1,8 @@
-#include "Widgets/Gameplay/ST_FinalScoreWidget.h"
+#include "UI/Widgets/Gameplay/ST_FinalScoreWidget.h"
 
 #include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameState.h"
 #include "GameFramework/ST_GameInstance.h"
-#include "Widgets/Utils/ST_WidgetUtilsLibrary.h"
+#include "UI/Utils/ST_WidgetUtilsLibrary.h"
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"

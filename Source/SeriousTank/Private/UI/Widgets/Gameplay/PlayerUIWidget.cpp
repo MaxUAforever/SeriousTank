@@ -1,6 +1,6 @@
-#include "Widgets/Gameplay/PlayerUIWidget.h"
+#include "UI/Widgets/Gameplay/PlayerUIWidget.h"
 
-#include "Widgets/Utils/ST_WidgetUtilsLibrary.h"
+#include "UI/Utils/ST_WidgetUtilsLibrary.h"
 #include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameState.h"
 
 #include "Sound/SoundCue.h"

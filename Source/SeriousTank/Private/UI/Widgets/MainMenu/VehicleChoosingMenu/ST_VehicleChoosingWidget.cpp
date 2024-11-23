@@ -1,4 +1,4 @@
-#include "Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleChoosingWidget.h"
+#include "UI/Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleChoosingWidget.h"
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Components/Button.h"
@@ -8,7 +8,7 @@
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 #include "GameFramework/MainMenu/Utils/ST_PlayerStateSaveGame.h"
 #include "GameFramework/ST_BaseHUD.h"
-#include "Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleInfoCardWidget.h"
+#include "UI/Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleInfoCardWidget.h"
 
 void UST_VehicleChoosingWidget::NativeConstruct()
 {

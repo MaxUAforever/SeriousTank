@@ -1,9 +1,9 @@
-#include "Widgets/MainMenu/ST_MainMenuWidget.h"
+#include "UI/Widgets/MainMenu/ST_MainMenuWidget.h"
 
 #include "GameFramework/MainMenu/ST_MainMenuHUD.h"
 #include "GameFramework/MainMenu/ST_MainMenuPlayerController.h"
 #include "GameFramework/ST_GameInstance.h"
-#include "Widgets/MainMenu/ST_GameplayLevelCardWidget.h"
+#include "UI/Widgets/MainMenu/ST_GameplayLevelCardWidget.h"
 
 #include "Components/Button.h"
 #include "Components/ScrollBox.h"

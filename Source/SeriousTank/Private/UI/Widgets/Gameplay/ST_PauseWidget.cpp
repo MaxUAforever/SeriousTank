@@ -1,4 +1,4 @@
-#include "Widgets/Gameplay/ST_PauseWidget.h"
+#include "UI/Widgets/Gameplay/ST_PauseWidget.h"
 
 #include "GameFramework/Gameplay/ST_GameplayPlayerController.h"
 #include "GameFramework/ST_BaseHUD.h"

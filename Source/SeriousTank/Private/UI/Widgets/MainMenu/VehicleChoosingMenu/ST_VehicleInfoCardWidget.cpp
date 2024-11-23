@@ -1,4 +1,4 @@
-#include "Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleInfoCardWidget.h"
+#include "UI/Widgets/MainMenu/VehicleChoosingMenu/ST_VehicleInfoCardWidget.h"
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"

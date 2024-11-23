@@ -1,4 +1,4 @@
-#include "Widgets/Gameplay/ST_WeaponReloadingWidget.h"
+#include "UI/Widgets/Gameplay/ST_WeaponReloadingWidget.h"
 
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 #include "Actors/Pawns/ST_BaseVehicle.h"
