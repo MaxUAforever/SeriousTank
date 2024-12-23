@@ -9,7 +9,8 @@ enum class EHealthChangingType : uint8
 	Healing
 };
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthValueChanged, float /*CurrentHealthValue*/, EHealthChangingType /*HealthChangingType*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthValueChangedDelegate, float /*CurrentHealthValue*/, EHealthChangingType /*HealthChangingType*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMaxHealthValueChangedDelegate, float /*MaxHealthValue*/);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_HealthComponent : public UActorComponent
@@ -17,7 +18,8 @@ class SERIOUSTANK_API UST_HealthComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	FOnHealthValueChanged OnHealthValueChangedDelegate;
+	FOnHealthValueChangedDelegate OnHealthValueChangedDelegate;
+	FOnMaxHealthValueChangedDelegate OnMaxHealthValueChangedDelegate;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.1"));
@@ -26,9 +28,12 @@ protected:
 private:
 	float CurrentHealthValue;
 
-public:	
-	float GetCurrentHealth() { return CurrentHealthValue; }
-	void AddHealthValue(float Value);
+public:
+	float GetCurrentHealth() const { return CurrentHealthValue; }
+	void AddHealthValue(float DeltaHealthValue);
+
+	float GetMaxHealth() const { return MaxHealthvalue; }
+	void SetMaxHealthValue(float InMaxHealth);
 
 protected:
 	virtual void BeginPlay() override;		

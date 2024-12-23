@@ -15,11 +15,17 @@ void UST_HealthComponent::BeginPlay()
 	CurrentHealthValue = MaxHealthvalue;
 }
 
-void UST_HealthComponent::AddHealthValue(float Value)
+void UST_HealthComponent::AddHealthValue(float DeltaHealthValue)
 {
 	const float OldHealthValue = CurrentHealthValue;
-	CurrentHealthValue = FMath::Clamp(CurrentHealthValue + Value, 0.f, MaxHealthvalue);
+	CurrentHealthValue = FMath::Clamp(CurrentHealthValue + DeltaHealthValue, 0.f, MaxHealthvalue);
 
 	EHealthChangingType HealthChangingType = CurrentHealthValue < OldHealthValue ? EHealthChangingType::Damage : EHealthChangingType::Healing;
 	OnHealthValueChangedDelegate.Broadcast(CurrentHealthValue, HealthChangingType);
+}
+
+void UST_HealthComponent::SetMaxHealthValue(float InMaxHealth)
+{
+	MaxHealthvalue = InMaxHealth;
+	OnMaxHealthValueChangedDelegate.Broadcast(MaxHealthvalue);
 }

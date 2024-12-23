@@ -1,13 +1,14 @@
 #include "UI/Widgets/Gameplay/PlayerUIWidget.h"
 
-#include "UI/Utils/ST_WidgetUtilsLibrary.h"
-#include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameState.h"
-
-#include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
 #include "Components/TextBlock.h"
+#include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 #include "TimerManager.h"
+#include "UI/Utils/ST_WidgetUtilsLibrary.h"
+#include "UI/ViewModel/Gameplay/ST_VMHealth.h"
+#include "UI/Widgets/Gameplay/ST_HealthUserWidget.h"
 
 void UPlayerUIWidget::NativeConstruct()
 {
@@ -32,6 +33,11 @@ void UPlayerUIWidget::NativeConstruct()
 		GameState->OnScoreHasChanged.BindUObject(this, &ThisClass::UpdateScore);
 		GameState->OnPreStartCountdownChanged.BindUObject(this, &ThisClass::UpdatePreStartTime);
 	}
+
+	HealthViewModel = NewObject<UST_VMHealth>(GetOuter(), UST_VMHealth::StaticClass());
+	HealthViewModel->Initialize(UGameplayStatics::GetPlayerController(GetOuter(), 0));
+	HealthViewModel->OnHealthChangedDelegate.BindUObject(HealthUserWidget, &UST_HealthUserWidget::SetHealthValue);
+	HealthViewModel->OnMaxHealthChangedDelegate.BindUObject(HealthUserWidget, &UST_HealthUserWidget::SetMaxHealthValue);
 
 	UISoundsComponent = UGameplayStatics::SpawnSound2D(World, CountdownSound); 
 }

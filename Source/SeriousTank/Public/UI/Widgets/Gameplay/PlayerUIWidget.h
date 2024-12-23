@@ -5,6 +5,8 @@
 
 class UAudioComponent;
 class UTextBlock;
+class UST_HealthUserWidget;
+class UST_VMHealth;
 class UST_WeaponReloadingWidget;
 class USoundCue;
 
@@ -22,6 +24,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UST_WeaponReloadingWidget* ThirdWeaponReloadingWidget;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UST_HealthUserWidget* HealthUserWidget;
 
 	UPROPERTY(EditAnyWhere, meta = (BindWidget))
 	UTextBlock* RemainingTimeBlock;
@@ -46,6 +51,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "TimerHandler")
 	float TimeRefreshRate;
+
+private:
+	//TODO: move ViewModel from Widget class
+	UPROPERTY()
+	UST_VMHealth* HealthViewModel;
 
 public:
 	virtual void NativeConstruct() override;
