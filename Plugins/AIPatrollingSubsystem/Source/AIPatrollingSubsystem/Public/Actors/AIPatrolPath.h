@@ -19,6 +19,7 @@ enum class EDirectionType : uint8
 	Backward
 };
 
+class UBillboardComponent;
 class USceneComponent;
 
 UCLASS()
@@ -46,6 +47,9 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	USceneComponent* SceneComponent;
+
+	UPROPERTY(EditAnywhere)
+	UBillboardComponent* EditorBillboard;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(MakeEditWidget="true"))
 	TArray<FVector> PathPoints;

@@ -1,11 +1,15 @@
 #include "Actors/AIPatrolPath.h"
 
 #include "AIPatrollingSubsystem.h"
+#include "Components/BillboardComponent.h"
 
 AAIPatrolPath::AAIPatrolPath()
 {
 	SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
 	SetRootComponent(SceneComponent);
+
+	EditorBillboard = CreateDefaultSubobject<UBillboardComponent>("Billboard");
+	EditorBillboard->SetupAttachment(SceneComponent);
 }
 
 void AAIPatrolPath::BeginPlay()
