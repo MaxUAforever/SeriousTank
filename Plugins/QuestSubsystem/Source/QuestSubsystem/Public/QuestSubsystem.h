@@ -22,7 +22,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnTrackedTaskChangedDelegate, TOptional<FTa
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnTrackedTaskWidgetCreatedDelegate, UUserWidget*, UViewModelBase*);
 
 /**
- * 
+ * @brief Subsystem that manages quests and quest tasks.
+ *
+ * This subsystem handles the registration, initialization, starting, and finishing of quests and their tasks. 
+ * It also deals with loading required data tables, tracking tasks, and creating required widgets for tasks.
  */
 UCLASS()
 class QUESTSUBSYSTEM_API UQuestSubsystem : public UGameInstanceSubsystem
@@ -30,33 +33,132 @@ class QUESTSUBSYSTEM_API UQuestSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 	
 public:
+	/**
+	 * @brief Initializes the quest subsystem.
+	 * Sets up data tables, binds to world cleanup, and initializes default settings.
+	 */
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
+	/**
+	 * @brief Registers a quest provider.
+	 * Schedules registration (loading and initialization) of quests and tasks which IDs are presented in QuestProvider.
+	 * By default this function is called by QuestProvider itself on BeginPlay.
+	 * 
+	 * @param QuestProvider - Pointer to the quest provider to register.
+	 */
 	void RegisterQuestProvider(UQuestProvider* QuestProvider);
 
+	/**
+	 * @brief Gets the delegate triggered when quests are initialized.
+	 * @return Reference to the OnQuestsInitialized delegate.
+	 */
 	FOnQuestsInitializedDelegate& GetOnQuestsInitializedDelegate() { return OnQuestsInitializedDelegate; }
+	
+	/**
+	 * @brief Gets the delegate triggered when the tracked task changes.
+	 * @return Reference to the OnTrackedTaskChanged delegate.
+	 */
 	FOnTrackedTaskChangedDelegate& GetOnTrackedTaskChangedDelegate() { return OnTrackedTaskChangedDelegate; }
+	
+	/**
+	 * @brief Gets the delegate triggered when a widget for the tracked task is created.
+	 * @return Reference to the OnTrackedTaskWidgetCreated delegate.
+	 */
 	FOnTrackedTaskWidgetCreatedDelegate& GetOnTrackedTaskWidgetCreatedDelegate() { return OnTrackedTaskWidgetCreatedDelegate; };
 
+	/**
+	 * @brief Retrieves a quest by its ID.
+	 *
+	 * @param QuestID The ID of the requested quest.
+	 * @return Pointer to the quest or nullptr if not found.
+	 */
 	const UBaseQuest* GetQuest(FQuestID QuestID) const;
 	const UBaseQuestTask* GetQuestTask(FTaskID TaskID) const;	
 
+	/**
+	 * @brief Gets the currently tracked quest task.
+	 * @return Pointer to the tracked quest task or nullptr if no task is tracked.
+	 */
 	const UBaseQuestTask* GetTrackedQuestTask() const;
 	UBaseQuestTask* GetTrackedQuestTask();
 
+	/**
+	 * @brief Gets all cached quests.
+	 * @return Constant reference to the map of all quests.
+	 */
 	const TMap<int32, TObjectPtr<UBaseQuest>>& GetAllQuests() const { return CachedQuests; };
+	
+	/**
+	 * @brief Gets all cached quest tasks.
+	 * @return Constant reference to the map of all tasks.
+	 */
 	const TMap<int32, TObjectPtr<UBaseQuestTask>>& GetAllTasks() const { return CachedTasks; };
 
+	/**
+	 * @brief Starts the quest with the specified ID.
+	 * Starts the quest and automatically starts all associated tasks.
+	 *
+	 * @param QuestID The ID of the quest to start.
+	 * @return True if the quest started successfully; false otherwise.
+	 */
 	bool StartQuest(FQuestID QuestID);
+
+	/**
+	 * @brief Starts a specific quest task.
+	 * Begins the specified quest task and sets it as tracked if conditions are met.
+	 *
+	 * @param TaskID The ID of the task to start.
+	 * @return True if the task started successfully; false otherwise.
+	 */
 	bool StartQuestTask(FTaskID TaskID);
 
+	/**
+	 * @brief Finishes a quest with a given result.
+	 * Marks the quest as finished with the specified result and finishes all associated tasks accordingly.
+	 *
+	 * @param QuestID The ID of the quest to finish.
+	 * @param CompleteResult The result of quest completion.
+	 * @return True if the quest finished successfully; false otherwise.
+	 */
 	bool FinishQuest(FQuestID QuestID, EQuestCompleteRelust CompleteResult);
+	
+	/**
+	 * @brief Finishes a quest task with a given result.
+	 * Marks the specified quest task as finished.
+	 *
+	 * @param TaskID The ID of the task to finish.
+	 * @param CompleteResult The result of task completion.
+	 * @return True if the task finished successfully; false otherwise.
+	 */
 	bool FinishQuestTask(FTaskID TaskID, EQuestTaskCompleteResult CompleteResult);
 
+	/**
+	 * @brief Gets the currently tracked task ID.
+	 * 
+	 * @return An optional containing the tracked task ID, or empty if no task is tracked.
+	 */
 	TOptional<FTaskID> GetTrackedTask() const { return TrackedTaskID; };
+
+	/**
+	 * @brief Sets the task to be tracked.
+	 * Updates the tracked task if the specified task is valid and active.
+	 *
+	 * @param TaskID The ID of the task to track.
+	 * @return True if the tracked task was updated successfully; false otherwise.
+	 */
 	bool SetTrackedTask(FTaskID TaskID);
+
+	/**
+	 * @brief Resets the tracked task.
+	 * Clears the current tracked task and notifies listeners.
+	 */
 	void ResetTrackedTask();
 
+	/**
+	 * @brief Retrieves the widget for the currently tracked task.
+	 *
+	 * @return Pointer to the user widget associated with the tracked task.
+	 */
 	UUserWidget* GetTrackedTaskWidget() { return TrackedTaskWidget; };
 
 private:
@@ -96,7 +198,7 @@ private:
 	TSoftObjectPtr<UDataTable> TaskWidgetsDataTable;
 
 	/**
-	 * Information about current quests registration and initializing
+	 * @brief Flags indicating the status of data loading and quest initialization.
 	 */
 	bool bDataTablesLoaded = false;
 	bool bQuestSaveGameLoaded = false;
@@ -106,7 +208,7 @@ private:
 	TSet<UQuestProvider*> RequestedQuestProviders;
 
 	/**
-	 * Current tracked task properties.
+	 *  @brief Currently tracked task properties.
 	 */
 	TOptional<FTaskID> TrackedTaskID;
 	
@@ -119,7 +221,7 @@ private:
 	TObjectPtr<UUserWidget> TrackedTaskWidget;
 
 	/**
-	 * Current stored quest and tasks with needed information
+	 *  @brief Currently stored quest and tasks with needed information
 	 */
 	UPROPERTY()
 	TMap<int32, TObjectPtr<UBaseQuest>> CachedQuests;
