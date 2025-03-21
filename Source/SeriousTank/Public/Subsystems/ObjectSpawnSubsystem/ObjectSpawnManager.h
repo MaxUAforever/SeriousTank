@@ -5,24 +5,28 @@
 #include "Engine/EngineTypes.h"
 #include "ObjectSpawnManager.generated.h"
 
-class AObjectSpawnVolume;
+class ABaseObjectSpawner;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnObjectSpawnedDelegate, AActor*)
 
 UCLASS()
 class SERIOUSTANK_API UObjectSpawnManager : public UObject
 {
 	GENERATED_BODY()
 	
+public:
+	FOnObjectSpawnedDelegate OnObjectSpawnedDelegate;
+
 private:
 	FObjectSpawnParameters SpawnParams;
 	FTimerHandle SpawnTimerHandle;
 	TSet<FTimerHandle> DestroyTimerHandles;
 
-	// TODO: Create common interface for spawn actors and add ObjectSpawnPoint.
-	TArray<AObjectSpawnVolume*> AvailableSpawnVolumes;
+	TSet<ABaseObjectSpawner*> AvailableSpawnActors;
 	int32 SpawnedObjectsCount = 0;
 
 public:
-	void Initialize(const ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters);
+	void Initialize(const ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner = nullptr);
 	virtual void BeginDestroy() override;
 
 	void SetIsAutoSpawnEnabled(bool bIsEnabled);
@@ -34,15 +38,19 @@ public:
 	void SetMaxObjectsCount(int32 Count);
 
 	bool SpawnRandomObject();
-	bool SpawnRandomObject(int32 SpawnVolumeIndex);
 
 protected:
-	virtual void OnObjectIsSpawned(AObjectSpawnVolume* SpawnVolume, AActor* SpawnedObject);
+	virtual void OnObjectIsSpawned(ABaseObjectSpawner* SpawnVolume, AActor* SpawnedObject);
 
 	virtual void OnDestroyTimerFinished(AActor* SpawnedObject);
 
 private:
-	void OnSpawnedObjectHandled(AObjectSpawnVolume* SpawnVolume, AActor* SpawnedObject);
+	bool SpawnRandomObject(int32 SpawnVolumeIndex);
+
+	void OnSpawnerSetEnabled(ABaseObjectSpawner* SpawningActor, bool bIsEnabled);
+	void OnSpawnedObjectDestroyed(ABaseObjectSpawner* SpawningActor, AActor* SpawnedObject);
 
 	void SetSpawnTimerEnabled(bool bIsEnabled);
+
+	void UpdateAvailableSpawners();
 };

@@ -9,6 +9,7 @@ enum class ESpawnObjectType : uint8
 	Ammo,
 	Buff,
 	Target,
+	AIPawn,
 	Custom
 };
 
@@ -20,6 +21,9 @@ struct FObjectSpawnParameters
 	UPROPERTY(EditDefaultsOnly)
 	bool bIsAutoSpawnEnabled = false;
 	
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bIsAutoSpawnEnabled"))
+	bool bSpawnFromTheStart = false;
+
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bIsAutoSpawnEnabled", ClampMin = "0.0"))
 	float SpawnTime = 10.f;
 
@@ -34,6 +38,9 @@ struct FObjectSpawnParameters
 	
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bIsSpawnLimited", ClampMin = "1"))
 	int32 MaxObjectsCount = 10;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bUseAllAvailableSpawners = false;
 };
 
 USTRUCT()

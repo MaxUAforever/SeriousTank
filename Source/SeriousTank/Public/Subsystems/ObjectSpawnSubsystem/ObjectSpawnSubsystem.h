@@ -8,6 +8,27 @@
 #include "Subsystems/ObjectSpawnSubsystem/SpawnSubsystemTypes.h"
 #include "ObjectSpawnSubsystem.generated.h"
 
+USTRUCT()
+struct FObjectSpawnManagerInfo
+{
+	GENERATED_BODY()
+
+public:
+	friend uint32 GetTypeHash(const FObjectSpawnManagerInfo& Settings);
+
+	bool operator==(const FObjectSpawnManagerInfo& Other) const
+	{
+		return SpawnObjectType == Other.SpawnObjectType && SpawnManagerOwner == Other.SpawnManagerOwner;
+	}
+
+public:
+	UPROPERTY()
+	ESpawnObjectType SpawnObjectType;
+
+	UPROPERTY()
+	TObjectPtr<const UObject> SpawnManagerOwner;
+};
+
 UCLASS()
 class SERIOUSTANK_API UObjectSpawnSubsystem : public UWorldSubsystem
 {
@@ -15,11 +36,20 @@ class SERIOUSTANK_API UObjectSpawnSubsystem : public UWorldSubsystem
 	
 private:
 	UPROPERTY()
-	TMap<ESpawnObjectType, UObjectSpawnManager*> ObjectSpawnManagers;
+	TMap<FObjectSpawnManagerInfo, TObjectPtr<UObjectSpawnManager>> ObjectSpawnManagers;
 
 public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 
-	UObjectSpawnManager* AddObjectSpawnManager(ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& SpawnParameters);
-	UObjectSpawnManager* GetObjectSpawnManager(ESpawnObjectType SpawnObjectType);
+	const UObjectSpawnManager* AddObjectSpawnManager(ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& SpawnParameters, UObject* InSpawnManagerOwner = nullptr);
+	const UObjectSpawnManager* GetObjectSpawnManager(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner = nullptr);
+	const UObjectSpawnManager* FindOrAddObjectSpawnManager(ESpawnObjectType SpawnObjectType, UObject* InSpawnManagerOwner = nullptr);
+
+	void SetupSpawnManager(ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& SpawnParameters, const UObject* InSpawnManagerOwner = nullptr);
+
+	bool SpawnObject(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner = nullptr);
+	FOnObjectSpawnedDelegate* GetManagerObjectSpawnedDelegate(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner = nullptr);
+
+private:
+	UObjectSpawnManager* FindObjectSpawnManager(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner);
 };

@@ -2,10 +2,10 @@
 
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
-#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnVolume.h"
+#include "Subsystems/ObjectSpawnSubsystem/BaseObjectSpawner.h"
 #include "TimerManager.h"
 
-void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters)
+void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner)
 {
 	const UWorld* World = GetWorld();
 	if (!World)
@@ -14,23 +14,34 @@ void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, con
 		return;
 	}
 
-	TArray<AActor*> FoundVolumesActors;
-	UGameplayStatics::GetAllActorsOfClass(World, AObjectSpawnVolume::StaticClass(), FoundVolumesActors);
+	TArray<AActor*> FoundSpawningActors;
+	UGameplayStatics::GetAllActorsOfClass(World, ABaseObjectSpawner::StaticClass(), FoundSpawningActors);
 
-	if (FoundVolumesActors.IsEmpty())
+	if (FoundSpawningActors.IsEmpty())
 	{
 		return;
 	}
 
-	AvailableSpawnVolumes.Reserve(FoundVolumesActors.Num());
-	for (AActor* FoundVolumesActor : FoundVolumesActors)
+	for (AActor* FoundSpawingActor : FoundSpawningActors)
 	{
-		AObjectSpawnVolume* SpawningVolume = Cast<AObjectSpawnVolume>(FoundVolumesActor);
-		if (SpawningVolume && SpawningVolume->HasSpawnObjectType(SpawnObjectType))
+		ABaseObjectSpawner* SpawningActor = Cast<ABaseObjectSpawner>(FoundSpawingActor);
+		if (!SpawningActor || !SpawningActor->HasSpawnObjectType(SpawnObjectType))
 		{
-			AvailableSpawnVolumes.Add(SpawningVolume);
+			continue;
+		}
 
-			SpawningVolume->OnSpawnedObjectHandled.BindUObject(this, &ThisClass::OnSpawnedObjectHandled);
+		const bool bIsNeededOwner = SpawningActor->GetSpawnOwner() == SpawnerOwner || (SpawningActor->GetSpawnOwner() == nullptr && SpawnerOwner->IsA<UWorld>());
+		if (!bIsNeededOwner)
+		{
+			continue;
+		}
+
+		SpawningActor->OnSetSpawerEnabledDelegate.BindUObject(this, &ThisClass::OnSpawnerSetEnabled);
+		SpawningActor->OnSpawnedObjectDestroyedDelegate.BindUObject(this, &ThisClass::OnSpawnedObjectDestroyed);
+
+		if (SpawningActor->CanSpawnObject())
+		{
+			AvailableSpawnActors.Add(SpawningActor);
 		}
 	}
 
@@ -41,6 +52,11 @@ void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, con
 	SetIsSpawnLimited(NewSpawnParameters.bIsSpawnLimited);
 	SetIsAutoSpawnEnabled(NewSpawnParameters.bIsAutoSpawnEnabled);
 	SetIsAutoDestroyEnabled(NewSpawnParameters.bIsAutoDestroyEnabled);
+
+	if (SpawnParams.bSpawnFromTheStart)
+	{
+		SpawnRandomObject();
+	}
 }
 
 void UObjectSpawnManager::BeginDestroy()
@@ -106,30 +122,41 @@ void UObjectSpawnManager::SetMaxObjectsCount(int32 Count)
 
 bool UObjectSpawnManager::SpawnRandomObject()
 {
-	return SpawnRandomObject(FMath::RandRange(0, AvailableSpawnVolumes.Num() - 1));
+	return SpawnRandomObject(FMath::RandRange(0, AvailableSpawnActors.Num() - 1));
 }
 
 bool UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
 {
-	const bool bIsOverMaxCount = SpawnParams.bIsSpawnLimited && SpawnedObjectsCount >= SpawnParams.MaxObjectsCount;
-	if (bIsOverMaxCount || AvailableSpawnVolumes.IsEmpty())
+	if (SpawnVolumeIndex >= AvailableSpawnActors.Num())
 	{
 		return false;
 	}
 
-	if (AvailableSpawnVolumes.IsValidIndex(SpawnVolumeIndex))
+	const bool bIsOverMaxCount = SpawnParams.bIsSpawnLimited && SpawnedObjectsCount >= SpawnParams.MaxObjectsCount;
+	if (bIsOverMaxCount)
 	{
-		AObjectSpawnVolume* SpawningVolume = AvailableSpawnVolumes[SpawnVolumeIndex];
-		AActor* NewObject = SpawningVolume->SpawnRandomObject();
-
-		OnObjectIsSpawned(SpawningVolume, NewObject);
-		return true;
+		return false;
 	}
 
-	return false;
+	auto SpawnActorsIt = AvailableSpawnActors.CreateIterator();
+	for (int i = 0; i < SpawnVolumeIndex; ++i)
+	{
+		++SpawnActorsIt;
+	}
+
+	ABaseObjectSpawner* SpawningActor = *SpawnActorsIt;
+	if (!IsValid(SpawningActor))
+	{
+		return false;
+	}
+
+	AActor* NewObject = SpawningActor->SpawnRandomObject();
+	OnObjectIsSpawned(SpawningActor, NewObject);
+
+	return true;
 }
 
-void UObjectSpawnManager::OnObjectIsSpawned(AObjectSpawnVolume* SpawnVolume, AActor* SpawnedObject)
+void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* SpawnVolume, AActor* SpawnedObject)
 {
 	if (!SpawnVolume || !SpawnedObject)
 	{
@@ -159,14 +186,16 @@ void UObjectSpawnManager::OnObjectIsSpawned(AObjectSpawnVolume* SpawnVolume, AAc
 	SpawnedObjectsCount += 1;
 	if (SpawnVolume->HasMaxObjectsCount())
 	{
-		AvailableSpawnVolumes.Remove(SpawnVolume);
+		AvailableSpawnActors.Remove(SpawnVolume);
 	}
 
 	const bool bIsOverMaxCount = SpawnParams.bIsSpawnLimited && SpawnedObjectsCount >= SpawnParams.MaxObjectsCount;
-	if (bIsOverMaxCount || AvailableSpawnVolumes.IsEmpty())
+	if (bIsOverMaxCount || AvailableSpawnActors.IsEmpty())
 	{
 		SetSpawnTimerEnabled(false);
 	}
+
+	OnObjectSpawnedDelegate.Broadcast(SpawnedObject);
 }
 
 void UObjectSpawnManager::OnDestroyTimerFinished(AActor* SpawnedObject)
@@ -174,18 +203,35 @@ void UObjectSpawnManager::OnDestroyTimerFinished(AActor* SpawnedObject)
 	SpawnedObject->Destroy();
 }
 
-void UObjectSpawnManager::OnSpawnedObjectHandled(AObjectSpawnVolume* SpawnVolume, AActor* SpawnedObject)
+void UObjectSpawnManager::OnSpawnerSetEnabled(ABaseObjectSpawner* SpawningActor, bool bIsEnabled)
 {
-	if (!SpawnVolume || !SpawnedObject)
+	if (!IsValid(SpawningActor))
+	{
+		return;
+	}
+
+	if (!bIsEnabled)
+	{
+		AvailableSpawnActors.Remove(SpawningActor);
+	}
+	else if (SpawningActor->CanSpawnObject())
+	{
+		AvailableSpawnActors.Add(SpawningActor);
+	}
+}
+
+void UObjectSpawnManager::OnSpawnedObjectDestroyed(ABaseObjectSpawner* SpawningActor, AActor* SpawnedObject)
+{
+	if (!SpawningActor || !SpawnedObject)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ObjectSpawnSubsystem::OnSpawnedObjectHandled: Spawn volume or object are not presented."));
 		return;
 	}
 
 	SpawnedObjectsCount -= 1;
-	if (SpawnVolume->GetMaxObjectsCount() == SpawnVolume->GetSpawnedObjectsCount() + 1)
+	if (SpawningActor->GetMaxObjectsCount() == SpawningActor->GetSpawnedObjectsCount() + 1)
 	{
-		AvailableSpawnVolumes.Add(SpawnVolume);
+		AvailableSpawnActors.Add(SpawningActor);
 	}
 
 	if (SpawnParams.bIsAutoSpawnEnabled)
@@ -225,4 +271,9 @@ void UObjectSpawnManager::SetSpawnTimerEnabled(bool bIsEnabled)
 	{
 		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
 	}
+}
+
+void UObjectSpawnManager::UpdateAvailableSpawners()
+{
+
 }
