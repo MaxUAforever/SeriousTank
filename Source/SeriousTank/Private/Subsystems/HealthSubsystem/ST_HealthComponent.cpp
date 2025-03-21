@@ -22,6 +22,11 @@ void UST_HealthComponent::AddHealthValue(float DeltaHealthValue)
 
 	EHealthChangingType HealthChangingType = CurrentHealthValue < OldHealthValue ? EHealthChangingType::Damage : EHealthChangingType::Healing;
 	OnHealthValueChangedDelegate.Broadcast(CurrentHealthValue, HealthChangingType);
+
+	if (FMath::IsNearlyZero(CurrentHealthValue))
+	{
+		OnOwnerKilledDelegate.Broadcast();
+	}
 }
 
 void UST_HealthComponent::SetMaxHealthValue(float InMaxHealth)

@@ -72,4 +72,6 @@ private:
 
 	UPROPERTY()
 	FQuestSubsystemSaveData QuestSubsystemSaveData;
+
+	TArray<TUniquePtr<AdditionalTaskInfo>> QuestAdditionalTaskInfo;
 };

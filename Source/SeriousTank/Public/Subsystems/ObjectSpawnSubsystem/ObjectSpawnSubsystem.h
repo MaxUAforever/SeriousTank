@@ -47,9 +47,11 @@ public:
 
 	void SetupSpawnManager(ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& SpawnParameters, const UObject* InSpawnManagerOwner = nullptr);
 
-	bool SpawnObject(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner = nullptr);
+	AActor* SpawnObject(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner = nullptr);
 	FOnObjectSpawnedDelegate* GetManagerObjectSpawnedDelegate(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner = nullptr);
 
 private:
 	UObjectSpawnManager* FindObjectSpawnManager(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner);
+
+	void OnObjectSpawned(AActor* SpawnedActor, ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner, UObjectSpawnManager* SpawnManager);
 };

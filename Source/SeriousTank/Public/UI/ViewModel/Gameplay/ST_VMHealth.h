@@ -19,7 +19,7 @@ public:
 	FOnMaxHealthViewChangedDelegate OnMaxHealthChangedDelegate;
 
 public:
-	void Initialize(APlayerController* PlayerController);
+	virtual void Initialize() override;
 
 private:
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType) const;

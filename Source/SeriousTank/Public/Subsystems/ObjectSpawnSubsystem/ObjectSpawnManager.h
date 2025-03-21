@@ -37,7 +37,7 @@ public:
 	void SetDestroyTime(float NewDestroyTime);
 	void SetMaxObjectsCount(int32 Count);
 
-	bool SpawnRandomObject();
+	AActor* SpawnRandomObject();
 
 protected:
 	virtual void OnObjectIsSpawned(ABaseObjectSpawner* SpawnVolume, AActor* SpawnedObject);
@@ -45,7 +45,7 @@ protected:
 	virtual void OnDestroyTimerFinished(AActor* SpawnedObject);
 
 private:
-	bool SpawnRandomObject(int32 SpawnVolumeIndex);
+	AActor* SpawnRandomObject(int32 SpawnVolumeIndex);
 
 	void OnSpawnerSetEnabled(ABaseObjectSpawner* SpawningActor, bool bIsEnabled);
 	void OnSpawnedObjectDestroyed(ABaseObjectSpawner* SpawningActor, AActor* SpawnedObject);

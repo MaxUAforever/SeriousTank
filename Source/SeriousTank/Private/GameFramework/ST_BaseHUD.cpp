@@ -10,7 +10,7 @@ void AST_BaseHUD::BeginPlay()
 
 	GameUIWidget = CreateAndAddWidget(GameUIClass);
 	SettingsWidget = CreateAndAddWidget(SettingsWidgetClass);
-
+    
 	if (GameUIWidget)
 	{
 		GameUIWidget->SetVisibility(ESlateVisibility::Visible);

@@ -9,6 +9,7 @@ enum class EHealthChangingType : uint8
 	Healing
 };
 
+DECLARE_MULTICAST_DELEGATE(FOnOwnerKilledDelegate)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthValueChangedDelegate, float /*CurrentHealthValue*/, EHealthChangingType /*HealthChangingType*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMaxHealthValueChangedDelegate, float /*MaxHealthValue*/);
 
@@ -18,6 +19,7 @@ class SERIOUSTANK_API UST_HealthComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	FOnOwnerKilledDelegate OnOwnerKilledDelegate;
 	FOnHealthValueChangedDelegate OnHealthValueChangedDelegate;
 	FOnMaxHealthValueChangedDelegate OnMaxHealthValueChangedDelegate;
 

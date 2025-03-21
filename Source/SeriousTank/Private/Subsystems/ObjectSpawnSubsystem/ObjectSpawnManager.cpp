@@ -120,22 +120,22 @@ void UObjectSpawnManager::SetMaxObjectsCount(int32 Count)
 	SpawnParams.MaxObjectsCount = Count;
 }
 
-bool UObjectSpawnManager::SpawnRandomObject()
+AActor* UObjectSpawnManager::SpawnRandomObject()
 {
 	return SpawnRandomObject(FMath::RandRange(0, AvailableSpawnActors.Num() - 1));
 }
 
-bool UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
+AActor* UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
 {
 	if (SpawnVolumeIndex >= AvailableSpawnActors.Num())
 	{
-		return false;
+		return nullptr;
 	}
 
 	const bool bIsOverMaxCount = SpawnParams.bIsSpawnLimited && SpawnedObjectsCount >= SpawnParams.MaxObjectsCount;
 	if (bIsOverMaxCount)
 	{
-		return false;
+		return nullptr;
 	}
 
 	auto SpawnActorsIt = AvailableSpawnActors.CreateIterator();
@@ -147,13 +147,13 @@ bool UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
 	ABaseObjectSpawner* SpawningActor = *SpawnActorsIt;
 	if (!IsValid(SpawningActor))
 	{
-		return false;
+		return nullptr;
 	}
 
 	AActor* NewObject = SpawningActor->SpawnRandomObject();
 	OnObjectIsSpawned(SpawningActor, NewObject);
 
-	return true;
+	return NewObject;
 }
 
 void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* SpawnVolume, AActor* SpawnedObject)
@@ -258,7 +258,7 @@ void UObjectSpawnManager::SetSpawnTimerEnabled(bool bIsEnabled)
 			bool bIsSpawnNeeded = true;
 			while (bIsSpawnNeeded)
 			{
-				bIsSpawnNeeded = SpawnRandomObject();
+				bIsSpawnNeeded = (SpawnRandomObject() != nullptr);
 			}
 		}
 		else

@@ -293,18 +293,23 @@ bool UQuestSubsystem::SetTrackedTask(FTaskID TaskID)
 
 void UQuestSubsystem::ResetTrackedTask()
 {
+	if (!TrackedTaskID.IsSet())
+	{
+		return;
+	}
+
 	if (IsValid(TrackedTaskViewModel))
 	{
 		TrackedTaskViewModel->Deinitialize();
 	}
-	
-	TrackedTaskID.Reset();
 
 	UBaseQuestTask* TrackedTask = GetQuestTask_Internal(TrackedTaskID.GetValue());
 	if (IsValid(TrackedTask))
 	{
 		TrackedTask->OnQuestTaskCompletedDelegate.Remove(TrackedTaskFinishedDelegateHandle);
 	}
+
+	TrackedTaskID.Reset();
 
 	const UQuestSubsystemSettings* QuestSettings = GetDefault<UQuestSubsystemSettings>();
 	if (QuestSettings->bShouldTaskUseWidgets)

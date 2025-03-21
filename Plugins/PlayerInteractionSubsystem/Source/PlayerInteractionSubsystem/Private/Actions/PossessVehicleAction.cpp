@@ -55,6 +55,12 @@ bool UPossessVehicleAction::Deactivate(UInteractingComponent* InteractingCompone
 		return false;
 	}
 
+	AController* Controller = VehiclePawn->GetController();
+	if (!Controller)
+	{
+		return false;
+	}
+
 	auto IsLocationFree = [this, VehiclePawn](AActor* Actor, const float ActorCollisionRadius, const float ActorCollisionHelfheight, const UInteractionPointComponent* InteractionPoint) -> bool
 	{
 		if (!Actor)
@@ -76,41 +82,34 @@ bool UPossessVehicleAction::Deactivate(UInteractingComponent* InteractingCompone
 
 	CapsuleComponent->GetScaledCapsuleSize(SoldierCollisionRadius, SoldierCollisionHalfLength);
 
-	const TArray<UInteractionPointComponent*>& InteractionPoints = InteractionComponent->GetInteractionPoints();
-
-	for (const UInteractionPointComponent* InteractionPoint : InteractionPoints)
+	const UInteractionPointComponent* UsingInteractionPoint = nullptr;
+	for (const UInteractionPointComponent* InteractionPoint : InteractionComponent->GetInteractionPoints())
 	{
 		if (IsLocationFree(SoldierPawn, SoldierCollisionRadius, SoldierCollisionHalfLength, InteractionPoint))
 		{
-			AController* Controller = VehiclePawn->GetController();
-			if (!Controller)
-			{
-				return false;
-			}
-
-			FVector InteractionLocation = InteractionPoint->GetComponentLocation() + InteractionPoint->GetForwardVector() * InteractionPoint->GetInteractionDistance();
-			InteractionLocation.Z = SoldierPawn->GetActorLocation().Z;
-
-			SoldierPawn->AttachToActor(VehiclePawn, FAttachmentTransformRules::KeepRelativeTransform);
-			SoldierPawn->SetActorLocation(InteractionLocation, true);
-			SoldierPawn->SetActorRotation(InteractionPoint->GetComponentRotation() * (-1));
-
-			/*if (USkeletalMeshComponent* SkeletalMesh = SoldierPawn->GetComponentByClass<USkeletalMeshComponent>())
-			{
-				SkeletalMesh->SetRelativeRotation(FRotator(0.f));
-			}*/
-			
-			SoldierPawn->GetRootComponent()->SetVisibility(true, true);
-
-			VehiclePawn->DisableInput(Cast<APlayerController>(Controller));
-
-			PlayDeactivationMontage(SoldierPawn, VehiclePawn, InteractionComponent, InteractionPoint);
-
-			return true;
+			UsingInteractionPoint = InteractionPoint;
+			break;
 		}
 	}
 
-	return false;
+	if (!IsValid(UsingInteractionPoint))
+	{
+		return false;
+	}
+
+	FVector InteractionLocation = UsingInteractionPoint->GetComponentLocation() + UsingInteractionPoint->GetForwardVector() * UsingInteractionPoint->GetInteractionDistance();
+	InteractionLocation.Z = SoldierPawn->GetActorLocation().Z;
+
+	SoldierPawn->AttachToActor(VehiclePawn, FAttachmentTransformRules{EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, false});
+	SoldierPawn->SetActorLocation(InteractionLocation, true);
+	SoldierPawn->SetActorRotation(UsingInteractionPoint->GetComponentRotation() * (-1));
+	
+	SoldierPawn->GetRootComponent()->SetVisibility(true, true);
+
+	VehiclePawn->DisableInput(Cast<APlayerController>(Controller));
+
+	PlayDeactivationMontage(SoldierPawn, VehiclePawn, InteractionComponent, UsingInteractionPoint);
+	return true;
 }
 
 bool UPossessVehicleAction::CanBeActivated(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) const

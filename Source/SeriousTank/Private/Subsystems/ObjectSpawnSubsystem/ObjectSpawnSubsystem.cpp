@@ -1,8 +1,9 @@
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 
-#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
 #include "Engine/EngineBaseTypes.h"
 #include "Engine/World.h"
+#include "GameFramework/Pawn.h"
+#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
 
 uint32 GetTypeHash(const FObjectSpawnManagerInfo& ObjectSpawnManagerInfo)
 {
@@ -76,17 +77,19 @@ void UObjectSpawnSubsystem::SetupSpawnManager(ESpawnObjectType SpawnObjectType, 
 	SpawnManager->SetIsAutoDestroyEnabled(SpawnParameters.bIsAutoDestroyEnabled);
 }
 
-bool UObjectSpawnSubsystem::SpawnObject(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner)
+AActor* UObjectSpawnSubsystem::SpawnObject(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner)
 {
 	UObjectSpawnManager* SpawnManager = FindObjectSpawnManager(SpawnObjectType, InSpawnManagerOwner);
 	if (!IsValid(SpawnManager))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ObjectSpawnSubsystem::SpawnObject: Trying to spawn object with not existing SpawnManager"));
-		return false;
+		return nullptr;
 	}
 
-	return SpawnManager->SpawnRandomObject();
+	AActor* SpawnedActor = SpawnManager->SpawnRandomObject();
+	OnObjectSpawned(SpawnedActor, SpawnObjectType, InSpawnManagerOwner, SpawnManager);
 
+	return SpawnedActor;
 }
 
 FOnObjectSpawnedDelegate* UObjectSpawnSubsystem::GetManagerObjectSpawnedDelegate(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner)
@@ -113,4 +116,13 @@ UObjectSpawnManager* UObjectSpawnSubsystem::FindObjectSpawnManager(ESpawnObjectT
 	TObjectPtr<UObjectSpawnManager>* SpawnManagerPtr = ObjectSpawnManagers.Find({ SpawnObjectType, SpawnManagerOwner });
 
 	return SpawnManagerPtr ? *SpawnManagerPtr : nullptr;
+}
+
+void UObjectSpawnSubsystem::OnObjectSpawned(AActor* SpawnedActor, ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner, UObjectSpawnManager* SpawnManager)
+{
+	APawn* AIPawn = Cast<APawn>(SpawnedActor);
+	if (IsValid(AIPawn) && SpawnObjectType == ESpawnObjectType::AIPawn)
+	{
+		AIPawn->SpawnDefaultController();
+	}
 }
