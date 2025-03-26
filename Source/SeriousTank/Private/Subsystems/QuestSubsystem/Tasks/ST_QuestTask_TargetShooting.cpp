@@ -63,7 +63,7 @@ void UST_QuestTask_TargetShooting::OnTargetDestroyed(AActor* DestroyedActor)
 
 	if (CurrentScore >= ScoreToWin && ScoreToWin > 0)
 	{
-		FinishTask(EQuestTaskCompleteResult::Succeeded);
+		FinishTask(EQuestCompleteRelust::Succeeded);
 		return;
 	}
 	

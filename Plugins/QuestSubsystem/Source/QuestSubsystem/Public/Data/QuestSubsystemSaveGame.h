@@ -7,6 +7,7 @@
 DECLARE_DELEGATE_OneParam(FQuestSubsystemAsyncSaveDelegate, bool);
 DECLARE_DELEGATE_OneParam(FQuestSubsystemAsyncLoadDelegate, const FQuestSubsystemSaveData*)
 
+class UQuestTaskAdditionalSaveInfo;
 class UQuestSubsystem;
 
 USTRUCT()
@@ -14,14 +15,17 @@ struct FQuestInfo
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	int32 QuestID = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	bool bIsActive = false;
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	bool bIsCompleted = false;
+
+	UPROPERTY(SaveGame)
+	FString AdditionalQuestInfo;
 };
 
 USTRUCT()
@@ -29,17 +33,20 @@ struct FQuestTaskInfo
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	int32 TaskID = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	int32 ParentQuestID = 0;
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	bool bIsActive = false;
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	bool bIsCompleted = false;
+
+	UPROPERTY(SaveGame)
+	FString AdditionalTaskInfo;
 };
 
 USTRUCT()
@@ -47,10 +54,10 @@ struct FQuestSubsystemSaveData
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	TArray<FQuestInfo> QuestsProgressList;
 
-	UPROPERTY(VisibleAnywhere, Category = "Quests")
+	UPROPERTY(SaveGame)
 	TArray<FQuestTaskInfo> QuestTasksProgressList;
 };
 
@@ -61,7 +68,7 @@ class QUESTSUBSYSTEM_API UQuestSubsystemSaveGame : public USaveGame
     
 public:
     static void AsyncLoadQuestsInfo(FQuestSubsystemAsyncLoadDelegate OnLoadedDelegate = FQuestSubsystemAsyncLoadDelegate());
-    static void AsyncSavedQuestsInfo(const UQuestSubsystem* QuestSubsystem, FQuestSubsystemAsyncSaveDelegate OnSavedDelegate = FQuestSubsystemAsyncSaveDelegate());
+    static void AsyncSaveQuestsInfo(const UQuestSubsystem* QuestSubsystem, FQuestSubsystemAsyncSaveDelegate OnSavedDelegate = FQuestSubsystemAsyncSaveDelegate());
 
 private:
 	static void StoreDataToSaveGame(const UQuestSubsystem* QuestSubsystem, UQuestSubsystemSaveGame* SaveGameInstance);
@@ -70,8 +77,6 @@ private:
 	static FString SaveSlotName;
 	static uint32 UserIndex;
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	FQuestSubsystemSaveData QuestSubsystemSaveData;
-
-	TArray<TUniquePtr<AdditionalTaskInfo>> QuestAdditionalTaskInfo;
 };

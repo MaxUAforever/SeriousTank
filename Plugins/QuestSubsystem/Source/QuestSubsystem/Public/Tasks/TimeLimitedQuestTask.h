@@ -19,20 +19,36 @@ public:
 
 	void AddRemainingTime(float TimeToAdd);
 
+	UFUNCTION()
+	void SetSavedRemainingTime(float InRemainingTimeTime) { SavedRemainingTime = InRemainingTimeTime; }
+
+	UFUNCTION()
+	void SetSavedPassedTime(float InPassedTime) { SavedPassedTime = InPassedTime; }
+
 protected:
 	virtual void OnTaskStarted() override;
-	virtual void OnTaskCompleted(EQuestTaskCompleteResult CompleteResult) override;
+	virtual void OnTaskCompleted(EQuestCompleteRelust CompleteResult) override;
 
 	virtual void FillTaskInfo(const UQuestTaskInfoDataAsset* QuestInfoDataAsset) override;
+	virtual void PreSaveGame() override;
 
 private:
-	void OnWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
+	void OnWorldCleanup(UWorld* World);
 
 	void OnTaskTimeLimitReached();
-
+	
 private:
 	FTimerHandle TaskLimitTimerHandle;
 
-	EQuestTaskCompleteResult TimeOverCompleteResult;
 	float TaskLimitTime = 0.0f;
+	bool bShouldFinishOnInterrupt = true;
+	EQuestCompleteRelust TimeOverCompleteResult;
+	
+	float StartTime;
+
+	UPROPERTY(SaveGame)
+	float SavedRemainingTime = 0.0f;
+
+	UPROPERTY(SaveGame)
+	float SavedPassedTime = 0.0f;
 };

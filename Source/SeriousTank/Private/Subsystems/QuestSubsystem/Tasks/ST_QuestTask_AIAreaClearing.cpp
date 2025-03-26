@@ -49,7 +49,7 @@ void UST_QuestTask_AIAreaClearing::OnTaskStarted()
 	StartWave(CurrentWaveIndex);
 }
 
-void UST_QuestTask_AIAreaClearing::OnTaskCompleted(EQuestTaskCompleteResult CompleteResult)
+void UST_QuestTask_AIAreaClearing::OnTaskCompleted(EQuestCompleteRelust CompleteResult)
 {
 	UObjectSpawnSubsystem* ObjectSpawnSubsystem = GetWorld()->GetSubsystem<UObjectSpawnSubsystem>();
 	if (!IsValid(ObjectSpawnSubsystem))
@@ -81,7 +81,7 @@ void UST_QuestTask_AIAreaClearing::StartWave(int32 WaveIndex)
 {
 	if (!EnemiesWavesAIAmount.IsValidIndex(WaveIndex))
 	{
-		FinishTask(EQuestTaskCompleteResult::Succeeded);
+		FinishTask(EQuestCompleteRelust::Succeeded);
 		return;
 	}
 

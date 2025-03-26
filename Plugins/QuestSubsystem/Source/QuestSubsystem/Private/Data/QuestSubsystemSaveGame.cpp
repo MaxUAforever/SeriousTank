@@ -2,6 +2,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "QuestSubsystem.h"
+#include "Utils/QuestSubsystemUtils.h"
 
 FString UQuestSubsystemSaveGame::SaveSlotName = TEXT("QuestSubsystemSlot");
 uint32 UQuestSubsystemSaveGame::UserIndex = 0;
@@ -25,15 +26,15 @@ void UQuestSubsystemSaveGame::AsyncLoadQuestsInfo(FQuestSubsystemAsyncLoadDelega
     UGameplayStatics::AsyncLoadGameFromSlot(SaveSlotName, UserIndex, LoadedDelegate);
 }
 
-void UQuestSubsystemSaveGame::AsyncSavedQuestsInfo(const UQuestSubsystem* QuestSubsystem, FQuestSubsystemAsyncSaveDelegate OnSavedDelegate)
+void UQuestSubsystemSaveGame::AsyncSaveQuestsInfo(const UQuestSubsystem* QuestSubsystem, FQuestSubsystemAsyncSaveDelegate OnSavedDelegate)
 {
     USaveGame* SaveGameObject = UGameplayStatics::CreateSaveGameObject(ThisClass::StaticClass());
     UQuestSubsystemSaveGame* SaveGameInstance = Cast<UQuestSubsystemSaveGame>(SaveGameObject);
-    if (!SaveGameInstance || !QuestSubsystem)
+    if (!SaveGameInstance || !IsValid(QuestSubsystem))
     {
         OnSavedDelegate.ExecuteIfBound(false);
     }
-	
+
 	StoreDataToSaveGame(QuestSubsystem, SaveGameInstance);
     
     auto OnAsyncSaveDone = [OnSavedDelegate](const FString& /*SlotName*/, const int32 /*UserIndex*/, bool bSuccess)
@@ -59,7 +60,8 @@ void UQuestSubsystemSaveGame::StoreDataToSaveGame(const UQuestSubsystem* QuestSu
 			continue;
 		}
 
-		SaveGameInstance->QuestSubsystemSaveData.QuestsProgressList.Add({ QuestID, Quest->IsActive(), Quest->IsCompleted() });
+        const FString AdditionalQuestInfo = QuestSubsystemUtils::CreateJSONStringForSaveGameParams(Quest);
+		SaveGameInstance->QuestSubsystemSaveData.QuestsProgressList.Add({ QuestID, Quest->IsActive(), Quest->IsCompleted(), AdditionalQuestInfo });
 
 		for (const FTaskID& TaskID : Quest->GetTaskIDs())
 		{
@@ -69,7 +71,8 @@ void UQuestSubsystemSaveGame::StoreDataToSaveGame(const UQuestSubsystem* QuestSu
 				continue;
 			}
 
-			SaveGameInstance->QuestSubsystemSaveData.QuestTasksProgressList.Add({ TaskID, QuestID, Task->IsActive(), Task->IsCompleted() });
+            const FString AdditionalTaskInfo = QuestSubsystemUtils::CreateJSONStringForSaveGameParams(Task, Quest);
+			SaveGameInstance->QuestSubsystemSaveData.QuestTasksProgressList.Add({ TaskID, QuestID, Task->IsActive(), Task->IsCompleted(), AdditionalTaskInfo });
 		}
 	}
 }

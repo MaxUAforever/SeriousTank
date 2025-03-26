@@ -25,7 +25,7 @@ public:
 
 protected:
 	virtual void OnTaskStarted() override;
-    virtual void OnTaskCompleted(EQuestTaskCompleteResult CompleteResult) override;
+    virtual void OnTaskCompleted(EQuestCompleteRelust CompleteResult) override;
 
 private:
     void StartWave(int32 WaveIndex);

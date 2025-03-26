@@ -24,7 +24,7 @@ bool UBaseQuestTask::StartTask()
 	return true;
 }
 
-bool UBaseQuestTask::FinishTask(EQuestTaskCompleteResult CompleteResult)
+bool UBaseQuestTask::FinishTask(EQuestCompleteRelust CompleteResult)
 {
 	if (!bIsActive)
 	{
@@ -32,7 +32,7 @@ bool UBaseQuestTask::FinishTask(EQuestTaskCompleteResult CompleteResult)
 	}
 
 	bIsActive = false;
-	bIsCompleted = CompleteResult == EQuestTaskCompleteResult::Succeeded;
+	bIsCompleted = CompleteResult == EQuestCompleteRelust::Succeeded;
 
 	OnTaskCompleted(CompleteResult);
 	OnQuestTaskCompletedDelegate.Broadcast(TaskID, CompleteResult);

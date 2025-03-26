@@ -4,19 +4,11 @@
 #include "QuestCoreTypes.h"
 #include "BaseQuestTask.generated.h"
 
-UENUM(BlueprintType)
-enum class EQuestTaskCompleteResult : uint8
-{
-    Succeeded,
-    Failed,
-    Cancelled
-};
-
 class UBaseTaskStartCondition;
 class UQuestTaskInfoDataAsset;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnQuestTaskStartedDelegate, FTaskID);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnQuestTaskCompletedDelegate, FTaskID, EQuestTaskCompleteResult);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnQuestTaskCompletedDelegate, FTaskID, EQuestCompleteRelust);
 
 UCLASS(Abstract)
 class QUESTSUBSYSTEM_API UBaseQuestTask : public UObject
@@ -32,7 +24,7 @@ public:
     UBaseQuestTask(FTaskID InTaskID);
 
     bool StartTask();
-    bool FinishTask(EQuestTaskCompleteResult CompleteResult);
+    bool FinishTask(EQuestCompleteRelust CompleteResult);
 
     FTaskID GetID() const { return TaskID; };
     void SetID(FTaskID InTaskID) { TaskID = InTaskID; }
@@ -57,10 +49,11 @@ public:
     void AddStartCondition(UBaseTaskStartCondition* StartCondition);
 
     virtual void FillTaskInfo(const UQuestTaskInfoDataAsset* QuestInfoDataAsset) {};
+    virtual void PreSaveGame() {};
 
 protected:
     virtual void OnTaskStarted() {};
-    virtual void OnTaskCompleted(EQuestTaskCompleteResult CompleteResult) {};
+    virtual void OnTaskCompleted(EQuestCompleteRelust CompleteResult) {};
 
     UObject* GetQuestProviderObject() const;
 

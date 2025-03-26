@@ -4,13 +4,6 @@
 #include "QuestCoreTypes.h"
 #include "BaseQuest.generated.h"
 
-enum class EQuestCompleteRelust : uint8
-{
-    Succeeded,
-    Failed,
-    Cancelled
-};
-
 class UBaseQuestTask;
 class UQuestInfoDataAsset;
 
@@ -50,11 +43,12 @@ public:
     void SetQuestName(const FText& InQuestName) { QuestName = InQuestName; };
     void SetQuestDescription(const FText& InQuestDescription) { QuestDescription = InQuestDescription; };
 
-    const TArray<FTaskID>& GetTaskIDs() { return TaskIDsList; };
+    const TArray<FTaskID>& GetTaskIDs() const { return TaskIDsList; };
     void SetTasks(TArray<FTaskID>&& InTasks);
     void AddTask(FTaskID TaskID);
 
     virtual void FillQuestInfo(const UQuestInfoDataAsset* QuestInfoDataAsset) {};
+    virtual void PreSaveGame() {};
 
     UObject* GetQuestProviderObject() const;
 

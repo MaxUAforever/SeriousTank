@@ -31,14 +31,26 @@ void AST_QuestsCompletingGameMode::StartQuests()
 		return;
 	}
 
-	for (const FQuestID& QuestID : QuestProvider->GetQuestIDs())
+	for (FQuestID QuestID : QuestProvider->GetQuestIDs())
 	{
-		bool bSuccess = QuestSubsystem->StartQuest(QuestID);
-		if (!bSuccess)
+		if (!IsValid(QuestSubsystem->GetQuest(QuestID)))
 		{
 			QuestSubsystem->GetOnQuestsInitializedDelegate().AddUObject(this, &ThisClass::StartQuests);
 			return;
 		}
+
+		QuestSubsystem->StartQuest(QuestID);
+	}
+
+	for (FTaskID TaskID : QuestProvider->GetQuestTaskIDs())
+	{
+		if (!IsValid(QuestSubsystem->GetQuestTask(TaskID)))
+		{
+			QuestSubsystem->GetOnQuestsInitializedDelegate().AddUObject(this, &ThisClass::StartQuests);
+			return;
+		}
+
+		QuestSubsystem->StartQuestTask(TaskID);
 	}
 
 	UBaseQuestTask* TackedQuestTask = QuestSubsystem->GetTrackedQuestTask();
@@ -48,7 +60,7 @@ void AST_QuestsCompletingGameMode::StartQuests()
 	}
 }
 
-void AST_QuestsCompletingGameMode::OnQuestTaskCompleted(FTaskID TaskID, EQuestTaskCompleteResult TaskCompleteResult)
+void AST_QuestsCompletingGameMode::OnQuestTaskCompleted(FTaskID TaskID, EQuestCompleteRelust TaskCompleteResult)
 {
 	TriggerGameFinish();
 }

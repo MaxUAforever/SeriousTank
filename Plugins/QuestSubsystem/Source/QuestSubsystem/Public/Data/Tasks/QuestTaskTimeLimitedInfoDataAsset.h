@@ -1,9 +1,8 @@
 #pragma once
 
 #include "QuestTaskInfoDataAsset.h"
+#include "QuestCoreTypes.h"
 #include "QuestTaskTimeLimitedInfoDataAsset.generated.h"
-
-enum class EQuestTaskCompleteResult : uint8;
 
 UCLASS(Abstract)
 class QUESTSUBSYSTEM_API UQuestTaskTimeLimitedInfoDataAsset : public UQuestTaskInfoDataAsset
@@ -17,5 +16,9 @@ public:
 
 	// Result of the task when the time limit is reached.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest Settings")
-	EQuestTaskCompleteResult TimeOverCompleteResult;
+	EQuestCompleteRelust TimeOverCompleteResult;
+
+	// Determines if task should be finished if it was interrupted by something (e.g. exiting game)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Quest Settings")
+	bool bShouldFinishOnInterrupt = true;
 };

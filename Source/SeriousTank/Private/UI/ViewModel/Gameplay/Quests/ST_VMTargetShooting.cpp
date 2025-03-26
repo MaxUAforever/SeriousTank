@@ -45,6 +45,8 @@ void UST_VMTargetShooting::Initialize(UUserWidget* RelatedWidget)
 
 void UST_VMTargetShooting::Deinitialize()
 {
+	Super::Deinitialize();
+
 	if (IsValid(TargetShootingTask))
 	{
 		TargetShootingTask->OnScoreChangedDelegate.Remove(ScoreChangedDelegateHandle);

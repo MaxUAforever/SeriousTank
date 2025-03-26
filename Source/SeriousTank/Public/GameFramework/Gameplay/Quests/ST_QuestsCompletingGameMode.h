@@ -5,7 +5,7 @@
 #include "ST_QuestsCompletingGameMode.generated.h"
 
 class UQuestProvider;
-enum class EQuestTaskCompleteResult : uint8;
+enum class EQuestCompleteRelust : uint8;
 
 UCLASS()
 class SERIOUSTANK_API AST_QuestsCompletingGameMode : public AST_GameplayGameMode
@@ -21,7 +21,7 @@ protected:
 private:
 	void StartQuests();
 	
-	void OnQuestTaskCompleted(FTaskID TaskID, EQuestTaskCompleteResult TaskCompleteResult);
+	void OnQuestTaskCompleted(FTaskID TaskID, EQuestCompleteRelust TaskCompleteResult);
 
 protected:
 	UPROPERTY(EditAnywhere)

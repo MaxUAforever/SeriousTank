@@ -13,125 +13,7 @@
 #include "Engine/StreamableManager.h"
 #include "Tasks/TaskStartConditions/BaseTaskStartCondition.h"
 #include "UI/ViewModel/ViewModelBase.h"
-
-#include "Dom/JsonObject.h"
-#include "Serialization/JsonSerializer.h"
-
-namespace
-{
-
-// Utility function to fill object properties from JSON string. 
-// TODO: modify or replace with FJsonObjectConverter::JsonObjectStringToUStruct
-void FillObjectParamsFromJSONString(UObject* Object, const FString& JSONParams)
-{
-	if (!Object)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InitializeObjectFromJson: Object is null"));
-		return;
-	}
-
-	TSharedPtr<FJsonObject> JsonObject;
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JSONParams);
-	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON: %s"), *JSONParams);
-		return;
-	}
-
-	for (TFieldIterator<FProperty> PropIt(Object->GetClass()); PropIt; ++PropIt)
-	{
-		FProperty* Property = *PropIt;
-		FString PropertyName = Property->GetName();
-
-		if (!JsonObject->HasField(PropertyName))
-		{
-			continue;
-		}
-
-		FString SetterFunctionName = "Set" + PropertyName;
-		UFunction* SetterFunction = Object->FindFunction(FName(SetterFunctionName));
-		if (!SetterFunction)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Setter function %s not found on %s"), *SetterFunctionName, *Object->GetName());
-			return;
-		}
-
-		if (FIntProperty* IntProp = CastField<FIntProperty>(Property))
-		{
-			struct { int32 Value; } ParamsStruct;
-			ParamsStruct.Value = JsonObject->GetIntegerField(PropertyName);
-			Object->ProcessEvent(SetterFunction, &ParamsStruct);
-		}
-		else if (FStrProperty* StrProp = CastField<FStrProperty>(Property))
-		{
-			struct { FString Value; } ParamsStruct;
-			ParamsStruct.Value = JsonObject->GetStringField(PropertyName);
-			Object->ProcessEvent(SetterFunction, &ParamsStruct);
-		}
-		else if (FFloatProperty* FloatProp = CastField<FFloatProperty>(Property))
-		{
-			struct { float Value; } ParamsStruct;
-			ParamsStruct.Value = JsonObject->GetNumberField(PropertyName);
-			Object->ProcessEvent(SetterFunction, &ParamsStruct);
-		}
-		else if (FBoolProperty* BoolProp = CastField<FBoolProperty>(Property))
-		{
-			struct { float Value; } ParamsStruct;
-			ParamsStruct.Value = JsonObject->GetBoolField(PropertyName);
-			Object->ProcessEvent(SetterFunction, &ParamsStruct);
-		}
-		else if (FArrayProperty* ArrayProp = CastField<FArrayProperty>(Property))
-		{
-			const TArray<TSharedPtr<FJsonValue>>* JsonArray = nullptr;
-			bool bResult = JsonObject->TryGetArrayField(PropertyName, JsonArray);
-			if (!bResult)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON array: %s"), *PropertyName);
-				continue;
-			}
-
-			if (FIntProperty* InnerIntProp = CastField<FIntProperty>(ArrayProp->Inner))
-			{
-				struct { TArray<int32> ValueArray; } ParamsStruct;
-
-				FScriptArrayHelper ArrayHelper(ArrayProp, ArrayProp->ContainerPtrToValuePtr<void>(Object));
-				ArrayHelper.Resize(JsonArray->Num());
-				for (int32 i = 0; i < JsonArray->Num(); i++)
-				{
-					ParamsStruct.ValueArray.Add(static_cast<int32>((*JsonArray)[i]->AsNumber()));
-				}
-
-				Object->ProcessEvent(SetterFunction, &ParamsStruct);
-			}
-		}
-	}
-}
-
-EQuestTaskCompleteResult GetTaskResultByQuest(EQuestCompleteRelust QuestCompleteResult)
-{
-	switch (QuestCompleteResult)
-	{
-		case EQuestCompleteRelust::Succeeded:
-		{
-			return EQuestTaskCompleteResult::Succeeded;
-		}
-		case EQuestCompleteRelust::Failed:
-		{
-			return EQuestTaskCompleteResult::Failed;
-		}
-		case EQuestCompleteRelust::Cancelled:
-		{
-			return EQuestTaskCompleteResult::Cancelled;
-		}
-		default:
-		{
-			UE_LOG(LogQuestSubsystem, Error, TEXT("GetTaskResultByQuest: Unhandled QuestCompleteResult!"));
-			return EQuestTaskCompleteResult::Failed;
-		}
-	}
-}
-
-} // anonymous namespace
+#include "Utils/QuestSubsystemUtils.h"
 
 void UQuestSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -184,7 +66,7 @@ UBaseQuestTask* UQuestSubsystem::GetTrackedQuestTask()
 	return GetQuestTask_Internal(TrackedTaskID.GetValue());
 }
 
-bool UQuestSubsystem::StartQuest(FQuestID QuestID)
+bool UQuestSubsystem::StartQuest(FQuestID QuestID, bool bShouldStartTasks)
 {
 	TObjectPtr<UBaseQuest> Quest = GetQuest_Internal(QuestID);
 	if (!IsValid(Quest))
@@ -194,10 +76,28 @@ bool UQuestSubsystem::StartQuest(FQuestID QuestID)
 	}
 
 	bool bSuccess = Quest->StartQuest();
-
-	if (bSuccess)
+	if (!bSuccess)
 	{
-		for (FTaskID TaskID : Quest->GetTaskIDs())
+		return false;
+	}
+
+	const bool bIsTasksStateResetNeeded = Quest->IsRepeatable() && Quest->IsCompleted();
+	if (!bShouldStartTasks && !bIsTasksStateResetNeeded)
+	{
+		return bSuccess;
+	}
+
+	for (FTaskID TaskID : Quest->GetTaskIDs())
+	{
+		if (bIsTasksStateResetNeeded)
+		{
+			if (UBaseQuestTask* QuestTask = GetQuestTask_Internal(TaskID))
+			{
+				QuestTask->SetIsCompleted(false);
+			}
+		}
+		
+		if (bShouldStartTasks)
 		{
 			StartQuestTask(TaskID);
 		}
@@ -218,6 +118,8 @@ bool UQuestSubsystem::StartQuestTask(FTaskID TaskID)
 	const bool bSuccess = QuestTask->StartTask();
 	if (bSuccess)
 	{
+		QuestTask->OnQuestTaskCompletedDelegate.AddUObject(this, &ThisClass::OnQuestTaskCompleted);
+		
 		const UQuestSubsystemSettings* QuestSettings = GetDefault<UQuestSubsystemSettings>();
 		if (QuestSettings->bShouldTrackNewActiveTasks && QuestTask->ShouldBeTracked())
 		{
@@ -240,17 +142,16 @@ bool UQuestSubsystem::FinishQuest(FQuestID QuestID, EQuestCompleteRelust Complet
 	bool bSuccess = Quest->FinishQuest(CompleteResult);
 	if (bSuccess)
 	{
-		EQuestTaskCompleteResult TaskCompleteResult = GetTaskResultByQuest(CompleteResult);
 		for (FTaskID TaskID : Quest->GetTaskIDs())
 		{
-			FinishQuestTask(TaskID, TaskCompleteResult);
+			FinishQuestTask(TaskID, CompleteResult);
 		}
 	}
 
 	return bSuccess;
 }
 
-bool UQuestSubsystem::FinishQuestTask(FTaskID TaskID, EQuestTaskCompleteResult CompleteResult)
+bool UQuestSubsystem::FinishQuestTask(FTaskID TaskID, EQuestCompleteRelust CompleteResult)
 {
 	TObjectPtr<UBaseQuestTask> QuestTask = GetQuestTask_Internal(TaskID);
 	if (!IsValid(QuestTask))
@@ -284,8 +185,6 @@ bool UQuestSubsystem::SetTrackedTask(FTaskID TaskID)
 		CreateWidgetForTrackedTask();
 	}
 
-	TrackedTaskFinishedDelegateHandle = Task->OnQuestTaskCompletedDelegate.AddUObject(this, &ThisClass::OnTrackedTaskFinished);
-
 	OnTrackedTaskChangedDelegate.Broadcast(TrackedTaskID);
 
 	return true;
@@ -301,12 +200,7 @@ void UQuestSubsystem::ResetTrackedTask()
 	if (IsValid(TrackedTaskViewModel))
 	{
 		TrackedTaskViewModel->Deinitialize();
-	}
-
-	UBaseQuestTask* TrackedTask = GetQuestTask_Internal(TrackedTaskID.GetValue());
-	if (IsValid(TrackedTask))
-	{
-		TrackedTask->OnQuestTaskCompletedDelegate.Remove(TrackedTaskFinishedDelegateHandle);
+		TrackedTaskViewModel = nullptr;
 	}
 
 	TrackedTaskID.Reset();
@@ -338,8 +232,12 @@ void UQuestSubsystem::OnWorldCleanup(UWorld* World, bool bSessionEnded, bool bCl
 		World->GetTimerManager().ClearTimer(RegistrationDelayTimer);
 	}
 
-	ResetAllData(true);
+	OnQuestsWorldCleanupDelegate.Broadcast(World);
+
+	SaveQuestsState();
+
 	ResetTrackedTask();
+	ResetAllData(true);
 
 	RequestedQuestProviders.Empty();
 }
@@ -528,7 +426,7 @@ void UQuestSubsystem::FillTaskStartConditions()
 			return;
 		}
 
-		FillObjectParamsFromJSONString(BaseTaskStartCondition, TaskStartConditionInfo.ConditionParametersJSON);
+		QuestSubsystemUtils::FillObjectParamsFromJSONString(BaseTaskStartCondition, TaskStartConditionInfo.ConditionParametersJSON);
 		BaseTask->AddStartCondition(BaseTaskStartCondition);
 	};
 
@@ -578,8 +476,13 @@ void UQuestSubsystem::RequestLoadSaveGame()
 				continue;
 			}
 
-			BaseQuest->SetIsActive(QuestInfo.bIsActive);
 			BaseQuest->SetIsCompleted(QuestInfo.bIsCompleted);
+			QuestSubsystemUtils::FillObjectParamsFromJSONString(BaseQuest, QuestInfo.AdditionalQuestInfo);
+
+			if (QuestInfo.bIsActive)
+			{
+				StartQuest(QuestInfo.QuestID);
+			}
 		}
 
 		for (const FQuestTaskInfo& TaskInfo : QuestSubsystemSaveData->QuestTasksProgressList)
@@ -595,8 +498,13 @@ void UQuestSubsystem::RequestLoadSaveGame()
 				continue;
 			}
 
-			BaseTask->SetIsActive(TaskInfo.bIsActive);
 			BaseTask->SetIsCompleted(TaskInfo.bIsCompleted);
+			QuestSubsystemUtils::FillObjectParamsFromJSONString(BaseTask, TaskInfo.AdditionalTaskInfo);
+			
+			if (TaskInfo.bIsActive)
+			{
+				StartQuestTask(TaskInfo.TaskID);
+			}
 		}
 
 		if (bIsQuestProviderRegisterActive)
@@ -728,14 +636,77 @@ void UQuestSubsystem::CreateWidgetForTrackedTask()
 	OnTrackedTaskWidgetCreatedDelegate.Broadcast(TrackedTaskWidget, TrackedTaskViewModel);
 }
 
-void UQuestSubsystem::OnTrackedTaskFinished(FTaskID TaskID, EQuestTaskCompleteResult TaskCompleteResult)
+bool UQuestSubsystem::HasOnlyCompletedTasks(const UBaseQuest* Quest) const
 {
-	if (TrackedTaskID != TaskID)
+	if (!IsValid(Quest))
+	{
+		return false;
+	}
+
+	for (FTaskID ChildTaskID : Quest->GetTaskIDs())
+	{
+		const UBaseQuestTask* Task = GetQuestTask(ChildTaskID);
+		if (!IsValid(Task))
+		{
+			continue;
+		}
+
+		if (!Task->IsCompleted())
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void UQuestSubsystem::OnQuestTaskCompleted(FTaskID TaskID, EQuestCompleteRelust TaskCompleteResult)
+{
+	UBaseQuestTask* BaseTask = GetQuestTask_Internal(TaskID);
+	if (!IsValid(BaseTask))
 	{
 		return;
 	}
 
-	ResetTrackedTask();
+	FDelegateHandle* DelegateHandle = TaskFinishedDelegateHandles.Find(TaskID);
+	if (DelegateHandle != nullptr)
+	{
+		BaseTask->OnQuestTaskCompletedDelegate.Remove(*DelegateHandle);
+		TaskFinishedDelegateHandles.Remove(TaskID);
+	}
+
+	UBaseQuest* ParentQuest = FindParentQuest(TaskID);
+	if (IsValid(ParentQuest) && HasOnlyCompletedTasks(ParentQuest))
+	{
+		ParentQuest->FinishQuest(TaskCompleteResult);
+	}
+	
+	if (TrackedTaskID == TaskID)
+	{
+		ResetTrackedTask();
+	}
+
+	SaveQuestsState();
+}
+
+void UQuestSubsystem::SaveQuestsState()
+{
+	for (const auto& [QuestID, Quest] : CachedQuests)
+	{
+		if (IsValid(Quest) && Quest->IsActive())
+		{
+			Quest->PreSaveGame();
+		}
+	}
+	for (const auto& [QuestID, Task] : CachedTasks)
+	{
+		if (IsValid(Task) && Task->IsActive())
+		{
+			Task->PreSaveGame();
+		}
+	}
+
+	UQuestSubsystemSaveGame::AsyncSaveQuestsInfo(this);
 }
 
 UBaseQuest* UQuestSubsystem::GetQuest_Internal(FQuestID QuestID)
@@ -750,4 +721,20 @@ UBaseQuestTask* UQuestSubsystem::GetQuestTask_Internal(FTaskID TaskID)
 	const TObjectPtr<UBaseQuestTask>* QuestTask = CachedTasks.Find(TaskID);
 
 	return QuestTask != nullptr ? *QuestTask : nullptr;
+}
+
+UBaseQuest* UQuestSubsystem::FindParentQuest(FTaskID InTaskID)
+{
+	for (auto& [QuestID, Quest] : CachedQuests)
+	{
+		for (FTaskID TaskID : Quest->GetTaskIDs())
+		{
+			if (InTaskID == TaskID)
+			{
+				return Quest;
+			}
+		}
+	}
+
+	return nullptr;
 }

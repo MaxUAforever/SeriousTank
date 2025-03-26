@@ -15,9 +15,10 @@ class UUserWidget;
 class UViewModelBase;
 struct FTableRowTaskStartConditionInfo;
 enum class EQuestCompleteRelust : uint8;
-enum class EQuestTaskCompleteResult : uint8;
+enum class EQuestCompleteRelust : uint8;
 
 DECLARE_MULTICAST_DELEGATE(FOnQuestsInitializedDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnQuestsWorldCleanupDelegate, UWorld*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTrackedTaskChangedDelegate, TOptional<FTaskID>);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnTrackedTaskWidgetCreatedDelegate, UUserWidget*, UViewModelBase*);
 
@@ -54,6 +55,12 @@ public:
 	 */
 	FOnQuestsInitializedDelegate& GetOnQuestsInitializedDelegate() { return OnQuestsInitializedDelegate; }
 	
+	/**
+	 * @brief Gets the delegate triggered when World is cleanup, before saving and reseting information.
+	 * @return Reference to the OnQuestsWorldCleanup delegate.
+	 */
+	FOnQuestsWorldCleanupDelegate& GetOnQuestsWorldCleanupDelegate() { return OnQuestsWorldCleanupDelegate;  }
+
 	/**
 	 * @brief Gets the delegate triggered when the tracked task changes.
 	 * @return Reference to the OnTrackedTaskChanged delegate.
@@ -99,9 +106,10 @@ public:
 	 * Starts the quest and automatically starts all associated tasks.
 	 *
 	 * @param QuestID The ID of the quest to start.
+	 * @param bShouldStartTasks Determines if tasks that can be started should start with parent quest.
 	 * @return True if the quest started successfully; false otherwise.
 	 */
-	bool StartQuest(FQuestID QuestID);
+	bool StartQuest(FQuestID QuestID, bool bShouldStartTasks = false);
 
 	/**
 	 * @brief Starts a specific quest task.
@@ -130,7 +138,7 @@ public:
 	 * @param CompleteResult The result of task completion.
 	 * @return True if the task finished successfully; false otherwise.
 	 */
-	bool FinishQuestTask(FTaskID TaskID, EQuestTaskCompleteResult CompleteResult);
+	bool FinishQuestTask(FTaskID TaskID, EQuestCompleteRelust CompleteResult);
 
 	/**
 	 * @brief Gets the currently tracked task ID.
@@ -182,13 +190,19 @@ private:
 	UBaseQuestTask* AddQuestTask(FTaskID TaskID, FQuestID ParentQuestID, TSubclassOf<UBaseQuestTask> BaseTaskClass, UQuestProvider* QuestProvider);
 
 	void CreateWidgetForTrackedTask();
-	void OnTrackedTaskFinished(FTaskID TaskID, EQuestTaskCompleteResult TaskCompleteResult);
+
+	bool HasOnlyCompletedTasks(const UBaseQuest* Quest) const;
+	void OnQuestTaskCompleted(FTaskID TaskID, EQuestCompleteRelust TaskCompleteResult);
+	void SaveQuestsState();
 
 	UBaseQuest* GetQuest_Internal(FQuestID QuestID);
 	UBaseQuestTask* GetQuestTask_Internal(FTaskID TaskID);
 
+	UBaseQuest* FindParentQuest(FTaskID TaskID);
+
 private:
 	FOnQuestsInitializedDelegate OnQuestsInitializedDelegate;
+	FOnQuestsWorldCleanupDelegate OnQuestsWorldCleanupDelegate;
 	FOnTrackedTaskChangedDelegate OnTrackedTaskChangedDelegate;
 	FOnTrackedTaskWidgetCreatedDelegate OnTrackedTaskWidgetCreatedDelegate;
 
@@ -211,8 +225,6 @@ private:
 	 *  @brief Currently tracked task properties.
 	 */
 	TOptional<FTaskID> TrackedTaskID;
-	
-	FDelegateHandle TrackedTaskFinishedDelegateHandle;
 
 	UPROPERTY()
 	TObjectPtr<UViewModelBase> TrackedTaskViewModel;
@@ -231,4 +243,6 @@ private:
 
 	UPROPERTY()
 	TMap<int32, FTableRowTaskWidgetInfo> CachedTaskWidgetInfo;
+
+	TMap<FTaskID, FDelegateHandle> TaskFinishedDelegateHandles;
 };
