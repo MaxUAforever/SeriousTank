@@ -24,7 +24,7 @@ void AST_GameplayGameMode::BeginPlay()
 
 UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-    if (UWorld* World = GetWorld())
+    /*if (UWorld* World = GetWorld())
     {
         if (APlayerController* PC = World->GetFirstPlayerController())
         {
@@ -36,7 +36,7 @@ UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AC
 				}
             }
         }
-    }
+    }*/
     
     return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
