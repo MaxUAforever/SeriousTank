@@ -1,6 +1,6 @@
 #include "UI/Widgets/Gameplay/ST_FinalScoreWidget.h"
 
-#include "GameFramework/Gameplay/TargetShooting/ST_TargetShootingGameState.h"
+#include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "GameFramework/ST_GameInstance.h"
 #include "UI/Utils/ST_WidgetUtilsLibrary.h"
 
@@ -65,10 +65,8 @@ void UST_FinalScoreWidget::OnGameIsOver()
 		return;
 	}
 
-	if (AST_TargetShootingGameState* GameState = World->GetGameState<AST_TargetShootingGameState>())
+	if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
 	{
-		ScoreValueBlock->SetText(FText::FromString(FString::FromInt(GameState->GetScore())));
 		TimeValueBlock->SetText(UST_WidgetUtilsLibrary::ConvertTimeToText(GameState->GetTotalPlayTime()));
-		TargetsValueBlock->SetText(FText::FromString(FString::FromInt(GameState->GetScore())));
 	}
 }

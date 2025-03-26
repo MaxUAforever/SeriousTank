@@ -2,10 +2,12 @@
 
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 
-void UST_VMHealth::Initialize(APlayerController* PlayerController)
+void UST_VMHealth::Initialize()
 {
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetOuter(), 0);
 	if (!IsValid(PlayerController))
 	{
 		return;

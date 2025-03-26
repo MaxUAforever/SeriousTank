@@ -18,20 +18,13 @@ void AST_GameplayGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (UObjectSpawnSubsystem* ObjectSpawnSubsystem = GetWorld()->GetSubsystem<UObjectSpawnSubsystem>())
-	{
-		for (FObjectTypeSpawnParams TypeSpawnParams : ObjectsSpawnParameters)
-		{
-			ObjectSpawnSubsystem->AddObjectSpawnManager(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
-		}
-	}
-
+	SetupSpawnSubsystem();
 	SetupDeathHandling();
 }
 
 UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-    if (UWorld* World = GetWorld())
+    /*if (UWorld* World = GetWorld())
     {
         if (APlayerController* PC = World->GetFirstPlayerController())
         {
@@ -43,7 +36,7 @@ UClass* AST_GameplayGameMode::GetDefaultPawnClassForController_Implementation(AC
 				}
             }
         }
-    }
+    }*/
     
     return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
@@ -77,6 +70,7 @@ void AST_GameplayGameMode::InitGameState()
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
 		GameplayGameState->SetPreStartCountdownTime(BaseGameData.PreStartCountdownTime);
+		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::OnPreStartCountdownEneded);
 	}
 }
 
@@ -104,5 +98,20 @@ void AST_GameplayGameMode::TriggerGameFinish()
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
 		GameplayGameState->OnGameIsOver.Broadcast();
+	}
+}
+
+void AST_GameplayGameMode::SetupSpawnSubsystem()
+{
+	UObjectSpawnSubsystem* ObjectSpawnSubsystem = GetWorld()->GetSubsystem<UObjectSpawnSubsystem>();
+	if (!IsValid(ObjectSpawnSubsystem))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ST_GameplayGameMode::SetupSpawnSubsystem: Failed to get ObjectSpawnSubsystem"));
+		return;
+	}
+	
+	for (const FObjectTypeSpawnParams& TypeSpawnParams : ObjectsSpawnParameters)
+	{
+		ObjectSpawnSubsystem->AddObjectSpawnManager(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
 	}
 }

@@ -7,4 +7,8 @@ UCLASS()
 class SERIOUSTANK_API UST_ViewModelBase : public UObject
 {
 	GENERATED_BODY()
+
+public:
+	virtual void Initialize() {};
+	virtual void Deinitialize() {};
 };

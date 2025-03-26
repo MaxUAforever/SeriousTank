@@ -15,6 +15,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget> PauseWidgetClass;
 
+private:
 	UPROPERTY()
 	UUserWidget* FinalScoreWidget;
 

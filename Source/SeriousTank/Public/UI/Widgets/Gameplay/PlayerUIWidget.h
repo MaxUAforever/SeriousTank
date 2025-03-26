@@ -3,73 +3,50 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerUIWidget.generated.h"
 
-class UAudioComponent;
-class UTextBlock;
+class UCanvasPanel;
 class UST_HealthUserWidget;
 class UST_VMHealth;
 class UST_WeaponReloadingWidget;
-class USoundCue;
+class UST_PreStartCountdownWidget;
+class UST_VMActiveQuestTask;
 
 UCLASS()
 class SERIOUSTANK_API UPlayerUIWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UST_WeaponReloadingWidget* FirstWeaponReloadingWidget;
-
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UST_WeaponReloadingWidget* SecondWeaponReloadingWidget;
-
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UST_WeaponReloadingWidget* ThirdWeaponReloadingWidget;
-
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UST_HealthUserWidget* HealthUserWidget;
-
-	UPROPERTY(EditAnyWhere, meta = (BindWidget))
-	UTextBlock* RemainingTimeBlock;
-
-	UPROPERTY(EditAnyWhere, meta = (BindWidget))
-	UTextBlock* ScoreBlock;
-
-	UPROPERTY(EditAnyWhere, meta = (BindWidget))
-	UTextBlock* PreStartTimeBlock;
-
-	UPROPERTY(EditAnyWhere, Category = "Audio")
-	USoundCue* CountdownSound;
-
-	UPROPERTY(EditAnyWhere, Category = "Audio")
-	USoundCue* StartGameSound;
-
-	UPROPERTY(VisibleAnyWhere, Category = "Audio")
-	UAudioComponent* UISoundsComponent;
-
-	UPROPERTY(VisibleAnywhere, Category = "TimerHandler")
-	FTimerHandle TimeRefreshHandler;
-
-	UPROPERTY(EditAnywhere, Category = "TimerHandler")
-	float TimeRefreshRate;
-
-private:
-	//TODO: move ViewModel from Widget class
-	UPROPERTY()
-	UST_VMHealth* HealthViewModel;
-
 public:
 	virtual void NativeConstruct() override;
 
 private:
-	UFUNCTION()
-	void UpdateScore(int32 NewScore);
+	void OnTrackedTaskWidgetChanged(UUserWidget* InTrackedTaskWidget);
 
-	UFUNCTION()
-	void UpdateTime();
+protected:
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> RootCanvasPanel;
 
-	UFUNCTION()
-	void UpdatePreStartTime(int32 NewTime);
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UST_WeaponReloadingWidget> FirstWeaponReloadingWidget;
 
-	UFUNCTION()
-	void HidePreStartTimeBlock();
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UST_WeaponReloadingWidget> SecondWeaponReloadingWidget;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UST_WeaponReloadingWidget> ThirdWeaponReloadingWidget;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	TObjectPtr<UST_HealthUserWidget> HealthUserWidget;
+
+	UPROPERTY(EditAnyWhere, meta = (BindWidget))
+	TObjectPtr<UST_PreStartCountdownWidget> PreStartCountdownWidget;
+
+private:
+	UPROPERTY()
+	TObjectPtr<UUserWidget> TrackedQuestTaskWidget;
+
+	UPROPERTY()
+	TObjectPtr<UST_VMHealth> HealthViewModel;
+
+	UPROPERTY()
+	TObjectPtr<UST_VMActiveQuestTask> ActiveQuestTaskViewModel;
 };

@@ -23,21 +23,6 @@ struct FBaseGameData
 };
 
 USTRUCT(BlueprintType)
-struct FTargetShootingGameData
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "1", ClampMax = "500"))
-	int32 StartTime = 50;
-
-	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "1", ClampMax = "500"))
-	float AddedTimeForTarget = 5.f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Game", meta = (ClampMin = "1", ClampMax = "500"))
-	int32 AddedScoreForTarget = 1;
-};
-
-USTRUCT(BlueprintType)
 struct FGameplayLevelInfo
 {
 	GENERATED_USTRUCT_BODY()

@@ -17,13 +17,9 @@
 		}
 	],
 	"TargetPlatforms": [
-		"Linux",
-		"Mac",
-		"Switch",
 		"Windows",
 		"WindowsNoEditor",
 		"Android",
-		"HoloLens",
 		"IOS"
 	]
 }

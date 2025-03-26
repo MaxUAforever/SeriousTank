@@ -36,8 +36,11 @@ protected:
 
 	virtual void InitGameState() override;
 
-private:
-	void SetupDeathHandling();
+	virtual void OnPreStartCountdownEneded() {};
 
 	void TriggerGameFinish();
+
+private:
+	void SetupDeathHandling();
+	void SetupSpawnSubsystem();
 };
