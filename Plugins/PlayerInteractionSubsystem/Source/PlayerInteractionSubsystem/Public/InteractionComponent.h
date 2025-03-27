@@ -6,7 +6,6 @@
 class UAnimMontage;
 class UBaseInteractionAction;
 class UInteractingComponent;
-class UInteractionPointComponent;
 class UInteractionUserWidget;
 class UInteractionWidgetComponent;
 class UPlayerInteractionSubsystem;
@@ -37,6 +36,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Widget", meta = (EditCondition = "bIsWidgetEnabled"))
 	TSubclassOf<UInteractionUserWidget> InteractionWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MakeEditWidget = "true"))
+	TArray<FTransform> InteractionPoints;
+
 private:
 	UPROPERTY()
 	UBaseInteractionAction* InteractionAction;
@@ -44,8 +46,6 @@ private:
 
 	UPROPERTY()
 	UInteractionWidgetComponent* InteractionWidgetComponent;
-
-	TArray<UInteractionPointComponent*> InteractionPoints;
 	
 	bool bIsActive = true;
 
@@ -60,9 +60,10 @@ public:
 	// Allows to control if component should trigger action on request. 
 	void SetIsComponentActive(bool bInIsActive);
 
-	const TArray<UInteractionPointComponent*>& GetInteractionPoints() const { return InteractionPoints; };
-	
-	const UInteractionPointComponent* GetClosestInteractionPoint(const FVector& Location) const;
+	const TArray<FTransform>& GetRelativeInteractionPoints() const { return InteractionPoints; };
+	TArray<FTransform> GetWorldInteractionPoints() const;
+
+	TOptional<FTransform> GetClosestInteractionPoint(const FVector& Location) const;
 
 protected:
 	UFUNCTION()

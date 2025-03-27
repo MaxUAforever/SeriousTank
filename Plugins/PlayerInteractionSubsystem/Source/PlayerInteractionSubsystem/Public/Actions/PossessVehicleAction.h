@@ -6,7 +6,7 @@
 class UAnimMontage;
 class UInputAction;
 class UInputMappingContext;
-class UInteractionPointComponent;
+
 /**
  * Action for possessing a vehicle actor if pawn with needed interactiong component called it.
  */
@@ -29,7 +29,7 @@ public:
 
 private:
 	void PlayActionMontage(APawn* CharacterPawn, APawn* VehiclePawn) const;
-	void PlayDeactivationMontage(APawn* CharacterPawn, APawn* VehiclePawn, UInteractionComponent* InteractionComponent, const UInteractionPointComponent* InteractionPoint) const;
+	void PlayDeactivationMontage(APawn* CharacterPawn, APawn* VehiclePawn, UInteractionComponent* InteractionComponent, const FTransform& InteractionPoint) const;
 
 	void PlayMontage_Internal(APawn* CharacterPawn, APawn* VehiclePawn, UAnimMontage* AnimMontage, float Delay, TFunction<void()> OnMontageCompleted) const;
 };

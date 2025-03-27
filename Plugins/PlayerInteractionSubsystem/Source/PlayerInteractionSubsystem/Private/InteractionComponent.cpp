@@ -3,7 +3,6 @@
 #include "Actions/BaseInteractionAction.h"
 #include "Components/WidgetComponent.h"
 #include "InteractingComponent.h"
-#include "InteractionPointComponent.h"
 #include "InteractionUserWidget.h"
 #include "InteractionWidgetComponent.h"
 #include "PlayerInteractionSubsystem.h"
@@ -53,13 +52,6 @@ void UInteractionComponent::BeginPlay()
 
 	TArray<USceneComponent*> ChildComponents;
 	GetChildrenComponents(false, ChildComponents);
-	for (USceneComponent* ChildComponent : ChildComponents)
-	{
-		if (UInteractionPointComponent* InteractionPoint = Cast<UInteractionPointComponent>(ChildComponent))
-		{
-			InteractionPoints.Add(InteractionPoint);
-		}
-	}
 }
 
 bool UInteractionComponent::ActivateAction(UInteractingComponent* InteractingComponent)
@@ -122,18 +114,37 @@ void UInteractionComponent::SetIsComponentActive(bool bInIsActive)
 	}
 }
 
-const UInteractionPointComponent* UInteractionComponent::GetClosestInteractionPoint(const FVector& Location) const
+TArray<FTransform> UInteractionComponent::GetWorldInteractionPoints() const
+{
+	TArray<FTransform> Result;
+	Result.Reserve(InteractionPoints.Num());
+
+	const FTransform ComponentWorldTransform = GetComponentTransform();
+
+	for (const FTransform& InteractionPoint : InteractionPoints)
+	{
+		Result.Add(InteractionPoint * ComponentWorldTransform);
+	}
+
+	return Result;
+}
+
+TOptional<FTransform> UInteractionComponent::GetClosestInteractionPoint(const FVector& Location) const
 {
 	float MinDistance = MAX_flt;
-	UInteractionPointComponent* ClosestPoint = nullptr;
+	TOptional<FTransform> ClosestPoint;
 	
-	for (UInteractionPointComponent* InteractionPoint : InteractionPoints)
+	const FTransform ComponentWorldTransform = GetComponentTransform();
+
+	for (const FTransform& InteractionPoint : InteractionPoints)
 	{
-		const float Distance = FVector::Dist2D(Location, InteractionPoint->GetComponentLocation());
+		FTransform WorldInteractionPoint = InteractionPoint * ComponentWorldTransform;
+		
+		const float Distance = FVector::Dist2D(Location, WorldInteractionPoint.GetLocation());
 		if (Distance < MinDistance)
 		{
 			MinDistance = Distance;
-			ClosestPoint = InteractionPoint;
+			ClosestPoint = WorldInteractionPoint;
 		}
 	}
 

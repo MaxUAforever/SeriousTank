@@ -12,8 +12,6 @@ class UInteractionComponent;
 struct InteractionComponentInfo
 {
 	UInteractionComponent* InteractionComponent;
-
-	bool bCanBeActivated;
 };
 
 /**
@@ -55,7 +53,4 @@ public:
 	* @return true if action was stopped successfully.
 	*/
 	bool StopInteractionAction(UInteractingComponent* InteractingComponent);
-
-//private:
-//	void UpdateInteractionStatuses();
 };

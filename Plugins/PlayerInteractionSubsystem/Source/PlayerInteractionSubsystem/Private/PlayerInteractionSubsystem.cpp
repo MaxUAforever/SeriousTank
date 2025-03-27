@@ -15,7 +15,7 @@ void UPlayerInteractionSubsystem::RegisterInteraction(UInteractingComponent* Int
 	const bool bWasEmpty = InteractionMap.Num() == 0;
 
 	const bool CanBeActivated = InteractionComponent->GetAction()->CanBeActivated(InteractingComponent, InteractionComponent);
-	InteractionMap.Add(InteractingComponent, { InteractionComponent, CanBeActivated });
+	InteractionMap.Add(InteractingComponent, { InteractionComponent });
 	InteractingComponent->OnInteractingStateChanged.Broadcast(true);
 
 	if (bWasEmpty && GetWorld())
@@ -86,24 +86,3 @@ bool UPlayerInteractionSubsystem::StopInteractionAction(UInteractingComponent* I
 
 	return bSuccess;
 }
-
-//void UPlayerInteractionSubsystem::UpdateInteractionStatuses()
-//{
-//	for (TTuple<UInteractingComponent*, InteractionComponentInfo> InteractionInfo : InteractionMap)
-//	{
-//		UInteractingComponent* InteractingComponent = InteractionInfo.Key;
-//		UInteractionComponent* InteractionComponent = InteractionInfo.Value.InteractionComponent;
-//		if (!InteractionComponent || !InteractionComponent->GetAction())
-//		{
-//			UE_LOG(LogTemp, Warning, TEXT("PlayerInteractionSubsystem::UpdateInteractionStatuses: failed to get InteractionComponent"));
-//			continue;
-//		}
-//
-//		const bool bNewCanBeActivated = InteractionComponent->GetAction()->CanBeActivated(InteractingComponent, InteractionComponent);
-//		if (InteractionInfo.Value.bCanBeActivated != bNewCanBeActivated)
-//		{
-//			InteractionInfo.Value.bCanBeActivated = bNewCanBeActivated;
-//			InteractingComponent->OnInteractingStateChanged.Broadcast(bNewCanBeActivated);
-//		}
-//	}
-//}
