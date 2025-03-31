@@ -27,7 +27,8 @@ public class PlayerInteractionSubsystem: ModuleRules
 			{
 				"Core",
 				"CoreUObject",
-				"Engine",
+                "DeveloperSettings",
+                "Engine",
 				"InputCore",
 				"UMG"
 			}

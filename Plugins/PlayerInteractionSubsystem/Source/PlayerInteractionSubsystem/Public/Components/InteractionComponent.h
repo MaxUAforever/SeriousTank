@@ -5,6 +5,7 @@
 
 class UAnimMontage;
 class UBaseInteractionAction;
+class UBaseInteractionActionDataAsset;
 class UInteractingComponent;
 class UInteractionUserWidget;
 class UInteractionWidgetComponent;
@@ -19,16 +20,38 @@ UCLASS()
 class PLAYERINTERACTIONSUBSYSTEM_API UInteractionComponent : public USphereComponent
 {
 	GENERATED_BODY()
-	
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	const TSubclassOf<UBaseInteractionAction> GetActionClass() const { return InteractionActionClass; };
+	const UBaseInteractionActionDataAsset* GetInteractionActionDataAsset() const { return InteractionActionDataAsset; }
+
+	// Allows to control if component should trigger action on request. 
+	bool IsInteractionComponentActive() const { return bIsActive; }
+	void SetIsInteractionComponentActive(bool bInIsActive);
+
+	const TArray<FTransform>& GetRelativeInteractionPoints() const { return InteractionPoints; };
+	TArray<FTransform> GetWorldInteractionPoints() const;
+
+	TOptional<FTransform> GetClosestInteractionPoint(const FVector& Location) const;
+
+	void UpdateWidgetData();
+
+protected:
+	UFUNCTION()
+	void HandleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void HandleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Actions")
 	TSubclassOf<UBaseInteractionAction> InteractionActionClass;
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Actions")
-	UAnimMontage* ActionMontage;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Actions")
-	UAnimMontage* DeactivationMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Actions")
+	TObjectPtr<UBaseInteractionActionDataAsset> InteractionActionDataAsset;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Widget")
 	bool bIsWidgetEnabled = true;
@@ -40,35 +63,10 @@ protected:
 	TArray<FTransform> InteractionPoints;
 
 private:
-	UPROPERTY()
-	UBaseInteractionAction* InteractionAction;
-	UPlayerInteractionSubsystem* PlayerInteractionSubsystem;
+	TObjectPtr<UPlayerInteractionSubsystem> PlayerInteractionSubsystem;
 
 	UPROPERTY()
-	UInteractionWidgetComponent* InteractionWidgetComponent;
-	
+	TObjectPtr<UInteractionWidgetComponent> InteractionWidgetComponent;
+
 	bool bIsActive = true;
-
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	const UBaseInteractionAction* GetAction() const { return InteractionAction; };
-	bool ActivateAction(UInteractingComponent* InteractingComponent);
-	bool DeactivateAction(UInteractingComponent* InteractingComponent);
-
-	// Allows to control if component should trigger action on request. 
-	void SetIsComponentActive(bool bInIsActive);
-
-	const TArray<FTransform>& GetRelativeInteractionPoints() const { return InteractionPoints; };
-	TArray<FTransform> GetWorldInteractionPoints() const;
-
-	TOptional<FTransform> GetClosestInteractionPoint(const FVector& Location) const;
-
-protected:
-	UFUNCTION()
-	void HandleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void HandleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };

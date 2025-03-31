@@ -13,14 +13,14 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractionUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	void SetInteractionButtonCaption(FText InButtonText);
+	void SetActionNameCaption(FText InActionDescriptionText);
+
 protected:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* InteractionButtonCaption;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* ActionDescriptionCaption;
-
-public:
-	void SetInteractionButtonCaption(FText InButtonText);
-	void SetActionNameCaption(FText InActionDescriptionText);
 };

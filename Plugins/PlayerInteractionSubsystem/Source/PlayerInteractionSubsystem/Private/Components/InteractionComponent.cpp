@@ -1,11 +1,12 @@
-#include "InteractionComponent.h"
+#include "Components/InteractionComponent.h"
 
 #include "Actions/BaseInteractionAction.h"
 #include "Components/WidgetComponent.h"
-#include "InteractingComponent.h"
-#include "InteractionUserWidget.h"
-#include "InteractionWidgetComponent.h"
+#include "Components/InteractingComponent.h"
+#include "Components/InteractionWidgetComponent.h"
+#include "PlayerInteractionCoreTypes.h"
 #include "PlayerInteractionSubsystem.h"
+#include "UI/InteractionUserWidget.h"
 
 void UInteractionComponent::BeginPlay()
 {
@@ -13,7 +14,7 @@ void UInteractionComponent::BeginPlay()
 
 	if (!InteractionActionClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionComponent::BeginPlay: InteractionActionClass isn't set"));
+		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("InteractionComponent::BeginPlay: InteractionActionClass isn't set"));
 		return;
 	}
 	
@@ -21,19 +22,8 @@ void UInteractionComponent::BeginPlay()
 	OnComponentEndOverlap.AddDynamic(this, &ThisClass::HandleEndOverlap);
 
 	PlayerInteractionSubsystem = GetWorld() ? GetWorld()->GetSubsystem<UPlayerInteractionSubsystem>() : nullptr;
-	InteractionAction = NewObject<UBaseInteractionAction>(this, InteractionActionClass.Get());
 
-	if (ActionMontage)
-	{
-		InteractionAction->SetActionMontage(ActionMontage);
-	}
-
-	if (DeactivationMontage)
-	{
-		InteractionAction->SetDeactivationMontage(DeactivationMontage);
-	}
-
-	if (InteractionWidgetClass)
+	if (bIsWidgetEnabled && InteractionWidgetClass)
 	{
 		InteractionWidgetComponent = NewObject<UInteractionWidgetComponent>(GetOwner(), UInteractionWidgetComponent::StaticClass(), TEXT("InteractionWidget"));
 		if (InteractionWidgetComponent)
@@ -54,34 +44,7 @@ void UInteractionComponent::BeginPlay()
 	GetChildrenComponents(false, ChildComponents);
 }
 
-bool UInteractionComponent::ActivateAction(UInteractingComponent* InteractingComponent)
-{
-	if (!InteractionAction)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionComponent::ActivateAction: Action isn't set for component!"));
-		return false;
-	}
-		
-	if (bIsActive)
-	{
-		return InteractionAction->Activate(InteractingComponent, this);
-	}
-
-	return false;
-}
-
-bool UInteractionComponent::DeactivateAction(UInteractingComponent* InteractingComponent)
-{
-	if (!InteractionAction)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionComponent::ActivateAction: Action isn't set for component!"));
-		return false;
-	}
-
-	return InteractionAction->Deactivate(InteractingComponent, this);
-}
-
-void UInteractionComponent::SetIsComponentActive(bool bInIsActive)
+void UInteractionComponent::SetIsInteractionComponentActive(bool bInIsActive)
 {
 	if (bIsActive == bInIsActive || !PlayerInteractionSubsystem)
 	{
@@ -151,14 +114,16 @@ TOptional<FTransform> UInteractionComponent::GetClosestInteractionPoint(const FV
 	return ClosestPoint;
 }
 
+void UInteractionComponent::UpdateWidgetData()
+{
+	if (InteractionWidgetComponent)
+	{
+		InteractionWidgetComponent->UpdateWidgetData();
+	}
+}
+
 void UInteractionComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!InteractionAction)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InteractionComponent::HandleBeginOverlap: Action isn't set for component!"));
-		return;
-	}
-
 	if (!bIsActive)
 	{
 		return;

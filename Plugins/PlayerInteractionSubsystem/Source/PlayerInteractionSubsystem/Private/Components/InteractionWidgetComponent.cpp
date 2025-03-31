@@ -1,12 +1,14 @@
-#include "InteractionWidgetComponent.h"
+#include "Components/InteractionWidgetComponent.h"
 
 #include "Actions/BaseInteractionAction.h"
+#include "Data/Actions/BaseInteractionActionDataAsset.h"
+#include "Data/InteractionSubsystemSettings.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "InteractingComponent.h"
-#include "InteractionComponent.h"
-#include "InteractionUserWidget.h"
+#include "Components/InteractingComponent.h"
+#include "Components/InteractionComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/InteractionUserWidget.h"
 
 void UInteractionWidgetComponent::UpdateWidgetData()
 {
@@ -18,13 +20,18 @@ void UInteractionWidgetComponent::UpdateWidgetData()
 	}
 
 	const UInteractionComponent* InteractionComponent = GetOwner()->GetComponentByClass<UInteractionComponent>();
-	if (!InteractionComponent || !InteractionComponent->GetAction())
+	if (!InteractionComponent)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InteractionWidgetComponent::BeginPlay: failed to get InteractionComponent"));
 		return;
 	}
 
-	InteractionWidget->SetActionNameCaption(InteractionComponent->GetAction()->GetActionDescription());
+	const UBaseInteractionActionDataAsset* InteractionActionDataAsset = InteractionComponent->GetInteractionActionDataAsset();
+	if (!IsValid(InteractionActionDataAsset))
+	{
+		return;
+	}
+	InteractionWidget->SetActionNameCaption(InteractionActionDataAsset->ActionDescription);
 
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
 	if (!IsValid(PlayerController) || !IsValid(PlayerController->GetPawn()))
@@ -46,14 +53,20 @@ void UInteractionWidgetComponent::UpdateWidgetData()
 		return;
 	}
 
-	auto TryToSetButtonCaption = [this, InteractingComponent, EnhancedSubsystem]()
+	auto TryToSetButtonCaption = [this, EnhancedSubsystem]()
 	{
-		if (!InteractingComponent || !EnhancedSubsystem)
+		if (!EnhancedSubsystem)
+		{
+			return false;
+		}
+		
+		const UInteractionSubsystemSettings* InteractionSettings = GetDefault<UInteractionSubsystemSettings>();
+		if (!InteractionSettings->InteractInputAction.IsValid())
 		{
 			return false;
 		}
 
-		const TArray<FKey> ActionKeys = EnhancedSubsystem->QueryKeysMappedToAction(InteractingComponent->GetInputAction());
+		const TArray<FKey> ActionKeys = EnhancedSubsystem->QueryKeysMappedToAction(InteractionSettings->InteractInputAction.Get());
 		if (ActionKeys.Num() > 0)
 		{
 			InteractionWidget->SetInteractionButtonCaption(ActionKeys[0].GetDisplayName(false));
@@ -67,5 +80,4 @@ void UInteractionWidgetComponent::UpdateWidgetData()
 	{
 		InteractingComponent->OnInteractionActionBoundDelegate.AddLambda([TryToSetButtonCaption]() { TryToSetButtonCaption(); });
 	}
-	
 }

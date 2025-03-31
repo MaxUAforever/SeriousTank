@@ -18,7 +18,7 @@
 #include "Inputs/Data/WeaponInputsDataAsset.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
-#include "PlayerInteractionSubsystem/Public/InteractingComponent.h"
+#include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 #include "UObject/UObjectGlobals.h"
 

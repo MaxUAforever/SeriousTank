@@ -13,10 +13,10 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractionWidgetComponent : public UWidge
 {
 	GENERATED_BODY()
 
-private:
-	UInteractionUserWidget* InteractionWidget;
-
 public:
 	// Function that allows to refresh all info for attached interaction widget.
 	void UpdateWidgetData();
+
+private:
+	UInteractionUserWidget* InteractionWidget;
 };

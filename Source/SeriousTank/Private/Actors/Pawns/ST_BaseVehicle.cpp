@@ -13,8 +13,8 @@
 #include "Engine/World.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "PlayerInteractionSubsystem/Public/InteractionComponent.h"
-#include "PlayerInteractionSubsystem/Public/InteractingComponent.h"
+#include "PlayerInteractionSubsystem/Public/Components/InteractionComponent.h"
+#include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
 
 AST_BaseVehicle::AST_BaseVehicle()
 {

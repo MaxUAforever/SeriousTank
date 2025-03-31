@@ -29,26 +29,7 @@ public:
 	// Delegate that should fire when action is bound to EnhancedComponent.
 	FOnInteractionActionBoundDelegate OnInteractionActionBoundDelegate;
 
-protected:
-	/**
-	 * Interaction inputs
-	 */
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputMappingContext* InteractionInputContext;
-
-	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UInputAction* InteractInputAction;
-
-private:
-	UPlayerInteractionSubsystem* PlayerInteractionSubsystem;
-
-	// Defines if component is now interacting and current interraction can be interrupted. 
-	bool bIsInteracting = false;
-
 public:
-	const UInputAction* GetInputAction() const { return InteractInputAction; };
-
 	UFUNCTION()
 	void Interact();
 	void StopInteraction();
@@ -58,4 +39,10 @@ protected:
 
 	UFUNCTION()
 	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+
+private:
+	UPlayerInteractionSubsystem* PlayerInteractionSubsystem;
+
+	// Defines if component is now interacting and current interraction can be interrupted. 
+	bool bIsInteracting = false;
 };

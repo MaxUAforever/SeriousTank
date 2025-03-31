@@ -6,110 +6,11 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
-#include "InteractingComponent.h"
-#include "InteractionComponent.h"
+#include "Components/InteractingComponent.h"
+#include "Components/InteractionComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Templates/Function.h"
-
-UPossessVehicleAction::UPossessVehicleAction()
-{
-	bShouldBeDeactivated = true;
-}
-
-bool UPossessVehicleAction::Activate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)
-{
-	if (!CanBeActivated(InteractingComponent, InteractionComponent))
-	{
-		return false;
-	}
-
-	APawn* CharacterPawn = Cast<APawn>(InteractingComponent->GetOwner());
-	APawn* VehiclePawn = Cast<APawn>(InteractionComponent->GetOwner());
-
-	InteractionComponent->SetIsComponentActive(false);
-	const TOptional<FTransform> InteractionPoint = InteractionComponent->GetClosestInteractionPoint(CharacterPawn->GetActorLocation());
-	if (InteractionPoint.IsSet())
-	{
-		FVector InteractionLocation = InteractionPoint.GetValue().GetLocation();
-		InteractionLocation.Z = CharacterPawn->GetActorLocation().Z;
-
-		CharacterPawn->SetActorLocation(InteractionLocation);
-		CharacterPawn->SetActorRotation(InteractionPoint.GetValue().GetRotation());
-	}
-
-	CharacterPawn->DisableInput(nullptr);
-
-	PlayActionMontage(CharacterPawn, VehiclePawn);
-
-	return true;
-}
-
-bool UPossessVehicleAction::Deactivate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)
-{
-	APawn* VehiclePawn = Cast<APawn>(InteractionComponent->GetOwner());
-	APawn* SoldierPawn = Cast<APawn>(InteractingComponent->GetOwner());
-	if (!SoldierPawn || !VehiclePawn)
-	{
-		return false;
-	}
-
-	AController* Controller = VehiclePawn->GetController();
-	if (!Controller)
-	{
-		return false;
-	}
-
-	auto IsLocationFree = [this, VehiclePawn](AActor* Actor, const float ActorCollisionRadius, const float ActorCollisionHelfheight, const FVector& InteractionPoint) -> bool
-	{
-		if (!Actor)
-		{
-			return false;
-		}
-
-		TArray<AActor*> OutActors;
-		return !UKismetSystemLibrary::CapsuleOverlapActors(this, InteractionPoint, ActorCollisionRadius, ActorCollisionHelfheight, {}, nullptr, { VehiclePawn }, OutActors);
-	};
-
-	float SoldierCollisionRadius;
-	float SoldierCollisionHalfLength;
-	UCapsuleComponent* CapsuleComponent = Cast<UCapsuleComponent>(SoldierPawn->GetRootComponent());
-	if (!CapsuleComponent)
-	{
-		return false;
-	}
-
-	CapsuleComponent->GetScaledCapsuleSize(SoldierCollisionRadius, SoldierCollisionHalfLength);
-
-	TOptional<FTransform> UsingInteractionPoint;
-	for (const FTransform& InteractionPoint : InteractionComponent->GetWorldInteractionPoints())
-	{
-		if (IsLocationFree(SoldierPawn, SoldierCollisionRadius, SoldierCollisionHalfLength, InteractionPoint.GetLocation()))
-		{
-			UsingInteractionPoint = InteractionPoint;
-			break;
-		}
-	}
-
-	if (!UsingInteractionPoint.IsSet())
-	{
-		return false;
-	}
-
-	FVector InteractionLocation = UsingInteractionPoint.GetValue().GetLocation() + UsingInteractionPoint.GetValue().GetUnitAxis(EAxis::X) /** UsingInteractionPoint->GetInteractionDistance()*/;
-	InteractionLocation.Z = SoldierPawn->GetActorLocation().Z;
-
-	SoldierPawn->AttachToActor(VehiclePawn, FAttachmentTransformRules{EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, false});
-	SoldierPawn->SetActorLocation(InteractionLocation, true);
-	SoldierPawn->SetActorRotation(UsingInteractionPoint.GetValue().GetRotation() * (-1));
-	
-	SoldierPawn->GetRootComponent()->SetVisibility(true, true);
-
-	VehiclePawn->DisableInput(Cast<APlayerController>(Controller));
-
-	PlayDeactivationMontage(SoldierPawn, VehiclePawn, InteractionComponent, UsingInteractionPoint.GetValue());
-	return true;
-}
 
 bool UPossessVehicleAction::CanBeActivated(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) const
 {
@@ -136,69 +37,140 @@ bool UPossessVehicleAction::CanBeActivated(UInteractingComponent* InteractingCom
 	return true;
 }
 
-FText UPossessVehicleAction::GetActionDescription() const
+void UPossessVehicleAction::OnActivationStarted()
 {
-	return FText::FromString(TEXT("Possess vehicle"));
+	UInteractingComponent* InteractingComponent = GetInteractingComponent();
+	UInteractionComponent* InteractionComponent = GetInteractionComponent();
+	if (!IsValid(InteractingComponent) || !IsValid(InteractionComponent))
+	{
+		return;
+	}
+
+	CachedCharacterPawn = Cast<APawn>(InteractingComponent->GetOwner());
+	CachedVehiclePawn = Cast<APawn>(InteractionComponent->GetOwner());
+
+	InteractionComponent->SetIsInteractionComponentActive(false);
+	const TOptional<FTransform> InteractionPoint = InteractionComponent->GetClosestInteractionPoint(CachedCharacterPawn->GetActorLocation());
+	if (InteractionPoint.IsSet())
+	{
+		FVector InteractionLocation = InteractionPoint.GetValue().GetLocation();
+		InteractionLocation.Z = CachedCharacterPawn->GetActorLocation().Z;
+
+		CachedCharacterPawn->SetActorLocation(InteractionLocation);
+		CachedCharacterPawn->SetActorRotation(InteractionPoint.GetValue().GetRotation());
+	}
+
+	CachedCharacterPawn->DisableInput(nullptr);
 }
 
-void UPossessVehicleAction::PlayActionMontage(APawn* CharacterPawn, APawn* VehiclePawn) const
+void UPossessVehicleAction::OnDeactivationStarted()
 {
-	auto OnActionMontagePlayed = [CharacterPawn, VehiclePawn]()
+	UInteractingComponent* InteractingComponent = GetInteractingComponent();
+	UInteractionComponent* InteractionComponent = GetInteractionComponent();
+	if (!IsValid(InteractingComponent) || !IsValid(InteractionComponent))
 	{
-		CharacterPawn->GetRootComponent()->SetVisibility(false, true);
-		CharacterPawn->SetActorEnableCollision(false);
-		CharacterPawn->EnableInput(nullptr);
+		return;
+	}
 
-		AController* CharacterController = CharacterPawn->GetController();
-
-		// TODO: add SetViewTargetWithBlend for new camera
-		CharacterController->Possess(VehiclePawn);
-	};
-
-	PlayMontage_Internal(CharacterPawn, VehiclePawn, ActionMontage, (-0.25f), OnActionMontagePlayed);
-}
-
-void UPossessVehicleAction::PlayDeactivationMontage(APawn* CharacterPawn, APawn* VehiclePawn, UInteractionComponent* InteractionComponent, const FTransform& InteractionPoint) const
-{
-	auto OnActionMontagePlayed = [CharacterPawn, VehiclePawn, InteractionComponent, InteractionPoint]()
+	CachedCharacterPawn = Cast<APawn>(InteractingComponent->GetOwner());
+	CachedVehiclePawn = Cast<APawn>(InteractionComponent->GetOwner());
+	if (!IsValid(CachedCharacterPawn) || !IsValid(CachedVehiclePawn))
 	{
-		if (AController* Controller = VehiclePawn->GetController())
+		return;
+	}
+
+	AController* Controller = CachedVehiclePawn->GetController();
+	if (!Controller)
+	{
+		return;
+	}
+
+	auto IsLocationFree = [this](AActor* Actor, const float ActorCollisionRadius, const float ActorCollisionHelfheight, const FVector& InteractionPoint) -> bool
+	{
+		if (!Actor)
 		{
-			InteractionComponent->SetIsComponentActive(true);
-			CharacterPawn->SetActorEnableCollision(true);
-			CharacterPawn->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			CharacterPawn->SetActorLocation(InteractionPoint.GetLocation());
-
-			VehiclePawn->EnableInput(nullptr);
-
-			Controller->Possess(CharacterPawn);
+			return false;
 		}
+
+		TArray<AActor*> OutActors;
+		return !UKismetSystemLibrary::CapsuleOverlapActors(this, InteractionPoint, ActorCollisionRadius, ActorCollisionHelfheight, {}, nullptr, { CachedVehiclePawn }, OutActors);
 	};
 
-	PlayMontage_Internal(CharacterPawn, VehiclePawn, DeactivationMontage, 0.f, OnActionMontagePlayed);
+	float SoldierCollisionRadius;
+	float SoldierCollisionHalfLength;
+	UCapsuleComponent* CapsuleComponent = Cast<UCapsuleComponent>(CachedCharacterPawn->GetRootComponent());
+	if (!CapsuleComponent)
+	{
+		return;
+	}
+
+	CapsuleComponent->GetScaledCapsuleSize(SoldierCollisionRadius, SoldierCollisionHalfLength);
+
+	TOptional<FTransform> UsingInteractionPoint;
+	for (const FTransform& InteractionPoint : InteractionComponent->GetWorldInteractionPoints())
+	{
+		if (IsLocationFree(CachedCharacterPawn, SoldierCollisionRadius, SoldierCollisionHalfLength, InteractionPoint.GetLocation()))
+		{
+			UsingInteractionPoint = InteractionPoint;
+			break;
+		}
+	}
+
+	if (!UsingInteractionPoint.IsSet())
+	{
+		return;
+	}
+
+	FVector InteractionLocation = UsingInteractionPoint.GetValue().GetLocation() + UsingInteractionPoint.GetValue().GetUnitAxis(EAxis::X) /** UsingInteractionPoint->GetInteractionDistance()*/;
+	InteractionLocation.Z = CachedCharacterPawn->GetActorLocation().Z;
+
+	CachedCharacterPawn->AttachToActor(CachedVehiclePawn, FAttachmentTransformRules{ EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepWorld, false });
+	CachedCharacterPawn->SetActorLocation(InteractionLocation, true);
+	CachedCharacterPawn->SetActorRotation(UsingInteractionPoint.GetValue().GetRotation() * (-1));
+
+	CachedCharacterPawn->GetRootComponent()->SetVisibility(true, true);
+
+	CachedVehiclePawn->DisableInput(Cast<APlayerController>(Controller));
 }
 
-void UPossessVehicleAction::PlayMontage_Internal(APawn* CharacterPawn, APawn* VehiclePawn, UAnimMontage* AnimMontage, float Delay, TFunction<void()> OnMontageCompleted) const
+void UPossessVehicleAction::OnActivationMontagePlayed()
 {
-	if (!AnimMontage)
+	if (!IsValid(CachedCharacterPawn) || !IsValid(CachedVehiclePawn))
 	{
 		return;
 	}
 
-	USkeletalMeshComponent* SkeletalMesh = CharacterPawn->GetComponentByClass<USkeletalMeshComponent>();
-	if (!SkeletalMesh)
+	CachedCharacterPawn->GetRootComponent()->SetVisibility(false, true);
+	CachedCharacterPawn->SetActorEnableCollision(false);
+	CachedCharacterPawn->EnableInput(nullptr);
+
+	AController* CharacterController = CachedCharacterPawn->GetController();
+
+	// TODO: add SetViewTargetWithBlend for new camera
+	CharacterController->Possess(CachedVehiclePawn);
+}
+
+void UPossessVehicleAction::OnDeactivationMontagePlayed()
+{
+	UInteractionComponent* InteractionComponent = GetInteractionComponent();
+	if (!IsValid(InteractionComponent) || !IsValid(CachedCharacterPawn) || !IsValid(CachedVehiclePawn))
 	{
 		return;
 	}
 
-	UAnimInstance* AnimInstance = SkeletalMesh->GetAnimInstance();
-	if (!AnimInstance)
+	if (AController* Controller = CachedVehiclePawn->GetController())
 	{
-		return;
+		InteractionComponent->SetIsInteractionComponentActive(true);
+		CachedCharacterPawn->SetActorEnableCollision(true);
+		CachedCharacterPawn->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		
+		if (CachedInteractionPoint.IsSet())
+		{
+			CachedCharacterPawn->SetActorLocation(CachedInteractionPoint.GetValue().GetLocation());
+		}
+
+		CachedVehiclePawn->EnableInput(nullptr);
+
+		Controller->Possess(CachedCharacterPawn);
 	}
-
-	const float MontageLength = AnimInstance->Montage_Play(AnimMontage, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
-
-	FTimerHandle ActionTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(ActionTimerHandle, FTimerDelegate::CreateLambda(OnMontageCompleted), MontageLength + Delay, false);
 }
