@@ -96,3 +96,11 @@ enum class EMovingType : uint8
 	RotatingInPlace,
 	Standing
 };
+
+UENUM(BlueprintType)
+enum class ESoldierActionState : uint8
+{
+	None,
+	UsingWeapon,
+	Interacting
+};

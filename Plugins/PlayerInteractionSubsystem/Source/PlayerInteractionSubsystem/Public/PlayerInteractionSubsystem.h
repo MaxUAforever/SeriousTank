@@ -51,8 +51,16 @@ public:
 
 	void RegisterInteraction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent);
 	void RemoveInteraction(UInteractingComponent* InteractingComponent);
-	void RemoveInteraction(UInteractionComponent* InteractingComponent);
-	
+	void RemoveInteraction(UInteractionComponent* InteractionComponent);
+
+	bool IsInteractionRegistered(const UInteractingComponent* InteractingComponent) const;
+	bool IsInteractionRegistered(const UInteractionComponent* InteractionComponent) const;
+
+	bool IsInteracting(const UInteractingComponent* InteractingComponent) const;
+	bool IsInteracting(const UInteractionComponent* InteractionComponent) const;
+
+	const UBaseInteractionAction* GetCurrentInterractionAction(const UInteractingComponent* InteractingComponent) const;
+
 	FOnInteractionSubsystemInitializedDelegate& GetOnSubsystemInitializedDelegate() { return OnInteractionSubsystemInitializedDelegate; }
 	
 	/**
@@ -65,15 +73,19 @@ public:
 	bool StartInteractionAction(UInteractingComponent* InteractingComponent);
 
 	/**
-	* Allow to stop interaction action with interaction component,  if continuous action 
+	* Allow to stop interaction action with interaction component, if continuous action 
 	* was started earlier for this component.
 	*
 	* @param InteractingComponent - pointer to component that request interaction.
 	* @return true if action was stopped successfully.
 	*/
 	bool StopInteractionAction(UInteractingComponent* InteractingComponent);
+	
+	bool StopInteractionAction(UInteractionComponent* InteractionComponent);
 
 private:
+	UInteractingComponent* FindBoundInteractingComponent(const UInteractionComponent* InteractionComponent) const;
+
 	void OnSettingsLoaded();
 
 private:

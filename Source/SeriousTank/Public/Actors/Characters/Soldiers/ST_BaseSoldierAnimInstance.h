@@ -62,6 +62,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	FName SecondWeaponSocketName;
 
+	UPROPERTY()
+	float EquipWeaponAnimDelay = -0.8f;
+
 private:
 	AST_BaseSoldierCharacter* SoldierCharacter;
 	UST_BaseWeaponsManagerComponent* WeaponManagerComponent;
@@ -81,11 +84,14 @@ private:
 	bool bIsReloading;
 	bool bIsWeaponSwitching;
 
+	FTimerHandle ReloadingTimerHandle;
+
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 
 	bool IsWeaponSwitching() const { return bIsWeaponSwitching; };
+	float GetEqiupWeaponMontageLength() const;
 
 private:
 	void UpdateMovingAnimation();
@@ -100,7 +106,8 @@ private:
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponFired(AST_BaseWeapon* Weapon);
     void OnWeaponReloading(AST_BaseWeapon* Weapon);
-	void OnWeaponSwitched(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
+	void OnWeaponReloadingInterrupted(AST_BaseWeapon* Weapon);
+	void OnWeaponSwitchStarted(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
 
 	void OnWeaponEquippingAnimationFinished();
 	

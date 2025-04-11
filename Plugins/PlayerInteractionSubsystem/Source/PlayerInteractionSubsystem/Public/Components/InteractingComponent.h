@@ -5,11 +5,14 @@
 
 class UInputAction;
 class UInputMappingContext;
+class UInteractionComponent;
 class UPlayerInteractionSubsystem;
 class UWidgetComponent;
 
 DECLARE_MULTICAST_DELEGATE(FOnInteractionActionBoundDelegate);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractingStateChangedDelegate, bool);
+DECLARE_MULTICAST_DELEGATE(FOnDeactivatingInteractionActionStartedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnInteractingActionStoppedDelegate);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnInteractionRegisterStateChangedDelegate, bool, const UInteractionComponent*);
 
 /*
 * Component that should be added to pawns that should initiate interaction process.
@@ -22,27 +25,32 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractingComponent : public UActorCompon
 	GENERATED_BODY()
 
 public:
-	// Delegate that should fire when an opportynity to interract appeared or disappeared 
+	// Delegate that should fire when an opportunity to interract appeared or disappeared 
 	// for the current component.
-	FOnInteractingStateChangedDelegate OnInteractingStateChanged;
+	FOnInteractionRegisterStateChangedDelegate OnInteractionRegisterStateChangedDelegate;
 
-	// Delegate that should fire when action is bound to EnhancedComponent.
+	// Delegate that should fire when action is loaded from settings.
 	FOnInteractionActionBoundDelegate OnInteractionActionBoundDelegate;
 
+	FOnDeactivatingInteractionActionStartedDelegate OnDeactivatingActionStartedDelegate;
+	FOnInteractingActionStoppedDelegate OnInteractingActionStoppedDelegate;
+
 public:
-	UFUNCTION()
-	void Interact();
-	void StopInteraction();
+	bool StartInteraction();
+	bool StopInteraction();
+
+	bool IsInteracting() const;
+	bool IsInteractingBlockingly() const;
+
+	bool IsInteractionEnabled() const { return bIsInteractionEnabled; }
+	void SetInteractionEnabled(bool bInIsInteractionEnabled);
 
 protected:
 	virtual void BeginPlay() override;	
 
-	UFUNCTION()
-	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
-
 private:
-	UPlayerInteractionSubsystem* PlayerInteractionSubsystem;
+	TObjectPtr<UPlayerInteractionSubsystem> PlayerInteractionSubsystem;
+	uint32 InteractBindingHandle;
 
-	// Defines if component is now interacting and current interraction can be interrupted. 
-	bool bIsInteracting = false;
+	bool bIsInteractionEnabled = true;
 };

@@ -43,6 +43,8 @@ public:
 protected:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void NotifyControllerChanged() override;
+
 private:
 	void RotateTurretToCamera(float DeltaTime);
 

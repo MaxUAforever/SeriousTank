@@ -9,6 +9,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/ST_GameInstance.h"
 #include "GameFramework/Actor.h"
+#include "Engine/World.h"
 
 void UST_VehicleWeaponManagerComponent::BeginPlay()
 {
@@ -41,8 +42,7 @@ void UST_VehicleWeaponManagerComponent::BeginPlay()
 
 	TArray<UActorComponent*> WeaponSocketActors;
 	GetOwner()->GetComponents(UST_WeaponSocketComponent::StaticClass(), WeaponSocketActors);
-	Weapons.Reserve(WeaponSocketActors.Num());
-
+	
 	int32 WeaponIndex = 0;
 	for (UActorComponent* WeaponSocketActor : WeaponSocketActors)
 	{
@@ -62,20 +62,4 @@ void UST_VehicleWeaponManagerComponent::BeginPlay()
 		
 		WeaponIndex++;
 	}
-}
-
-void UST_VehicleWeaponManagerComponent::OnOwnerPawnPossessed(AController* NewController)
-{
-	for (AST_BaseWeapon* Weapon : Weapons)
-	{
-		if (Weapon->IsReloadingNeeded())
-		{
-			Weapon->ForceReload();
-		}
-	}
-}
-
-void UST_VehicleWeaponManagerComponent::OnOwnerPawnUnPossessed(AController* OldController)
-{
-	InterruptReloading();
 }

@@ -15,6 +15,7 @@ class UWeaponInputsDataAsset;
 
 class UAIPerceptionStimuliSourceComponent;
 enum class EHealthChangingType : uint8;
+enum class ESoldierActionState : uint8;
 struct FInputActionValue;
 
 UCLASS()
@@ -70,6 +71,8 @@ protected:
 	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
 	FName SecondWeaponSocketName;
 	
+private:
+	ESoldierActionState CurrentActionState;
 
 protected:
 	virtual void BeginPlay() override;
@@ -84,8 +87,6 @@ public:
 
 	float GetCameraYawAngle() const;
 
-	bool CanUseWeapon() const;
-
 	FName GetRightHandSocketName() const { return RightHandSocketName; };
 	FName GetLeftHandSocketName() const { return LeftHandSocketName; };
 	FName GetSecondWeaponSocketName() const { return SecondWeaponSocketName; };
@@ -99,19 +100,27 @@ protected:
 
 	void RotateCamera(const FInputActionValue& ActionValue);
 
+	void Interact();
+
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponEquippedFinished();
+	void OnWeaponReloadingFinished(AST_BaseWeapon* Weapon);
 
-	virtual void StartFire();
-	virtual void StopFire();
-    virtual void Reload();
-    
-	virtual void SwitchToFirstWeapon();
-	virtual void SwitchToSecondWeapon();
-	virtual void SwitchToThirdWeapon();
+	void StartFire();
+	void StopFire();
+    void Reload();
+
+	void SwitchToFirstWeapon();
+	void SwitchToSecondWeapon();
+	void SwitchToThirdWeapon();
+
+	bool SwitchToActionState(ESoldierActionState NewActionState);
 
 private:
+	void SwitchToWeapon(int32 WeaponIndex);
+
 	void MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis);
 
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
+	void OnInteractionStopped();
 };

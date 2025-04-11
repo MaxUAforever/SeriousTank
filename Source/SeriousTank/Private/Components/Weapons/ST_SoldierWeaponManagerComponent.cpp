@@ -9,6 +9,7 @@
 #include "GameFramework/ST_GameInstance.h"
 #include "GameFramework/Actor.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
+#include "Engine/World.h"
 
 namespace 
 {
@@ -116,7 +117,7 @@ void UST_SoldierWeaponManagerComponent::BeginPlay()
 
 void UST_SoldierWeaponManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	for (AST_BaseWeapon* Weapon : Weapons)
+	for (AST_BaseWeapon* Weapon : GetWeapons())
 	{
 		Weapon->OnShootDone.Unbind();
 	}
@@ -134,11 +135,11 @@ void UST_SoldierWeaponManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
     Super::AddWeapon(NewWeapon);
     NewWeapon->SetActorEnableCollision(false);
 	NewWeapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
-	NewWeapon->OnReloadingStarted.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
+	NewWeapon->OnReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
 
 	if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
 	{
-		switch (Weapons.Num())
+		switch (GetWeapons().Num())
 		{ 
 			case 1:
 				NewWeapon->AttachToParentComponent(CharacterSkeletalMesh, RightHandSocketName);
@@ -152,26 +153,7 @@ void UST_SoldierWeaponManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
 	}
 }
 
-void UST_SoldierWeaponManagerComponent::OnWeaponSwitched(const int32 PrevWeaponIndex, const int32 NewWeaponIndex)
-{
-	if (!Weapons.IsValidIndex(PrevWeaponIndex) || !Weapons[PrevWeaponIndex] || Weapons.IsValidIndex(NewWeaponIndex) || !Weapons[NewWeaponIndex])
-	{
-		return;
-	}
-}
-
-void UST_SoldierWeaponManagerComponent::OnOwnerPawnPossessed(AController* NewController)
-{
-	if (Weapons.IsValidIndex(CurrentWeaponIndex))
-	{
-		if (Weapons[CurrentWeaponIndex]->IsReloadingNeeded())
-		{
-			Weapons[CurrentWeaponIndex]->ForceReload();
-		}
-	}
-}
-
-void UST_SoldierWeaponManagerComponent::OnOwnerPawnUnPossessed(AController* OldController)
+void UST_SoldierWeaponManagerComponent::OnWeaponSwitchingStarted(const int32 PrevWeaponIndex, const int32 NewWeaponIndex)
 {
 	InterruptReloading();
 }

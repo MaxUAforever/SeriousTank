@@ -12,8 +12,4 @@ class SERIOUSTANK_API UST_VehicleWeaponManagerComponent : public UST_BaseWeapons
 	
 protected:
 	virtual void BeginPlay() override;
-
-protected:
-	virtual void OnOwnerPawnPossessed(AController* NewController) override;
-	virtual void OnOwnerPawnUnPossessed(AController* OldController) override;
 };

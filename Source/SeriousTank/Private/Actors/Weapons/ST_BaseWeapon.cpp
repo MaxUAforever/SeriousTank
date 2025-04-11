@@ -21,34 +21,34 @@ AST_BaseWeapon::AST_BaseWeapon()
 
 	ReloadingTime = 5.f;
 	TotalAmmoCount = 50;
-}
-
-float AST_BaseWeapon::GetReloadingRemainingTime() const
-{
-	return GetWorldTimerManager().GetTimerRemaining(ReloadTimerHandler);
+	MaxAmmoCount = 90;
 }
 
 void AST_BaseWeapon::SetTotalAmmoCount(int32 NewAmmoCount)
 {
-	if (NewAmmoCount >= 0)
+	if (TotalAmmoCount == NewAmmoCount)
 	{
-		int32 OldAmmoCount = TotalAmmoCount;
-		TotalAmmoCount = NewAmmoCount;
-
-		if (OldAmmoCount == 0 && NewAmmoCount > 0)
-		{
-			StartReloading();
-		}
+		return;
 	}
+
+	TotalAmmoCount = FMath::Clamp(NewAmmoCount, 0, MaxAmmoCount);
+	OnAmmoCountChangedDelegate.Broadcast(TotalAmmoCount);
 }
 
-void AST_BaseWeapon::StartFire()
+void AST_BaseWeapon::AddAmmo(int32 AddedAmmoCount)
+{
+	SetTotalAmmoCount(TotalAmmoCount + AddedAmmoCount);
+}
+
+bool AST_BaseWeapon::StartFire()
 {
 	if (bIsEnabled)
 	{
 		bIsFireForced = true;
 		StartShooting();
 	}
+
+	return bIsEnabled;
 }
 
 void AST_BaseWeapon::StopFire()
@@ -82,41 +82,45 @@ void AST_BaseWeapon::SetEnabled(bool bInIsEnabled)
 	OnSetWeaponEnabled(bInIsEnabled);
 }
 
-void AST_BaseWeapon::StartReloading()
+bool AST_BaseWeapon::StartReloading()
 {
-	if (bIsWeaponReloading || TotalAmmoCount <= 0)
+	if (!CanReload())
 	{
-		return;
+		return false;
 	}
 
 	bIsWeaponReloading = true;
 
-	FTimerDelegate FireTimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::StopReloading);
-	GetWorldTimerManager().SetTimer(ReloadTimerHandler, FireTimerDelegate, ReloadingTime, false);
+	OnReloadingStarted();
+	OnReloadingStartedDelegate.Broadcast();
 
-	OnReloadingStarted.Broadcast();
+	return true;
+}
+
+void AST_BaseWeapon::CompleteReloading()
+{
+	if (!bIsWeaponReloading)
+	{
+		return;
+	}
+
+	bIsWeaponReloading = false;
+	OnReloadingCompleted();
+
+	if (IsFireForced())
+	{
+		StartShooting();
+	}
 }
 
 void AST_BaseWeapon::InterruptReloading()
 {
-	bIsWeaponReloading = false;
-	GetWorldTimerManager().ClearTimer(ReloadTimerHandler);
-}
+	if (bIsWeaponReloading)
+	{
+		bIsWeaponReloading = false;
 
-void AST_BaseWeapon::ForceReload()
-{
-    if (CanReload())
-    {
-        StartReloading();
-    }
-}
-
-void AST_BaseWeapon::StopReloading()
-{
-	bIsWeaponReloading = false;
-	GetWorldTimerManager().ClearTimer(ReloadTimerHandler);
-
-	FinishReloading();
+		OnReloadingInterrupted();
+	}
 }
 
 void AST_BaseWeapon::SetHidden(bool bIsHidden)
@@ -126,12 +130,15 @@ void AST_BaseWeapon::SetHidden(bool bIsHidden)
 		return;
 	}
 
-	//SetWeaponEnabled(!bIsHidden);
-
 	SceneComponent->SetVisibility(!bIsHidden, true);
 }
 
 bool AST_BaseWeapon::CanShoot() const
+{
+	return bIsEnabled && !bIsWeaponReloading && TotalAmmoCount > 0;
+}
+
+bool AST_BaseWeapon::CanReload() const
 {
 	return bIsEnabled && !bIsWeaponReloading && TotalAmmoCount > 0;
 }

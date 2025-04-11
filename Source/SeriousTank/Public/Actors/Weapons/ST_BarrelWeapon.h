@@ -13,9 +13,9 @@ public:
 
 protected:
 	virtual void StartShooting() override;
-	virtual void FinishReloading() override { IsCharged = true; };
+	virtual void OnReloadingCompleted() override { IsCharged = true; };
 
-	virtual bool CanReload() const { return !IsCharged && TotalAmmoCount > 0; };
+	virtual bool CanReload() const { return !IsCharged && GetTotalAmmoCount() > 0; };
 
 private:
 	bool IsCharged = true;

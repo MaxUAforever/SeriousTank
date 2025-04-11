@@ -72,14 +72,5 @@ void AST_FireArmWeapon::Shoot()
 	}
 
 	OnShootDone.ExecuteIfBound();
-    OnAmmoCountChanged.Broadcast(--TotalAmmoCount);
-}
-
-void AST_FireArmWeapon::FinishReloading()
-{
-	// Firearm weapons have to shoot immediately after reloading if fire is forced.
-	if (IsFireForced())
-	{
-		StartShooting();
-	}
+	SetTotalAmmoCount(GetTotalAmmoCount() - 1);
 }

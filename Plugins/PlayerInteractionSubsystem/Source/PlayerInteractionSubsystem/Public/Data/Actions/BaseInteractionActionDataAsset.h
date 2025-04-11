@@ -24,5 +24,8 @@ public:
 	TObjectPtr<UAnimMontage> DeactivationMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Base Action Settings")
-	bool bShouldBeDeactivated = true;
+	bool bShouldBeDeactivated = false;
+
+	UPROPERTY(EditAnywhere, Category = "Base Action Settings")
+	bool bIsBlockingInteraction = false;
 };

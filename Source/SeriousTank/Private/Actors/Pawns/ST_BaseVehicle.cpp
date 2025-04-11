@@ -107,25 +107,31 @@ void AST_BaseVehicle::UnPossessed()
 		}
 	}
 
+	if (IsValid(InputComponent))
+	{
+		InputComponent->ClearActionBindings();
+	}
+
+	DisableVehicle();
+
 	Super::UnPossessed();
 }
 
 void AST_BaseVehicle::ExitVehicle()
 {
-	DisableVehicle();
-
-	if (AST_GameplayPlayerController* PlayerController = Cast<AST_GameplayPlayerController>(GetController()))
+	AST_GameplayPlayerController* PlayerController = Cast<AST_GameplayPlayerController>(GetController());
+	if (!IsValid(PlayerController))
 	{
-		APawn* SoldierPawn = PlayerController->GetPreviousPawn();
-
-		if (SoldierPawn && InteractionComponent)
-		{
-			if (UInteractingComponent* InteractingComponent = SoldierPawn->GetComponentByClass<UInteractingComponent>())
-			{
-				InteractingComponent->StopInteraction();
-			}
-		}
+		return;
 	}
+		
+	APawn* SoldierPawn = PlayerController->GetPreviousPawn();
+	if (!IsValid(SoldierPawn) || !IsValid(InteractionComponent))
+	{
+		return;
+	}
+	
+	InteractionComponent->StopInteraction();
 }
 
 void AST_BaseVehicle::DisableVehicle()

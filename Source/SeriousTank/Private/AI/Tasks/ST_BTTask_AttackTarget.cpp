@@ -116,7 +116,7 @@ bool UST_BTTask_AttackTarget::CheckAvailableWeapon(UST_BaseWeaponsManagerCompone
 	{
 		if (IsValid(NewWeapon) && NewWeapon->GetTotalAmmoCount() > 0)
 		{
-			WeaponComponent->SwitchWeapon(WeaponIndex);
+			WeaponComponent->StartSwitchingWeapon(WeaponIndex);
 			WeaponComponent->StartFire();
 
 			return true;

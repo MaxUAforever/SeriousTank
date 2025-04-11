@@ -5,7 +5,7 @@
 #include "GameFramework/ST_GameInstance.h"
 #include "GameFramework/Actor.h"
 #include "Engine/World.h"
-
+#include "TimerManager.h"
 
 UST_BaseWeaponsManagerComponent::UST_BaseWeaponsManagerComponent()
 {
@@ -40,56 +40,164 @@ void UST_BaseWeaponsManagerComponent::BeginPlay()
 #endif
 }
 
-void UST_BaseWeaponsManagerComponent::StartFire()
+void UST_BaseWeaponsManagerComponent::EndPlay(EEndPlayReason::Type Reason)
 {
-	if (Weapons.IsValidIndex(CurrentWeaponIndex))
+	Super::EndPlay(Reason);
+
+	InterruptReloading();
+}
+
+bool UST_BaseWeaponsManagerComponent::StartFire()
+{
+	AST_BaseWeapon* CurrentWeapon = GetCurrentWeapon();
+	if (!IsValid(CurrentWeapon))
 	{
-		Weapons[CurrentWeaponIndex]->StartFire();
+		return false;
 	}
+
+	CurrentWeapon->StartFire();
+	return true;
 }
 
 void UST_BaseWeaponsManagerComponent::StopFire()
 {
-	if (Weapons.IsValidIndex(CurrentWeaponIndex))
+	AST_BaseWeapon* CurrentWeapon = GetCurrentWeapon();
+	if (IsValid(CurrentWeapon))
 	{
-		Weapons[CurrentWeaponIndex]->StopFire();
+		CurrentWeapon->StopFire();
 	}
 }
 
-void UST_BaseWeaponsManagerComponent::Reload()
+void UST_BaseWeaponsManagerComponent::ReloadCurrentWeapon()
 {
-    if (Weapons.IsValidIndex(CurrentWeaponIndex))
-    {
-        Weapons[CurrentWeaponIndex]->ForceReload();
-    }
+	UWorld* World = GetWorld();
+	AST_BaseWeapon* CurrentWeapon = GetCurrentWeapon();
+	if (!IsValid(CurrentWeapon) || !IsValid(World))
+	{
+		return;
+	}
+
+	bool bSuccessfullyStarted = CurrentWeapon->StartReloading();
+	if (!bSuccessfullyStarted)
+	{
+		return;
+	}
+
+	const float WeponReloadingTime = CurrentWeapon->GetTotalReloadingTime();
+	if (WeponReloadingTime > 0)
+	{
+		World->GetTimerManager().SetTimer(WeaponsInfo[CurrentWeaponIndex].ReloadingTimerHandle, FTimerDelegate::CreateUObject(this, &ThisClass::FinishReloading, CurrentWeapon), WeponReloadingTime, false);
+	}
+	else
+	{
+		FinishReloading(CurrentWeapon);
+	}
 }
 
 void UST_BaseWeaponsManagerComponent::InterruptReloading()
 {
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		return;
+	}
+
+	for (FWeaponAdditionalInfo& WeaponInfo : WeaponsInfo)
+	{
+		if (!WeaponInfo.ReloadingTimerHandle.IsValid())
+		{
+			World->GetTimerManager().ClearTimer(WeaponInfo.ReloadingTimerHandle);
+		}
+	}
+
 	for (AST_BaseWeapon* Weapon : Weapons)
 	{
-		Weapon->InterruptReloading();
+		if (!IsValid(Weapon))
+		{
+			Weapon->InterruptReloading();
+
+			OnWeaponReloadingFinishedDelegate.Broadcast(Weapon);
+		}
 	}
 }
 
-bool UST_BaseWeaponsManagerComponent::SwitchWeapon(int32 WeaponIndex)
+bool UST_BaseWeaponsManagerComponent::IsReloadingWeapon(int32 WeaponIndex) const
 {
-	if (WeaponIndex < 0 || WeaponIndex >= Weapons.Num() || Weapons[WeaponIndex] == nullptr)
+	return GetWeaponReloadingTime(WeaponIndex) > 0.f;
+}
+
+float UST_BaseWeaponsManagerComponent::GetWeaponReloadingTime(int32 WeaponIndex) const
+{
+	UWorld* World = GetWorld();
+	const FWeaponAdditionalInfo* WeaponInfo = GetWeaponInfo(WeaponIndex);
+	if (!IsValid(World))
+	{
+		return 0.f;
+	}
+
+	if (WeaponInfo == nullptr || !World->GetTimerManager().IsTimerActive(WeaponInfo->ReloadingTimerHandle))
+	{
+		return 0.f;
+	}
+
+	return World->GetTimerManager().GetTimerRemaining(WeaponInfo->ReloadingTimerHandle);
+}
+
+bool UST_BaseWeaponsManagerComponent::StartSwitchingWeapon(int32 WeaponIndex)
+{
+	if (IsWeaponSwitching())
+	{
+		return false;
+	}
+
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		return false;
+	}
+
+	if (!Weapons.IsValidIndex(WeaponIndex) || !Weapons.IsValidIndex(CurrentWeaponIndex))
+	{
+		return false;
+	}
+
+	AST_BaseWeapon* CurrentWeapon = Weapons[CurrentWeaponIndex];
+	AST_BaseWeapon* NewWeapon = Weapons[WeaponIndex];
+	if (!IsValid(CurrentWeapon) || !IsValid(NewWeapon))
 	{
 		return false;
 	}
 
 	StopFire();
-
-	Weapons[CurrentWeaponIndex]->SetEnabled(false);
-	Weapons[WeaponIndex]->SetEnabled(true);
-
-	OnWeaponSwitched(CurrentWeaponIndex, WeaponIndex);
-	OnWeaponSwitchedDelegate.Broadcast(CurrentWeaponIndex, WeaponIndex);
-
+	
+	bIsWeaponSwitching = true;
+	CurrentWeapon->SetEnabled(false);
+	
+	OnWeaponSwitchingStarted(CurrentWeaponIndex, WeaponIndex);
+	OnWeaponSwitchingStartedDelegate.Broadcast(CurrentWeaponIndex, WeaponIndex);
+	
 	CurrentWeaponIndex = WeaponIndex;
 
+	if (WeaponSwitchingTime > 0)
+	{
+		World->GetTimerManager().SetTimer(WeaponSwitchingTimerHandle, this, &ThisClass::CompleteWeaponSwitching, WeaponSwitchingTime, false);
+	}
+	else
+	{
+		CompleteWeaponSwitching();
+	}
+
 	return true;
+}
+
+void UST_BaseWeaponsManagerComponent::FinishReloading(AST_BaseWeapon* Weapon)
+{
+	if (IsValid(Weapon))
+	{
+		Weapon->CompleteReloading();
+	}
+
+	OnWeaponReloadingFinishedDelegate.Broadcast(Weapon);
 }
 
 AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetCurrentWeapon() const
@@ -99,7 +207,7 @@ AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetCurrentWeapon() const
 
 AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetWeapon(int32 WeaponIndex) const
 {
-	return (WeaponIndex >= 0 && WeaponIndex < Weapons.Num()) ? Weapons[WeaponIndex] : nullptr;
+	return Weapons.IsValidIndex(WeaponIndex) ? Weapons[WeaponIndex] : nullptr;
 }
 
 void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
@@ -117,9 +225,32 @@ void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
 		NewWeapon->SetEnabled(true);
 	}
 
-    Weapons.Add(NewWeapon);
+    int32 Index = Weapons.Add(NewWeapon);
+	WeaponsInfo.EmplaceAt(Index);
 
-    OnWeaponAdded.Broadcast(Weapons.Num() - 1, NewWeapon);
+	NewWeapon->OnAmmoCountChangedDelegate.AddUObject(this, &ThisClass::OnAmmoCountChanged, Index);
+
+    OnWeaponAdded.Broadcast(Index, NewWeapon);
+}
+
+void UST_BaseWeaponsManagerComponent::CompleteWeaponSwitching()
+{
+	if (!Weapons.IsValidIndex(CurrentWeaponIndex))
+	{
+		return;
+	}
+
+	AST_BaseWeapon* CurrentWeapon = Weapons[CurrentWeaponIndex];
+	if (!IsValid(CurrentWeapon))
+	{
+		return;
+	}
+
+	bIsWeaponSwitching = false;
+	CurrentWeapon->SetEnabled(true);
+
+	OnWeaponSwitchingCompleted();
+	OnWeaponSwitchingCompletedDelegate.Broadcast();
 }
 
 void UST_BaseWeaponsManagerComponent::OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
@@ -132,4 +263,42 @@ void UST_BaseWeaponsManagerComponent::OnControllerChanged(APawn* Pawn, AControll
 	{
 		OnOwnerPawnUnPossessed(OldController);
 	}
+}
+
+void UST_BaseWeaponsManagerComponent::OnOwnerPawnPossessed(AController* NewController)
+{
+	AST_BaseWeapon* CurrentWeapon = GetCurrentWeapon();
+	if (IsValid(CurrentWeapon) && CurrentWeapon->IsReloadingNeeded())
+	{
+		ReloadCurrentWeapon();
+	}
+}
+
+void UST_BaseWeaponsManagerComponent::OnOwnerPawnUnPossessed(AController* OldController)
+{
+	InterruptReloading();
+}
+
+void UST_BaseWeaponsManagerComponent::OnAmmoCountChanged(int32 NewAmmoCount, int32 WeaponIndex)
+{
+	AST_BaseWeapon* Weapon = GetWeapon(WeaponIndex);
+	if (!IsValid(Weapon))
+	{
+		return;
+	}
+	
+	if (WeaponIndex == GetCurrentWeaponIndex() && NewAmmoCount > 0 && Weapon->IsReloadingNeeded())
+	{
+		ReloadCurrentWeapon();
+	}
+}
+
+const FWeaponAdditionalInfo* UST_BaseWeaponsManagerComponent::GetWeaponInfo(int32 WeaponIndex) const
+{
+	if (!WeaponsInfo.IsValidIndex(WeaponIndex) || GetWeapon(WeaponIndex) == nullptr)
+	{
+		return nullptr;
+	}
+
+	return &WeaponsInfo[WeaponIndex];
 }

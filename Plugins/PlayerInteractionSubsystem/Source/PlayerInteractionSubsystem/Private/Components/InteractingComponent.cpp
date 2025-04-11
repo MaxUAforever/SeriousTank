@@ -1,5 +1,6 @@
 #include "Components/InteractingComponent.h"
 
+#include "Actions/BaseInteractionAction.h"
 #include "Data/InteractionSubsystemSettings.h"
 #include "Engine/GameInstance.h"
 #include "Engine/LocalPlayer.h"
@@ -27,8 +28,7 @@ void UInteractingComponent::BeginPlay()
 	{
 		auto OnSubsystemInitialized = [this, OwnerPawn]()
 		{
-			OwnerPawn->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnControllerChanged);
-			OnControllerChanged(OwnerPawn, nullptr, OwnerPawn->GetController());
+			OnInteractionActionBoundDelegate.Broadcast();
 		};
 
 		if (PlayerInteractionSubsystem->IsInitialized())
@@ -42,71 +42,75 @@ void UInteractingComponent::BeginPlay()
 	}
 }
 
-void UInteractingComponent::Interact()
+bool UInteractingComponent::StartInteraction()
 {
 	if (!PlayerInteractionSubsystem)
 	{
 		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("UInteractingComponent::Interact: failed to get PlayerInteractionSubsystem"));
-		return;
+		return false;
 	}
 
-	if (!bIsInteracting)
+	if (!bIsInteractionEnabled)
 	{
-		bIsInteracting = PlayerInteractionSubsystem->StartInteractionAction(this);
+		return false;
 	}
+
+	if (PlayerInteractionSubsystem->IsInteracting(this))
+	{
+		return false;
+	}
+
+	bool bDeactivatingInteractionStarted = PlayerInteractionSubsystem->StartInteractionAction(this);
+	if (bDeactivatingInteractionStarted)
+	{
+		OnDeactivatingActionStartedDelegate.Broadcast();
+	}
+
+	return bDeactivatingInteractionStarted;
 }
 
-void UInteractingComponent::StopInteraction()
+bool UInteractingComponent::StopInteraction()
 {
 	if (!PlayerInteractionSubsystem)
 	{
 		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("UInteractingComponent::Interact: failed to get PlayerInteractionSubsystem"));
-		return;
+		return false;
 	}
 
-	if (bIsInteracting)
-	{
-		bIsInteracting = !PlayerInteractionSubsystem->StopInteractionAction(this);
-	}
+	return PlayerInteractionSubsystem->StopInteractionAction(this);
 }
 
-void UInteractingComponent::OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
+bool UInteractingComponent::IsInteracting() const
 {
-	APawn* OwnerPawn = Cast<APawn>(GetOwner());
-	if (!OwnerPawn)
+	if (!IsValid(PlayerInteractionSubsystem))
 	{
-		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("UST_InteractingComponent::BeginPlay: Owner of component is not a pawn."));
-		return;
+		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("UInteractingComponent::IsInteracting: failed to get PlayerInteractionSubsystem"));
+		return false;
 	}
 
-	APlayerController* PC = NewController ? Cast<APlayerController>(NewController) : Cast<APlayerController>(OldController);
-	if (!PC)
+	return PlayerInteractionSubsystem->IsInteracting(this);
+}
+
+bool UInteractingComponent::IsInteractingBlockingly() const
+{
+	if (!IsValid(PlayerInteractionSubsystem))
 	{
-		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("UST_InteractingComponent::BeginPlay: Failed to get possessing player controller of parent pawn."));
-		return;
+		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("UInteractingComponent::IsInteracting: failed to get PlayerInteractionSubsystem"));
+		return false;
 	}
 
-	UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
-	UEnhancedInputComponent* EnhancedComponent = PC->GetComponentByClass<UEnhancedInputComponent>();
-	if (!EnhancedSubsystem)
+	const UBaseInteractionAction* CurrentAction = PlayerInteractionSubsystem->GetCurrentInterractionAction(this);
+	if (!IsValid(CurrentAction))
 	{
-		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("UST_InteractingComponent::BeginPlay: Failed to get EnhancedSubsystem or EnhancedComponent of owning actor."));
-		return;
+		return false;
 	}
 
-	const UInteractionSubsystemSettings* InteractionSettings = GetDefault<UInteractionSubsystemSettings>();
-	if (NewController && EnhancedComponent)
-	{
-		EnhancedComponent->BindAction(InteractionSettings->InteractInputAction.Get(), ETriggerEvent::Started, this, &ThisClass::Interact);
-		
-		FModifyContextOptions ModifyContextOptions;
-		ModifyContextOptions.bForceImmediately = true;
-		EnhancedSubsystem->AddMappingContext(InteractionSettings->InteractionInputContext.Get(), 0, ModifyContextOptions);
+	return CurrentAction->IsBlockingInteraction();
+}
 
-		OnInteractionActionBoundDelegate.Broadcast();
-	}
-	else
-	{
-		EnhancedSubsystem->RemoveMappingContext(InteractionSettings->InteractionInputContext.Get());
-	}
+void UInteractingComponent::SetInteractionEnabled(bool bInIsInteractionEnabled)
+{
+	bIsInteractionEnabled = bInIsInteractionEnabled;
+
+	StopInteraction();
 }

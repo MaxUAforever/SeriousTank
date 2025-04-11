@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "InteractionUserWidget.generated.h"
 
+class UBaseInteractionAction;
 class UTextBlock;
 
 /**
@@ -16,6 +17,9 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractionUserWidget : public UUserWidget
 public:
 	void SetInteractionButtonCaption(FText InButtonText);
 	void SetActionNameCaption(FText InActionDescriptionText);
+
+	virtual void OnInteractionActionStarted(UBaseInteractionAction* InteractionAction) {};
+	virtual void OnInteractionActionStopped() {};
 
 protected:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))

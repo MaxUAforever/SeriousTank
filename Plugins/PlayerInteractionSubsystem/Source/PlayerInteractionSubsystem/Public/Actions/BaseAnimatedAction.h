@@ -3,6 +3,7 @@
 #include "Actions/BaseInteractionAction.h"
 #include "BaseAnimatedAction.generated.h"
 
+class UAnimInstance;
 class UAnimMontage;
 class UBaseInteractionActionDataAsset;
 
@@ -36,6 +37,7 @@ private:
 	void PlayDeactivationMontage();
 
 	void PlayMontage_Internal(UAnimMontage* AnimMontage, float Delay, TFunction<void()> OnMontageCompleted);
+	UAnimInstance* GetOwnerAnimInstance();
 
 private:
 	float ActivationMontageCompleteDelay = 0.f;

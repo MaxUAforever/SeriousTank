@@ -7,8 +7,6 @@ void AST_BarrelWeapon::StartShooting()
 		return;
 	}
 
-	Shoot();
-	StartReloading();
-
 	IsCharged = false;
+	Shoot();
 }

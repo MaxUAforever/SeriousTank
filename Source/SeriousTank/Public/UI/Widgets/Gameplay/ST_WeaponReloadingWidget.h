@@ -6,6 +6,7 @@
 class UBorder;
 class UProgressBar;
 class UTextBlock;
+class UST_BaseWeaponsManagerComponent;
 
 UCLASS()
 class SERIOUSTANK_API UST_WeaponReloadingWidget : public UUserWidget
@@ -48,6 +49,8 @@ private:
 	FDelegateHandle OnAmmoCountChangedDelegateHandle;
 	FDelegateHandle OnClipAmmoCountChangedDelegateHandle;
 
+    UST_BaseWeaponsManagerComponent* WeaponsManagerComponent;
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -57,7 +60,7 @@ private:
 	void OnWeaponRemoved(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 
 	UFUNCTION()
-	void OnWeaponReloadingStarted(AST_BaseWeapon* Weapon);
+	void OnWeaponReloadingStarted();
 
     UFUNCTION()
     void OnWeaponSelected(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
@@ -71,5 +74,5 @@ private:
 	UFUNCTION()
 	void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);
 
-	void UpdateReloadingProgressbar(AST_BaseWeapon* Weapon);
+	void UpdateReloadingProgressbar();
 };

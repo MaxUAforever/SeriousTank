@@ -7,6 +7,11 @@ class AController;
 class APawn;
 class AST_BaseWeapon;
 
+struct FWeaponAdditionalInfo
+{
+	FTimerHandle ReloadingTimerHandle;
+};
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SERIOUSTANK_API UST_BaseWeaponsManagerComponent : public UActorComponent
 {
@@ -19,38 +24,40 @@ public:
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAdded, int32, AST_BaseWeapon*)
 	FWeaponAdded OnWeaponAdded;
 
-    DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadingStartedDelegate, AST_BaseWeapon*)
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadingStartedDelegate, AST_BaseWeapon*)
     FOnWeaponReloadingStartedDelegate OnWeaponReloadingStartedDelegate;
     
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponSwitched, int32 /*PreviousWeaponIndex*/, int32 /*NewWeaponIndex*/)
-	FOnWeaponSwitched OnWeaponSwitchedDelegate;
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadingFinishedDelegate, AST_BaseWeapon*)
+	FOnWeaponReloadingFinishedDelegate OnWeaponReloadingFinishedDelegate;
 
-protected:
-	TArray<AST_BaseWeapon*> Weapons;
-	int32 CurrentWeaponIndex;
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponSwitchingStartedDelegate, int32 /*PreviousWeaponIndex*/, int32 /*NewWeaponIndex*/)
+	FOnWeaponSwitchingStartedDelegate OnWeaponSwitchingStartedDelegate;
 
-#if WITH_EDITORONLY_DATA
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AST_BaseWeapon> OverriddenFirstWeapon;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AST_BaseWeapon> OverriddenSecondWeapon;
-#endif
+	DECLARE_MULTICAST_DELEGATE(FOnWeaponSwitchingCompletedDelegate)
+	FOnWeaponSwitchingCompletedDelegate OnWeaponSwitchingCompletedDelegate;
 
 public:
 	UST_BaseWeaponsManagerComponent();
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 public:
-	void StartFire();
+	bool StartFire();
 	void StopFire();
 
-    void Reload();
+    void ReloadCurrentWeapon();
 	void InterruptReloading();
 
-	bool SwitchWeapon(int32 WeaponIndex);
+	bool IsReloadingWeapon(int32 WeaponIndex) const;
+	float GetWeaponReloadingTime(int32 WeaponIndex) const;
+
+	bool IsWeaponSwitching() const { return bIsWeaponSwitching; }
+	bool StartSwitchingWeapon(int32 WeaponIndex);
+	
+	float GetWeaponSwitchingTime() { return WeaponSwitchingTime; }
+	void SetWeaponSwitchingTime(float InWeaponSwitchingTime) { WeaponSwitchingTime = InWeaponSwitchingTime; }
 
 	const TArray<AST_BaseWeapon*>& GetWeapons() const { return Weapons; }
 	AST_BaseWeapon* GetCurrentWeapon() const;
@@ -61,12 +68,43 @@ public:
 protected:
     virtual void AddWeapon(AST_BaseWeapon* NewWeapon);
     
-	virtual void OnWeaponSwitched(int32 PrevWeaponIndex, int32 NewWeaponIndex) {};
+	virtual void OnWeaponSwitchingStarted(int32 PrevWeaponIndex, int32 NewWeaponIndex) {};
+	virtual void OnWeaponSwitchingCompleted() {};
 
-	virtual void OnOwnerPawnPossessed(AController* NewController) {};
-	virtual void OnOwnerPawnUnPossessed(AController* OldController) {};
+private:
+	void CompleteWeaponSwitching();
 
 private:
 	UFUNCTION()
 	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+
+	void FinishReloading(AST_BaseWeapon* Weapon);
+
+	void OnOwnerPawnPossessed(AController* NewController);
+	void OnOwnerPawnUnPossessed(AController* OldController);
+
+	void OnAmmoCountChanged(int32 NewAmmoCount, int32 WeaponIndex);
+
+protected:
+	const FWeaponAdditionalInfo* GetWeaponInfo(int32 WeaponIndex) const;
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float WeaponSwitchingTime = 0.f;
+
+	TArray<TObjectPtr<AST_BaseWeapon>> Weapons;
+	TArray<FWeaponAdditionalInfo> WeaponsInfo;
+
+	int32 CurrentWeaponIndex;
+
+	bool bIsWeaponSwitching;
+	FTimerHandle WeaponSwitchingTimerHandle;
+
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AST_BaseWeapon> OverriddenFirstWeapon;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AST_BaseWeapon> OverriddenSecondWeapon;
+#endif
 };

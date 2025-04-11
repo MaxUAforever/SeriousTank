@@ -15,6 +15,7 @@ void UBaseInteractionAction::Initialize(const UBaseInteractionActionDataAsset* I
 	ActivationMontage = InteractionActionDataAsset->ActivationMontage;
 	DeactivationMontage = InteractionActionDataAsset->DeactivationMontage;
 	bShouldBeDeactivated = InteractionActionDataAsset->bShouldBeDeactivated;
+	bIsBlockingInteraction = InteractionActionDataAsset->bIsBlockingInteraction;
 }
 
 bool UBaseInteractionAction::Activate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)

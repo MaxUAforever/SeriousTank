@@ -58,6 +58,14 @@ public:
 	bool ShouldBeDeactivated() const { return bShouldBeDeactivated; }
 	void SetShouldBeDeactivated(bool bInShouldBeDeactivated) { bShouldBeDeactivated = bInShouldBeDeactivated; }
 
+	/**
+	 * Checks if action should block other user interaction while active.
+	 *
+	 * @return True if action is blocking.
+	 */
+	bool IsBlockingInteraction() const { return bIsBlockingInteraction; }
+	void SetIsBlockingInteraction(bool bInIsBlockingInteraction) { bIsBlockingInteraction = bInIsBlockingInteraction; }
+
 protected:
 	virtual bool CanBeActivated(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) const { return true; };
 
@@ -84,6 +92,8 @@ private:
 	bool bShouldBeDeactivated = true;
 
 	FText ActionDescription;
+
+	bool bIsBlockingInteraction = false;
 
 private:
 	TObjectPtr<UInteractingComponent> CachedInteractingComponent;

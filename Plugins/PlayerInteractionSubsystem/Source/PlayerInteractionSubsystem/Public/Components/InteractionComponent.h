@@ -11,15 +11,22 @@ class UInteractionUserWidget;
 class UInteractionWidgetComponent;
 class UPlayerInteractionSubsystem;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractionActionStartedDelegate, UBaseInteractionAction*);
+DECLARE_MULTICAST_DELEGATE(FOnInteractionActionStoppedDelegate);
+
 /**
  * Component that should be added to actors that should provide interaction action.
  * Overlapping of sphere component by actor with IneractingComponent will be registered in InteractionSubsystem
  * And allow it to initiate interactionProcess
  */
-UCLASS()
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent), Blueprintable)
 class PLAYERINTERACTIONSUBSYSTEM_API UInteractionComponent : public USphereComponent
 {
 	GENERATED_BODY()
+
+public:
+	FOnInteractionActionStartedDelegate OnInteractionActionStartedDelegate;
+	FOnInteractionActionStoppedDelegate OnInteractionActionStoppedDelegate;
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,6 +38,8 @@ public:
 	// Allows to control if component should trigger action on request. 
 	bool IsInteractionComponentActive() const { return bIsActive; }
 	void SetIsInteractionComponentActive(bool bInIsActive);
+
+	bool StopInteraction();
 
 	const TArray<FTransform>& GetRelativeInteractionPoints() const { return InteractionPoints; };
 	TArray<FTransform> GetWorldInteractionPoints() const;
@@ -45,6 +54,9 @@ protected:
 
 	UFUNCTION()
 	void HandleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+private:
+	void OnInteractionStateChanged(bool bIsInteracting, const UInteractionComponent* InteractionComponent);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Actions")

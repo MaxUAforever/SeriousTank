@@ -17,7 +17,6 @@ void UBaseInterruptibleAction::Initialize(const UBaseInteractionActionDataAsset*
 	}
 
 	ActivationTime = InterruptibleActionDataAsset->ActivationTime;
-	DeactivationTime = InterruptibleActionDataAsset->DeactivationTime;
 	InterruptionCaption = InterruptibleActionDataAsset->InterruptionCaption;
 
 	bShouldBeDeactivatedAfterActivation = ShouldBeDeactivated();
@@ -35,7 +34,7 @@ void UBaseInterruptibleAction::BeginDestroy()
 	UInteractingComponent* InteractingComponent = GetInteractingComponent();
 	if (IsValid(InteractingComponent))
 	{
-		InteractingComponent->OnInteractingStateChanged.RemoveAll(this);
+		InteractingComponent->OnInteractionRegisterStateChangedDelegate.RemoveAll(this);
 	}
 }
 
@@ -48,8 +47,7 @@ bool UBaseInterruptibleAction::Activate(UInteractingComponent* InteractingCompon
 
 	if (bIsActivationInProgress)
 	{
-		InterruptActivation();
-		return true;
+		return false;
 	}
 
 	UWorld* World = GetWorld();
@@ -62,16 +60,40 @@ bool UBaseInterruptibleAction::Activate(UInteractingComponent* InteractingCompon
 	World->GetTimerManager().SetTimer(ActivationTimerHandle, FTimerDelegate::CreateUObject(this, &ThisClass::CompleteActivation), ActivationTime, false);
 
 	SetShouldBeDeactivated(true);
+	OnActivationStarted();
 
-	InteractingComponent->OnInteractingStateChanged.AddUObject(this, &ThisClass::OnInteractingStateChanged);
+	InteractingComponent->OnInteractionRegisterStateChangedDelegate.AddUObject(this, &ThisClass::OnInteractionRegisterStateChanged);
 	InteractionComponent->UpdateWidgetData();
 
+	return true;
+}
+
+bool UBaseInterruptibleAction::Deactivate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)
+{
+	if (bIsActivationInProgress)
+	{
+		InterruptActivation();
+		return true;
+	}
+
+	OnDeactivationStarted();
 	return true;
 }
 
 FText UBaseInterruptibleAction::GetActionDescription() const
 {
 	return bIsActivationInProgress ? InterruptionCaption : GetDefaultActionDescription();
+}
+
+float UBaseInterruptibleAction::GetRemainingActivationTime() const
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return ActivationTime;
+	}
+
+	return bIsActivationInProgress ? World->GetTimerManager().GetTimerRemaining(ActivationTimerHandle) : ActivationTime;
 }
 
 void UBaseInterruptibleAction::InterruptActivation()
@@ -107,14 +129,14 @@ void UBaseInterruptibleAction::CompleteActivation()
 		UPlayerInteractionSubsystem* PlayerInteractionSubsystem = World->GetSubsystem<UPlayerInteractionSubsystem>();
 		if (IsValid(PlayerInteractionSubsystem))
 		{
-			PlayerInteractionSubsystem->StopInteractionAction(GetInteractingComponent());
+			PlayerInteractionSubsystem->StopInteractionAction(GetInteractionComponent());
 		}
 	}
 
 	OnActivationCompleted();
 }
 
-void UBaseInterruptibleAction::OnInteractingStateChanged(bool bIsInteracting)
+void UBaseInterruptibleAction::OnInteractionRegisterStateChanged(bool bIsInteracting, const UInteractionComponent* InteractionComponent)
 {
 	if (!bIsInteracting && bIsActivationInProgress)
 	{

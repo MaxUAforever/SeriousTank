@@ -44,6 +44,12 @@ bool UBaseAnimatedAction::Activate(UInteractingComponent* InteractingComponent, 
 		return false;
 	}
 
+	UAnimInstance* AnimInstance = GetOwnerAnimInstance();
+	if (!IsValid(AnimInstance) || AnimInstance->Montage_IsPlaying(GetActivationMontage()) || AnimInstance->Montage_IsPlaying(GetDeactivationMontage()))
+	{
+		return false;
+	}
+
 	OnActivationStarted();
 	PlayActivationMontage();
 
@@ -53,6 +59,12 @@ bool UBaseAnimatedAction::Activate(UInteractingComponent* InteractingComponent, 
 bool UBaseAnimatedAction::Deactivate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)
 {
 	if (!Super::Deactivate(InteractingComponent, InteractionComponent))
+	{
+		return false;
+	}
+
+	UAnimInstance* AnimInstance = GetOwnerAnimInstance();
+	if (!IsValid(AnimInstance) || AnimInstance->Montage_IsPlaying(GetActivationMontage()) || AnimInstance->Montage_IsPlaying(GetDeactivationMontage()))
 	{
 		return false;
 	}
@@ -85,37 +97,37 @@ void UBaseAnimatedAction::PlayDeactivationMontage()
 
 void UBaseAnimatedAction::PlayMontage_Internal(UAnimMontage* AnimMontage, float Delay, TFunction<void()> OnMontageCompleted)
 {
-	const UInteractingComponent* InteractingComponent = GetInteractingComponent();
-	if (!IsValid(AnimMontage) || !IsValid(InteractingComponent))
+	UWorld* World = GetWorld();
+	UAnimInstance* AnimInstance = GetOwnerAnimInstance();
+	if (!IsValid(AnimInstance) || !IsValid(World))
 	{
 		return;
+	}
+	
+	const float MontageLength = AnimInstance->Montage_Play(AnimMontage, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
+
+	World->GetTimerManager().SetTimer(ActionTimerHandle, FTimerDelegate::CreateLambda(OnMontageCompleted), MontageLength + Delay, false);
+}
+
+UAnimInstance* UBaseAnimatedAction::GetOwnerAnimInstance()
+{
+	const UInteractingComponent* InteractingComponent = GetInteractingComponent();
+	if (!IsValid(InteractingComponent))
+	{
+		return nullptr;
 	}
 
 	AActor* InteractingActor = Cast<AActor>(InteractingComponent->GetOwner());
 	if (!IsValid(InteractingActor))
 	{
-		return;
+		return nullptr;
 	}
 
 	USkeletalMeshComponent* SkeletalMesh = InteractingActor->GetComponentByClass<USkeletalMeshComponent>();
-	if (!SkeletalMesh)
+	if (!IsValid(SkeletalMesh))
 	{
-		return;
+		return nullptr;
 	}
 
-	UAnimInstance* AnimInstance = SkeletalMesh->GetAnimInstance();
-	if (!AnimInstance)
-	{
-		return;
-	}
-
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-
-	const float MontageLength = AnimInstance->Montage_Play(AnimMontage, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
-
-	World->GetTimerManager().SetTimer(ActionTimerHandle, FTimerDelegate::CreateLambda(OnMontageCompleted), MontageLength + Delay, false);
+	return SkeletalMesh->GetAnimInstance();
 }

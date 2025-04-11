@@ -26,10 +26,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     virtual void AddWeapon(AST_BaseWeapon* NewWeapon) override;
-	virtual void OnWeaponSwitched(int32 PrevWeaponIndex, int32 NewWeaponIndex) override;
-	
-	virtual void OnOwnerPawnPossessed(AController* OldController) override;
-	virtual void OnOwnerPawnUnPossessed(AController* OldController) override;
+	virtual void OnWeaponSwitchingStarted(int32 PrevWeaponIndex, int32 NewWeaponIndex) override;
 
 	void OnWeaponFired();
     

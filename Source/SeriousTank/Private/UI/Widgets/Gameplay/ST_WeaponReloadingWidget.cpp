@@ -51,17 +51,16 @@ void UST_WeaponReloadingWidget::OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapo
     SetIsEnabled(true);
 	SetVisibility(ESlateVisibility::Visible);
     
-	OnReloadingStartedDelegateHandle = Weapon->OnReloadingStarted.AddUObject(this, &ThisClass::OnWeaponReloadingStarted, Weapon);
-	OnAmmoCountChangedDelegateHandle = Weapon->OnAmmoCountChanged.AddUObject(this, &ThisClass::UpdateTotalAmmoCount);
+	OnReloadingStartedDelegateHandle = Weapon->OnReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
+	OnAmmoCountChangedDelegateHandle = Weapon->OnAmmoCountChangedDelegate.AddUObject(this, &ThisClass::UpdateTotalAmmoCount);
     
 	UpdateTotalAmmoCount(Weapon->GetTotalAmmoCount());
     
 	if (Weapon->IsReloading())
 	{
-		OnWeaponReloadingStarted(Weapon);
+		OnWeaponReloadingStarted();
 	}
 
-	UST_BaseWeaponsManagerComponent* WeaponsManagerComponent = PlayerController->GetPawn() ? PlayerController->GetPawn()->GetComponentByClass<UST_BaseWeaponsManagerComponent>() : nullptr;
 	if (WeaponsManagerComponent)
 	{
 		SelectionBorder->SetVisibility(WeaponIndex == WeaponsManagerComponent->GetCurrentWeaponIndex() ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
@@ -92,8 +91,8 @@ void UST_WeaponReloadingWidget::OnWeaponRemoved(int32 InWeaponIndex, AST_BaseWea
 	ClipAmmoCountBlock->SetVisibility(ESlateVisibility::Hidden);
 	AmmoDelimiterBlock->SetVisibility(ESlateVisibility::Hidden);
 
-	Weapon->OnReloadingStarted.Remove(OnReloadingStartedDelegateHandle);
-	Weapon->OnAmmoCountChanged.Remove(OnAmmoCountChangedDelegateHandle);
+	Weapon->OnReloadingStartedDelegate.Remove(OnReloadingStartedDelegateHandle);
+	Weapon->OnAmmoCountChangedDelegate.Remove(OnAmmoCountChangedDelegateHandle);
 
 	GetWorld()->GetTimerManager().ClearTimer(WeaponReloadingRefreshRateHandler);
 	ReloadingProgressbar->SetPercent(0.f);
@@ -105,10 +104,10 @@ void UST_WeaponReloadingWidget::OnWeaponRemoved(int32 InWeaponIndex, AST_BaseWea
 	}
 }
 
-void UST_WeaponReloadingWidget::OnWeaponReloadingStarted(AST_BaseWeapon* Weapon)
+void UST_WeaponReloadingWidget::OnWeaponReloadingStarted()
 {
 	// TODO: Probably it's better to use tick function with customized interval
-    FTimerDelegate ReloadingRefreshRateTimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::UpdateReloadingProgressbar, Weapon);
+    FTimerDelegate ReloadingRefreshRateTimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::UpdateReloadingProgressbar);
 	GetWorld()->GetTimerManager().SetTimer(WeaponReloadingRefreshRateHandler, ReloadingRefreshRateTimerDelegate, ReloadingRefreshRate, true);
     
     ReloadingProgressbar->SetVisibility(ESlateVisibility::Visible);
@@ -142,7 +141,7 @@ void UST_WeaponReloadingWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 		if (OldWeaponsManagerComponent)
 		{
 			OldWeaponsManagerComponent->OnWeaponAdded.Remove(OnWeaponAddedDelegateHandle);
-			OldWeaponsManagerComponent->OnWeaponSwitchedDelegate.Remove(OnWeaponSwitchedDelegateHandle);
+			OldWeaponsManagerComponent->OnWeaponSwitchingStartedDelegate.Remove(OnWeaponSwitchedDelegateHandle);
 		
 			if (AST_BaseWeapon* OldWeapon = OldWeaponsManagerComponent->GetWeapon(WeaponIndex))
 			{
@@ -151,12 +150,12 @@ void UST_WeaponReloadingWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 		}
 	}
 
-	UST_BaseWeaponsManagerComponent* WeaponsManagerComponent = NewPawn->GetComponentByClass<UST_BaseWeaponsManagerComponent>();
+	WeaponsManagerComponent = NewPawn->GetComponentByClass<UST_BaseWeaponsManagerComponent>();
 	if (WeaponsManagerComponent)
 	{
 		// TODO: Bind delegate to parent widget to preventing multiple broadcasting to each rloading widget
 		OnWeaponAddedDelegateHandle = WeaponsManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponAdded);
-		OnWeaponSwitchedDelegateHandle = WeaponsManagerComponent->OnWeaponSwitchedDelegate.AddUObject(this, &ThisClass::OnWeaponSelected);
+		OnWeaponSwitchedDelegateHandle = WeaponsManagerComponent->OnWeaponSwitchingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponSelected);
 	
 		if (AST_BaseWeapon* NewWeapon = WeaponsManagerComponent->GetWeapon(WeaponIndex))
 		{
@@ -165,18 +164,24 @@ void UST_WeaponReloadingWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 	}
 }
 
-void UST_WeaponReloadingWidget::UpdateReloadingProgressbar(AST_BaseWeapon* Weapon)
+void UST_WeaponReloadingWidget::UpdateReloadingProgressbar()
 {
-	if (!Weapon || !Weapon->IsReloading())
+	if (!IsValid(WeaponsManagerComponent))
 	{
-        ReloadingProgressbar->SetPercent(0.f);
-        ReloadingProgressbar->SetVisibility(ESlateVisibility::Hidden);
+		return;
+	}
+
+	AST_BaseWeapon* Weapon = WeaponsManagerComponent->GetWeapon(WeaponIndex);
+	if (!IsValid(Weapon) || !Weapon->IsReloading())
+	{
+		ReloadingProgressbar->SetPercent(0.f);
+		ReloadingProgressbar->SetVisibility(ESlateVisibility::Hidden);
 		GetWorld()->GetTimerManager().ClearTimer(WeaponReloadingRefreshRateHandler);
 		return;
 	}
 
-	const float ReloadingTime = Weapon->GetReloadingRemainingTime();
-    const float TotalReloadingTime = Weapon->GetTotalReloadingTime();
-    
-    ReloadingProgressbar->SetPercent(1.f - (ReloadingTime / TotalReloadingTime));
+	const float ReloadingTime = WeaponsManagerComponent->GetWeaponReloadingTime(WeaponIndex);
+	const float TotalReloadingTime = WeaponsManagerComponent->GetWeaponReloadingTime(WeaponIndex);
+
+	ReloadingProgressbar->SetPercent(1.f - (ReloadingTime / TotalReloadingTime));
 }

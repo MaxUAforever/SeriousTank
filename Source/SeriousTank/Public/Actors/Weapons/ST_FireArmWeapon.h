@@ -29,9 +29,7 @@ public:
     
     virtual void AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName = NAME_None, bool bInShouldBeDestroyedWithActor = true) override;
     virtual void OnSetWeaponEnabled(bool bIsEnabled) override;
-    
+
 protected:
 	virtual void Shoot() override;
-
-	virtual void FinishReloading() override;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Actions/BaseInteractionAction.h"
+#include "Engine/TimerHandle.h"
 #include "BaseInterruptibleAction.generated.h"
 
 class UBaseInteractionActionDataAsset;
@@ -19,10 +20,17 @@ public:
 	virtual void BeginDestroy() override;
 
 	virtual bool Activate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) override;
-	
+	virtual bool Deactivate(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent) override;
+
 	virtual FText GetActionDescription() const override;
+	
+	float GetTotalActivationTime() const { return ActivationTime; }
+	float GetRemainingActivationTime() const;
 
 protected:
+	virtual void OnActivationStarted() {};
+	virtual void OnDeactivationStarted() {};
+
 	virtual void OnActivationCompleted() {};
 	virtual void OnActivationInterrupted() {};
 
@@ -30,11 +38,10 @@ private:
 	void InterruptActivation();
 	void CompleteActivation();
 
-	void OnInteractingStateChanged(bool bIsInteracting);
+	void OnInteractionRegisterStateChanged(bool bIsInteracting, const UInteractionComponent* InteractionComponent);
 
 private:
 	float ActivationTime = 1.f;
-	float DeactivationTime = 1.f;
 
 	FText InterruptionCaption;
 

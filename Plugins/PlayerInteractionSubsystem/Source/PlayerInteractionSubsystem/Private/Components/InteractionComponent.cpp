@@ -26,22 +26,20 @@ void UInteractionComponent::BeginPlay()
 	if (bIsWidgetEnabled && InteractionWidgetClass)
 	{
 		InteractionWidgetComponent = NewObject<UInteractionWidgetComponent>(GetOwner(), UInteractionWidgetComponent::StaticClass(), TEXT("InteractionWidget"));
-		if (InteractionWidgetComponent)
+		if (IsValid(InteractionWidgetComponent))
 		{
-			InteractionWidgetComponent->RegisterComponent();
 			InteractionWidgetComponent->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			
+			InteractionWidgetComponent->RegisterComponent();
+
 			InteractionWidgetComponent->SetVisibility(false);
 
 			InteractionWidgetComponent->SetWidgetClass(InteractionWidgetClass);
 			InteractionWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
-			InteractionWidgetComponent->SetRelativeLocation(FVector{ 0.f, 0.f, -40.f });
+			InteractionWidgetComponent->SetDrawAtDesiredSize(true);
+			InteractionWidgetComponent->SetRelativeLocation(FVector{ 0.f, 0.f, 0.f });
 			InteractionWidgetComponent->UpdateWidgetData();
 		}
 	}
-
-	TArray<USceneComponent*> ChildComponents;
-	GetChildrenComponents(false, ChildComponents);
 }
 
 void UInteractionComponent::SetIsInteractionComponentActive(bool bInIsActive)
@@ -75,6 +73,16 @@ void UInteractionComponent::SetIsInteractionComponentActive(bool bInIsActive)
 	{
 		InteractionWidgetComponent->SetVisibility(bIsActive);
 	}
+}
+
+bool UInteractionComponent::StopInteraction()
+{
+	if (!IsValid(PlayerInteractionSubsystem))
+	{
+		return false;
+	}
+
+	return PlayerInteractionSubsystem->StopInteractionAction(this);
 }
 
 TArray<FTransform> UInteractionComponent::GetWorldInteractionPoints() const
@@ -132,12 +140,8 @@ void UInteractionComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedCo
 	UInteractingComponent* InteractingComponent = OtherActor->GetComponentByClass<UInteractingComponent>();
 	if (PlayerInteractionSubsystem && InteractingComponent)
 	{
+		InteractingComponent->OnInteractionRegisterStateChangedDelegate.AddUObject(this, &ThisClass::OnInteractionStateChanged);
 		PlayerInteractionSubsystem->RegisterInteraction(InteractingComponent, this);
-	}
-
-	if (InteractionWidgetComponent)
-	{
-		InteractionWidgetComponent->SetVisibility(true);
 	}
 }
 
@@ -149,13 +153,19 @@ void UInteractionComponent::HandleEndOverlap(UPrimitiveComponent* OverlappedComp
 	}
 
 	UInteractingComponent* InteractingComponent = OtherActor->GetComponentByClass<UInteractingComponent>();
-	if (PlayerInteractionSubsystem && InteractingComponent)
+	if (IsValid(PlayerInteractionSubsystem) && InteractingComponent)
 	{
-		PlayerInteractionSubsystem->RemoveInteraction(InteractingComponent);
-	}
+		PlayerInteractionSubsystem->StopInteractionAction(this);
+		PlayerInteractionSubsystem->RemoveInteraction(this);
 
-	if (InteractionWidgetComponent)
+		InteractingComponent->OnInteractionRegisterStateChangedDelegate.RemoveAll(this);
+	}
+}
+
+void UInteractionComponent::OnInteractionStateChanged(bool bIsInteracting, const UInteractionComponent* InteractionComponent)
+{
+	if (InteractionWidgetComponent && InteractionComponent == this)
 	{
-		InteractionWidgetComponent->SetVisibility(false);
+		InteractionWidgetComponent->SetVisibility(bIsInteracting);
 	}
 }

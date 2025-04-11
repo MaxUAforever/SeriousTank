@@ -36,10 +36,10 @@ protected:
     virtual void BeginPlay() override;
     
 	virtual void StartShooting() override;
+	virtual void Shoot() override;
 
 	virtual bool CanReload() const override;
-	virtual void FinishReloading() override;
-	virtual void Shoot() override;
+	virtual void OnReloadingCompleted() override;
 
 	void OnBurstPauseEnded();
 };

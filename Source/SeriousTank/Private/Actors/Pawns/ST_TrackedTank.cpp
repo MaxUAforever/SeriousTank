@@ -35,6 +35,21 @@ void AST_TrackedTank::Tick(float DeltaTime)
 	RotateTurretToCamera(DeltaTime);
 }
 
+void AST_TrackedTank::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+	
+	SetActorTickEnabled(IsValid(GetController()));
+
+	if (IsValid(TurretSceneComponent) && IsValid(CameraSceneComponent))
+	{
+		FRotator TargetRotator = CameraSceneComponent->GetComponentRotation();
+		TargetRotator.Yaw = TurretSceneComponent->GetComponentRotation().Yaw;
+
+		CameraSceneComponent->SetWorldRotation(TargetRotator);
+	}
+}
+
 void AST_TrackedTank::RotateTurretToCamera(float DeltaTime)
 {
 	const FRotator CameraRotator = CameraSceneComponent->GetComponentRotation();
@@ -72,14 +87,10 @@ void AST_TrackedTank::StopFire()
 
 void AST_TrackedTank::SwitchToFirstWeapon()
 {
-    Super::SwitchToFirstWeapon();
-    
-	WeaponManagerComponent->SwitchWeapon(0);
+    WeaponManagerComponent->StartSwitchingWeapon(0);
 }
 
 void AST_TrackedTank::SwitchToSecondWeapon()
 {
-    Super::SwitchToSecondWeapon();
-    
-	WeaponManagerComponent->SwitchWeapon(1);
+	WeaponManagerComponent->StartSwitchingWeapon(1);
 }

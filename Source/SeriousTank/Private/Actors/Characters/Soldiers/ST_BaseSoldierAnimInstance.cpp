@@ -44,7 +44,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 			WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
 			WeaponManagerComponent->OnWeaponFiredDelegate.BindUObject(this, &ThisClass::OnWeaponFired);
 			WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
-			WeaponManagerComponent->OnWeaponSwitchedDelegate.AddUObject(this, &ThisClass::OnWeaponSwitched);
+			WeaponManagerComponent->OnWeaponSwitchingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponSwitchStarted);
 		}
 	}
 
@@ -96,6 +96,16 @@ void UST_BaseSoldierAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	{
 		UpdateLeftHandWeaponPosition();
 	}
+}
+
+float UST_BaseSoldierAnimInstance::GetEqiupWeaponMontageLength() const
+{
+	if (IsValid(MontagesDataAsset) && IsValid(MontagesDataAsset->SwitchWeaponMontage))
+	{
+		return MontagesDataAsset->SwitchWeaponMontage->GetPlayLength() + EquipWeaponAnimDelay;
+	}
+
+	return 0.f;
 }
 
 void UST_BaseSoldierAnimInstance::UpdateMovingAnimation()
@@ -250,11 +260,22 @@ void UST_BaseSoldierAnimInstance::OnWeaponReloading(AST_BaseWeapon* Weapon)
 		bIsReloading = false;
 	};
 
-	FTimerHandle ReloadingTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(ReloadingTimerHandle, FTimerDelegate::CreateLambda(OnReloadingMontageFinished), MontageLength, false);
 }
 
-void UST_BaseSoldierAnimInstance::OnWeaponSwitched(int32 PreviousWeaponIndex, int32 NewWeaponIndex)
+void UST_BaseSoldierAnimInstance::OnWeaponReloadingInterrupted(AST_BaseWeapon* Weapon)
+{
+	if (bIsReloading)
+	{
+		Montage_Stop(0.f, MontagesDataAsset->TwoHandsWeaponReloadingMontage);
+		InternalAnimNotify_OnMagazineInserted();
+
+		GetWorld()->GetTimerManager().ClearTimer(ReloadingTimerHandle);
+		bIsReloading = false;
+	}
+}
+
+void UST_BaseSoldierAnimInstance::OnWeaponSwitchStarted(int32 PreviousWeaponIndex, int32 NewWeaponIndex)
 {
 	if (!MontagesDataAsset || !WeaponManagerComponent)
 	{
@@ -262,24 +283,22 @@ void UST_BaseSoldierAnimInstance::OnWeaponSwitched(int32 PreviousWeaponIndex, in
 	}
 
 	SwitchingWeapon = WeaponManagerComponent->GetWeapon(NewWeaponIndex);
-	if (SwitchingWeapon)
+	if (!SwitchingWeapon)
 	{
-		SwitchingWeapon->SetEnabled(false);
-
-		if (bIsReloading)
-		{
-			Montage_Stop(0.f, MontagesDataAsset->TwoHandsWeaponReloadingMontage);
-			InternalAnimNotify_OnMagazineInserted();
-
-			CurrentWeapon->InterruptReloading();
-		}
-
-		const float MontageLength = Montage_Play(MontagesDataAsset->SwitchWeaponMontage);
-		
-		bIsWeaponSwitching = true;
-		FTimerHandle SwitchingTimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(SwitchingTimerHandle, this, &ThisClass::OnWeaponEquippingAnimationFinished, MontageLength - 0.8f, false);
+		return;
 	}
+	
+	if (bIsReloading)
+	{
+		OnWeaponReloadingInterrupted(CurrentWeapon);
+	}
+
+	SwitchingWeapon->SetEnabled(false);
+	const float MontageLength = Montage_Play(MontagesDataAsset->SwitchWeaponMontage);
+	
+	bIsWeaponSwitching = true;
+	FTimerHandle SwitchingTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(SwitchingTimerHandle, this, &ThisClass::OnWeaponEquippingAnimationFinished, MontageLength + EquipWeaponAnimDelay, false);
 }
 
 void UST_BaseSoldierAnimInstance::OnDamageDealed(float CurrentHealthValue, EHealthChangingType HealthChangingType)
@@ -369,11 +388,6 @@ void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnWeaponSwitched()
 void UST_BaseSoldierAnimInstance::OnWeaponEquippingAnimationFinished()
 {
 	bIsWeaponSwitching = false;
-	
-	if (SwitchingWeapon)
-	{
-		SwitchingWeapon->SetEnabled(true);
-	}
 
 	OnEqiupWeaponAnimationFinishedDelegate.ExecuteIfBound();
 }

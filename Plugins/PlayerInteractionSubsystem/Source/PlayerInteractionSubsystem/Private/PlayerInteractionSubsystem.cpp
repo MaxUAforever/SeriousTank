@@ -43,8 +43,18 @@ void UPlayerInteractionSubsystem::RegisterInteraction(UInteractingComponent* Int
 		return;
 	}
 
+	if (ActiveInteractionsMap.Contains(InteractingComponent))
+	{
+		return;
+	}
+
+	if (RegisteredInteractionsMap.Contains(InteractingComponent))
+	{
+		RemoveInteraction(InteractingComponent);
+	}
+
 	RegisteredInteractionsMap.Add(InteractingComponent, InteractionComponent);
-	InteractingComponent->OnInteractingStateChanged.Broadcast(true);
+	InteractingComponent->OnInteractionRegisterStateChangedDelegate.Broadcast(true, InteractionComponent);
 }
 
 void UPlayerInteractionSubsystem::RemoveInteraction(UInteractingComponent* InteractingComponent)
@@ -55,28 +65,55 @@ void UPlayerInteractionSubsystem::RemoveInteraction(UInteractingComponent* Inter
 		return;
 	}
 
+	UInteractionComponent** InteractionComponent = RegisteredInteractionsMap.Find(InteractingComponent);
+	InteractingComponent->OnInteractionRegisterStateChangedDelegate.Broadcast(false, InteractionComponent != nullptr ? *InteractionComponent : nullptr);
+	
 	RegisteredInteractionsMap.Remove(InteractingComponent);
-	InteractingComponent->OnInteractingStateChanged.Broadcast(false);
 }
 
-void UPlayerInteractionSubsystem::RemoveInteraction(UInteractionComponent* InteractingComponent)
+void UPlayerInteractionSubsystem::RemoveInteraction(UInteractionComponent* InteractionComponent)
 {
-	if (!IsValid(InteractingComponent))
+	if (!IsValid(InteractionComponent))
 	{
 		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("PlayerInteractionSubsystem::RemoveInteraction: failed to get InteractingComponent"));
 		return;
 	}
 
-	for (auto InteractionMapIt = ActiveInteractionsMap.CreateConstIterator(); InteractionMapIt; ++InteractionMapIt)
+	if (UInteractingComponent* InteractingComponent = FindBoundInteractingComponent(InteractionComponent))
 	{
-		UInteractingComponent* InteractingComponent = InteractionMapIt.Key();
-		if (!InteractingComponent)
-		{
-			continue;
-		}
-
 		RemoveInteraction(InteractingComponent);
 	}
+}
+
+bool UPlayerInteractionSubsystem::IsInteractionRegistered(const UInteractingComponent* InteractingComponent) const
+{
+	return RegisteredInteractionsMap.Contains(InteractingComponent);
+}
+
+bool UPlayerInteractionSubsystem::IsInteractionRegistered(const UInteractionComponent* InteractionComponent) const
+{
+	return IsInteractionRegistered(FindBoundInteractingComponent(InteractionComponent));
+}
+
+bool UPlayerInteractionSubsystem::IsInteracting(const UInteractingComponent* InteractingComponent) const
+{
+	return ActiveInteractionsMap.Contains(InteractingComponent);
+}
+
+bool UPlayerInteractionSubsystem::IsInteracting(const UInteractionComponent* InteractionComponent) const
+{
+	return IsInteracting(FindBoundInteractingComponent(InteractionComponent));
+}
+
+const UBaseInteractionAction* UPlayerInteractionSubsystem::GetCurrentInterractionAction(const UInteractingComponent* InteractingComponent) const
+{
+	const FInteractionComponentInfo* InteractionComponentInfo = ActiveInteractionsMap.Find(InteractingComponent);
+	if (InteractionComponentInfo == nullptr)
+	{
+		return nullptr;
+	}
+
+	return InteractionComponentInfo->InteractionAction;
 }
 
 bool UPlayerInteractionSubsystem::StartInteractionAction(UInteractingComponent* InteractingComponent)
@@ -115,14 +152,16 @@ bool UPlayerInteractionSubsystem::StartInteractionAction(UInteractingComponent* 
 		ActiveInteractionsMap.Remove(InteractingComponent);
 		return false;
 	}
-		
+	
+	CurrentInteractionComponent->OnInteractionActionStartedDelegate.Broadcast(InteractionAction);
+
 	return InteractionAction->ShouldBeDeactivated();
 }
 
 bool UPlayerInteractionSubsystem::StopInteractionAction(UInteractingComponent* InteractingComponent)
 {
 	FInteractionComponentInfo* InteractionComponentInfo = ActiveInteractionsMap.Find(InteractingComponent);
-	if (!InteractionComponentInfo)
+	if (!IsValid(InteractingComponent) || !InteractionComponentInfo)
 	{
 		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("PlayerInteractionSubsystem::StopInteractionAction: Failed to get InteractionComponentInfo."));
 		return false;
@@ -139,10 +178,38 @@ bool UPlayerInteractionSubsystem::StopInteractionAction(UInteractingComponent* I
 	const bool bSuccess = CurrentInteractionAction->Deactivate(InteractingComponent, CurrentInteractionComponent);
 	if (bSuccess)
 	{
+		InteractingComponent->OnInteractingActionStoppedDelegate.Broadcast();
+		CurrentInteractionComponent->OnInteractionActionStoppedDelegate.Broadcast();
+		CurrentInteractionAction = nullptr;
+
 		ActiveInteractionsMap.Remove(InteractingComponent);
 	}
 
 	return bSuccess;
+}
+
+bool UPlayerInteractionSubsystem::StopInteractionAction(UInteractionComponent* InteractionComponent)
+{
+	return StopInteractionAction(FindBoundInteractingComponent(InteractionComponent));
+}
+
+UInteractingComponent* UPlayerInteractionSubsystem::FindBoundInteractingComponent(const UInteractionComponent* InteractionComponent) const
+{
+	for (auto InteractionMapIt = RegisteredInteractionsMap.CreateConstIterator(); InteractionMapIt; ++InteractionMapIt)
+	{
+		UInteractingComponent* InteractingComponent = InteractionMapIt.Key();
+		if (!InteractingComponent)
+		{
+			continue;
+		}
+
+		if (InteractionMapIt.Value() == InteractionComponent)
+		{
+			return InteractingComponent;
+		}
+	}
+
+	return nullptr;
 }
 
 void UPlayerInteractionSubsystem::OnSettingsLoaded()
