@@ -133,6 +133,11 @@ void UBaseInterruptibleAction::CompleteActivation()
 		}
 	}
 
+	if (IsValid(GetActivationMontage()))
+	{
+
+	}
+
 	OnActivationCompleted();
 }
 

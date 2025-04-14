@@ -105,7 +105,7 @@ private:
 
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponFired(AST_BaseWeapon* Weapon);
-    void OnWeaponReloading(AST_BaseWeapon* Weapon);
+    void OnWeaponReloading(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponReloadingInterrupted(AST_BaseWeapon* Weapon);
 	void OnWeaponSwitchStarted(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
 

@@ -21,7 +21,7 @@ void UST_BaseWeaponsManagerComponent::BeginPlay()
 		PawnOwner->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnControllerChanged);
 	}
 
-#if WITH_EDITOR
+//#if WITH_EDITOR
 	if (OverriddenFirstWeapon)
 	{
 		if (AST_BaseWeapon* Weapon = GetWorld()->SpawnActor<AST_BaseWeapon>(OverriddenFirstWeapon))
@@ -37,7 +37,7 @@ void UST_BaseWeaponsManagerComponent::BeginPlay()
 			AddWeapon(Weapon);
 		}
 	}
-#endif
+//#endif
 }
 
 void UST_BaseWeaponsManagerComponent::EndPlay(EEndPlayReason::Type Reason)
@@ -83,14 +83,16 @@ void UST_BaseWeaponsManagerComponent::ReloadCurrentWeapon()
 		return;
 	}
 
+	OnWeaponReloadingStartedDelegate.Broadcast(CurrentWeaponIndex, CurrentWeapon);
+
 	const float WeponReloadingTime = CurrentWeapon->GetTotalReloadingTime();
 	if (WeponReloadingTime > 0)
 	{
-		World->GetTimerManager().SetTimer(WeaponsInfo[CurrentWeaponIndex].ReloadingTimerHandle, FTimerDelegate::CreateUObject(this, &ThisClass::FinishReloading, CurrentWeapon), WeponReloadingTime, false);
+		World->GetTimerManager().SetTimer(WeaponsInfo[CurrentWeaponIndex].ReloadingTimerHandle, FTimerDelegate::CreateUObject(this, &ThisClass::FinishReloading, CurrentWeaponIndex), WeponReloadingTime, false);
 	}
 	else
 	{
-		FinishReloading(CurrentWeapon);
+		FinishReloading(CurrentWeaponIndex);
 	}
 }
 
@@ -110,13 +112,14 @@ void UST_BaseWeaponsManagerComponent::InterruptReloading()
 		}
 	}
 
+	int32 Index = 0;
 	for (AST_BaseWeapon* Weapon : Weapons)
 	{
 		if (!IsValid(Weapon))
 		{
 			Weapon->InterruptReloading();
 
-			OnWeaponReloadingFinishedDelegate.Broadcast(Weapon);
+			OnWeaponReloadingFinishedDelegate.Broadcast(Index++, Weapon);
 		}
 	}
 }
@@ -141,6 +144,17 @@ float UST_BaseWeaponsManagerComponent::GetWeaponReloadingTime(int32 WeaponIndex)
 	}
 
 	return World->GetTimerManager().GetTimerRemaining(WeaponInfo->ReloadingTimerHandle);
+}
+
+float UST_BaseWeaponsManagerComponent::GetWeaponTotalReloadingTime(int32 WeaponIndex) const
+{
+	AST_BaseWeapon* Weapon = GetWeapon(WeaponIndex);
+	if (!IsValid(Weapon))
+	{
+		return 0.f;
+	}
+
+	return Weapon->GetTotalReloadingTime();
 }
 
 bool UST_BaseWeaponsManagerComponent::StartSwitchingWeapon(int32 WeaponIndex)
@@ -190,14 +204,16 @@ bool UST_BaseWeaponsManagerComponent::StartSwitchingWeapon(int32 WeaponIndex)
 	return true;
 }
 
-void UST_BaseWeaponsManagerComponent::FinishReloading(AST_BaseWeapon* Weapon)
+void UST_BaseWeaponsManagerComponent::FinishReloading(int32 WeaponIndex)
 {
-	if (IsValid(Weapon))
+	AST_BaseWeapon* Weapon = GetWeapon(WeaponIndex);
+	if (!IsValid(Weapon))
 	{
-		Weapon->CompleteReloading();
+		return;
 	}
-
-	OnWeaponReloadingFinishedDelegate.Broadcast(Weapon);
+		
+	Weapon->CompleteReloading();
+	OnWeaponReloadingFinishedDelegate.Broadcast(WeaponIndex, Weapon);
 }
 
 AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetCurrentWeapon() const

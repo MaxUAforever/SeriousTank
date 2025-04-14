@@ -24,10 +24,10 @@ public:
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAdded, int32, AST_BaseWeapon*)
 	FWeaponAdded OnWeaponAdded;
 
-	DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadingStartedDelegate, AST_BaseWeapon*)
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingStartedDelegate, int32, AST_BaseWeapon*)
     FOnWeaponReloadingStartedDelegate OnWeaponReloadingStartedDelegate;
     
-	DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponReloadingFinishedDelegate, AST_BaseWeapon*)
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingFinishedDelegate, int32, AST_BaseWeapon*)
 	FOnWeaponReloadingFinishedDelegate OnWeaponReloadingFinishedDelegate;
 
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponSwitchingStartedDelegate, int32 /*PreviousWeaponIndex*/, int32 /*NewWeaponIndex*/)
@@ -52,6 +52,7 @@ public:
 
 	bool IsReloadingWeapon(int32 WeaponIndex) const;
 	float GetWeaponReloadingTime(int32 WeaponIndex) const;
+	float GetWeaponTotalReloadingTime(int32 WeaponIndex) const;
 
 	bool IsWeaponSwitching() const { return bIsWeaponSwitching; }
 	bool StartSwitchingWeapon(int32 WeaponIndex);
@@ -78,7 +79,7 @@ private:
 	UFUNCTION()
 	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
 
-	void FinishReloading(AST_BaseWeapon* Weapon);
+	void FinishReloading(int32 WeaponIndex);
 
 	void OnOwnerPawnPossessed(AController* NewController);
 	void OnOwnerPawnUnPossessed(AController* OldController);
@@ -100,11 +101,11 @@ private:
 	bool bIsWeaponSwitching;
 	FTimerHandle WeaponSwitchingTimerHandle;
 
-#if WITH_EDITORONLY_DATA
+//#if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AST_BaseWeapon> OverriddenFirstWeapon;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AST_BaseWeapon> OverriddenSecondWeapon;
-#endif
+//#endif
 };

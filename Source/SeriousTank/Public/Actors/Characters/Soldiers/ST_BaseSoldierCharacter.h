@@ -104,7 +104,7 @@ protected:
 
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponEquippedFinished();
-	void OnWeaponReloadingFinished(AST_BaseWeapon* Weapon);
+	void OnWeaponReloadingFinished(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 
 	void StartFire();
 	void StopFire();

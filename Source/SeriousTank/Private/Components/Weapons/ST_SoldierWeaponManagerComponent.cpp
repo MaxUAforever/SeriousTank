@@ -135,7 +135,6 @@ void UST_SoldierWeaponManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
     Super::AddWeapon(NewWeapon);
     NewWeapon->SetActorEnableCollision(false);
 	NewWeapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
-	NewWeapon->OnReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
 
 	if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
 	{
@@ -168,11 +167,6 @@ void UST_SoldierWeaponManagerComponent::SetupSockets(const FName InRightHandSock
 void UST_SoldierWeaponManagerComponent::OnWeaponFired()
 {
 	OnWeaponFiredDelegate.ExecuteIfBound(GetCurrentWeapon());
-}
-
-void UST_SoldierWeaponManagerComponent::OnWeaponReloadingStarted()
-{
-    OnWeaponReloadingStartedDelegate.Broadcast(GetCurrentWeapon());
 }
 
 

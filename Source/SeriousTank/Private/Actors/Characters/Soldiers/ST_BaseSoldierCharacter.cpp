@@ -135,15 +135,14 @@ void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* Player
 
 void AST_BaseSoldierCharacter::NotifyControllerChanged()
 {
-	Super::NotifyControllerChanged();
-
 	const bool bIsUnPossessed = Controller == nullptr;
-
 	APlayerController* PC = Cast<APlayerController>(bIsUnPossessed ? PreviousController : Controller);
 	if (!PC)
 	{
 		return;
 	}
+
+	Super::NotifyControllerChanged();
 
 	const UInteractionSubsystemSettings* InteractionSettings = GetDefault<UInteractionSubsystemSettings>();
 	UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
@@ -307,7 +306,7 @@ void AST_BaseSoldierCharacter::OnWeaponEquippedFinished()
 	}
 }
 
-void AST_BaseSoldierCharacter::OnWeaponReloadingFinished(AST_BaseWeapon* Weapon)
+void AST_BaseSoldierCharacter::OnWeaponReloadingFinished(int32 InWeaponIndex, AST_BaseWeapon* Weapon)
 {
 	if (IsValid(Weapon) && !Weapon->IsFireForced() && CurrentActionState == ESoldierActionState::UsingWeapon)
 	{

@@ -51,14 +51,14 @@ void UST_WeaponReloadingWidget::OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapo
     SetIsEnabled(true);
 	SetVisibility(ESlateVisibility::Visible);
     
-	OnReloadingStartedDelegateHandle = Weapon->OnReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
+	OnReloadingStartedDelegateHandle = WeaponsManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
 	OnAmmoCountChangedDelegateHandle = Weapon->OnAmmoCountChangedDelegate.AddUObject(this, &ThisClass::UpdateTotalAmmoCount);
     
 	UpdateTotalAmmoCount(Weapon->GetTotalAmmoCount());
     
 	if (Weapon->IsReloading())
 	{
-		OnWeaponReloadingStarted();
+		OnWeaponReloadingStarted(WeaponIndex, Weapon);
 	}
 
 	if (WeaponsManagerComponent)
@@ -104,8 +104,13 @@ void UST_WeaponReloadingWidget::OnWeaponRemoved(int32 InWeaponIndex, AST_BaseWea
 	}
 }
 
-void UST_WeaponReloadingWidget::OnWeaponReloadingStarted()
+void UST_WeaponReloadingWidget::OnWeaponReloadingStarted(int32 InWeaponIndex, AST_BaseWeapon* Weapon)
 {
+	if (WeaponIndex != InWeaponIndex)
+	{
+		return;
+	}
+
 	// TODO: Probably it's better to use tick function with customized interval
     FTimerDelegate ReloadingRefreshRateTimerDelegate = FTimerDelegate::CreateUObject(this, &ThisClass::UpdateReloadingProgressbar);
 	GetWorld()->GetTimerManager().SetTimer(WeaponReloadingRefreshRateHandler, ReloadingRefreshRateTimerDelegate, ReloadingRefreshRate, true);
@@ -181,7 +186,7 @@ void UST_WeaponReloadingWidget::UpdateReloadingProgressbar()
 	}
 
 	const float ReloadingTime = WeaponsManagerComponent->GetWeaponReloadingTime(WeaponIndex);
-	const float TotalReloadingTime = WeaponsManagerComponent->GetWeaponReloadingTime(WeaponIndex);
+	const float TotalReloadingTime = WeaponsManagerComponent->GetWeaponTotalReloadingTime(WeaponIndex);
 
 	ReloadingProgressbar->SetPercent(1.f - (ReloadingTime / TotalReloadingTime));
 }

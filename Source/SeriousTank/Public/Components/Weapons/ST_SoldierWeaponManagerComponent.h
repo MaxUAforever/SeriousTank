@@ -29,7 +29,4 @@ protected:
 	virtual void OnWeaponSwitchingStarted(int32 PrevWeaponIndex, int32 NewWeaponIndex) override;
 
 	void OnWeaponFired();
-    
-private:
-    void OnWeaponReloadingStarted();
 };

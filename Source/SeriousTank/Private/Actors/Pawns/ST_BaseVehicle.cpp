@@ -77,15 +77,17 @@ void AST_BaseVehicle::NotifyControllerChanged()
 	{
 		EnhancedSubsystem->AddMappingContext(CommonInputsDataAsset->CommonGameplayInputContext, 0);
 	}
-	
-	if (VehicleInputsDataAsset && !EnhancedSubsystem->HasMappingContext(VehicleInputsDataAsset->VehicleInputContext))
-	{
-		EnhancedSubsystem->AddMappingContext(VehicleInputsDataAsset->VehicleInputContext, 0);
-	}
 
 	if (WeaponInputsDataAsset && !EnhancedSubsystem->HasMappingContext(WeaponInputsDataAsset->WeaponsInputContext))
 	{
 		EnhancedSubsystem->AddMappingContext(WeaponInputsDataAsset->WeaponsInputContext, 0);
+	}
+
+	if (VehicleInputsDataAsset && !EnhancedSubsystem->HasMappingContext(VehicleInputsDataAsset->VehicleInputContext))
+	{
+		FModifyContextOptions ModifyContextOptions;
+		ModifyContextOptions.bForceImmediately = true;
+		EnhancedSubsystem->AddMappingContext(VehicleInputsDataAsset->VehicleInputContext, 0, ModifyContextOptions);
 	}
 }
 

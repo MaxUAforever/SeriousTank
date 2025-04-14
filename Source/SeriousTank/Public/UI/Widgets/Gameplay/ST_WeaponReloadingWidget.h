@@ -59,8 +59,7 @@ private:
 	void OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponRemoved(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 
-	UFUNCTION()
-	void OnWeaponReloadingStarted();
+	void OnWeaponReloadingStarted(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 
     UFUNCTION()
     void OnWeaponSelected(int32 PreviousWeaponIndex, int32 NewWeaponIndex);

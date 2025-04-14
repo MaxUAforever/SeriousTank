@@ -16,10 +16,30 @@
 			]
 		}
 	],
+	"Plugins": [
+		{
+			"Name": "OnlineSubsystemGooglePlay",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Android"
+			]
+		},
+		{
+			"Name": "Fab",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
+		}
+	],
 	"TargetPlatforms": [
 		"Windows",
 		"WindowsNoEditor",
 		"Android",
-		"IOS"
+		"IOS",
+		"Linux",
+		"Mac"
 	]
 }

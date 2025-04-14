@@ -10,7 +10,7 @@ public class QuestSubsystem: ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-                "QuestSubsystem/Public"
+                
             }
 			);
 				

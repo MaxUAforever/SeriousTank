@@ -9,6 +9,7 @@
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "Core/Animation/ST_AnimNotify.h"
 #include "Core/ST_CoreTypes.h"
+#include "Engine/World.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
@@ -245,7 +246,7 @@ void UST_BaseSoldierAnimInstance::OnWeaponFired(AST_BaseWeapon* Weapon)
     }
 }
 
-void UST_BaseSoldierAnimInstance::OnWeaponReloading(AST_BaseWeapon* Weapon)
+void UST_BaseSoldierAnimInstance::OnWeaponReloading(int32 WeaponIndex, AST_BaseWeapon* Weapon)
 {
 	if (bIsReloading || !MontagesDataAsset)
 	{
@@ -335,7 +336,7 @@ void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineGrabbed()
 		return;
 	}
 	
-	CurrentMagazineComponent->DetachFromParent();
+	CurrentMagazineComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	CurrentMagazineComponent->AttachToComponent(SoldierCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, LeftHandSocketName);
 }
 
@@ -351,7 +352,7 @@ void UST_BaseSoldierAnimInstance::InternalAnimNotify_OnMagazineInserted()
 		return;
 	}
 
-	CurrentMagazineComponent->DetachFromParent();
+	CurrentMagazineComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	CurrentMagazineComponent->AttachToComponent(CurrentWeapon->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	CurrentMagazineComponent->SetRelativeTransform(CurrentMagazineTransform);
 }

@@ -142,6 +142,8 @@ void UInteractionComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedCo
 	{
 		InteractingComponent->OnInteractionRegisterStateChangedDelegate.AddUObject(this, &ThisClass::OnInteractionStateChanged);
 		PlayerInteractionSubsystem->RegisterInteraction(InteractingComponent, this);
+
+		UpdateWidgetData();
 	}
 }
 
