@@ -10,7 +10,7 @@ public class SeriousTank : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "GameplayTasks", "PlayerInteractionSubsystem", "AIPatrollingSubsystem", "NavigationSystem", "QuestSubsystem" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "GameplayTasks", "PlayerInteractionSubsystem", "AIPatrollingSubsystem", "NavigationSystem", "ObjectPoolSubsystem", "QuestSubsystem" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

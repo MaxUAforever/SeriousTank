@@ -15,19 +15,19 @@ class SERIOUSTANK_API AST_BaseProjectile : public AActor
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	USphereComponent* CollisionComponent;
+	TObjectPtr<USphereComponent> CollisionComponent;
 
 	UPROPERTY(EditDefaultsOnly)
-	UStaticMeshComponent* MeshComponent;
+	TObjectPtr<UStaticMeshComponent> MeshComponent;
 
 	UPROPERTY(EditDefaultsOnly)
-	UProjectileMovementComponent* ProjectileMovementComponent;
+	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent;
 
 	UPROPERTY(EditAnywhere)
-	USoundCue* ExplosionSound;
+	TObjectPtr<USoundCue> ExplosionSound;
 
 	UPROPERTY(EditDefaultsOnly)
-	UST_DamageDealingComponent* DamageDealingComponent;
+	TObjectPtr<UST_DamageDealingComponent> DamageDealingComponent;
 
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<AActor>> ActorsToIgnore;
@@ -37,6 +37,8 @@ protected:
 
 public:	
 	AST_BaseProjectile();
+
+	void ResetVelocity(FVector Direction);
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

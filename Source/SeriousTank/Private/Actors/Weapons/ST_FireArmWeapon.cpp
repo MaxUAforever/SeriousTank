@@ -6,9 +6,11 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "ObjectPoolSubsystem/Public/ObjectPoolSubsystem.h"
 #include "Sound/SoundCue.h"
 #include "TimerManager.h"
 
@@ -51,26 +53,39 @@ void AST_FireArmWeapon::Shoot()
 		return;
 	}
 
-	if (UWorld* World = GetWorld())
+	UWorld* World = GetWorld();
+	if (!IsValid(World))
 	{
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.Owner = this;
-
-		FTransform SpawnTransform = ShootingArrowComponent->GetComponentTransform();
-		SpawnTransform.SetScale3D(FVector(1.f));
-		
-		FRotator SpawnRotator = SpawnTransform.Rotator();
-		SpawnRotator.Pitch = 0.f;
-		SpawnTransform.SetRotation(SpawnRotator.Quaternion());
-
-		World->SpawnActor<AST_BaseProjectile>(ProjectileClass, ShootingArrowComponent->GetComponentTransform(), SpawnParameters);
-
-		if (ShootSound)
-		{
-			UGameplayStatics::SpawnSoundAtLocation(World, ShootSound, ShootingArrowComponent->GetComponentLocation());
-		}
+		return;
 	}
 
-	OnShootDone.ExecuteIfBound();
+	UObjectPoolSubsystem* ObjectPoolSubsystem = World->GetSubsystem<UObjectPoolSubsystem>();
+	if (!IsValid(ObjectPoolSubsystem))
+	{
+		return;
+	}
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this;
+
+	FTransform SpawnTransform = ShootingArrowComponent->GetComponentTransform();
+	SpawnTransform.SetScale3D(GetActorScale3D());
+
+	AST_BaseProjectile* Projectile = ObjectPoolSubsystem->SpawnActor<AST_BaseProjectile>(ProjectileClass, SpawnTransform, SpawnParameters);
+	if (!IsValid(Projectile))
+	{
+		return;
+	}
+	
+	FVector Velocity = ShootingArrowComponent->GetForwardVector();
+	Velocity.Z = 0.f;
+	Projectile->ResetVelocity(Velocity);
+	
+	if (ShootSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(World, ShootSound, ShootingArrowComponent->GetComponentLocation());
+	}
+
 	SetTotalAmmoCount(GetTotalAmmoCount() - 1);
+	OnShootDone.ExecuteIfBound();
 }
