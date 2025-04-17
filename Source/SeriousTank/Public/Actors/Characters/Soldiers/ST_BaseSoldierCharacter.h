@@ -103,12 +103,15 @@ protected:
 	void Interact();
 
 	void OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
+	void OnWeaponUnequipped(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponEquippedFinished();
 	void OnWeaponReloadingFinished(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 
 	void StartFire();
 	void StopFire();
     void Reload();
+
+	void DropCurrentWeapon();
 
 	void SwitchToFirstWeapon();
 	void SwitchToSecondWeapon();

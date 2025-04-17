@@ -43,6 +43,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 		if (WeaponManagerComponent)
 		{
 			WeaponManagerComponent->OnWeaponAddedDelegate.AddUObject(this, &ThisClass::OnWeaponEquipped);
+			WeaponManagerComponent->OnPreWeaponRemovedDelegate.AddUObject(this, &ThisClass::OnWeaponUnequipped);
 			WeaponManagerComponent->OnWeaponFiredDelegate.BindUObject(this, &ThisClass::OnWeaponFired);
 			WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
 			WeaponManagerComponent->OnWeaponSwitchingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponSwitchStarted);
@@ -235,6 +236,30 @@ void UST_BaseSoldierAnimInstance::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWe
 	else if (WeaponManagerComponent->GetWeapons().Num() == 2)
 	{
 		AdditionalWeapon = Weapon;
+	}
+}
+
+void UST_BaseSoldierAnimInstance::OnWeaponUnequipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+{
+	if (Weapon == CurrentWeapon)
+	{
+		if (bIsReloading)
+		{
+			OnWeaponReloadingInterrupted(Weapon);
+		}
+
+		CurrentWeapon->SetHidden(false);
+
+		CurrentMagazineComponent = nullptr;
+		CurrentMagazineTransform = FTransform{};
+
+		CurrentWeapon = nullptr;
+
+		bIsWeaponEquipped = false;
+	}
+	else if (Weapon == AdditionalWeapon)
+	{
+		AdditionalWeapon = nullptr;
 	}
 }
 

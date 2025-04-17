@@ -85,7 +85,6 @@ public:
 
 private:
 	bool TryToActivateAutomaticAction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent);
-	bool TryToDeactivateAutomaticAction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent);
 	
 	UInteractingComponent* FindBoundInteractingComponent(const UInteractionComponent* InteractionComponent) const;
 

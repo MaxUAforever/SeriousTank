@@ -61,7 +61,8 @@ public:
 	virtual bool CanReload() const;
 	virtual bool IsReloadingNeeded() const { return false; };
 
-	virtual void AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName = NAME_None, bool bInShouldBeDestroyedWithActor = true);
+	void AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName = NAME_None, bool bInShouldBeDestroyedWithActor = true);
+	void DetachFromParentComponent();
 
 protected:
 	virtual void OnReloadingStarted() {};
@@ -80,9 +81,6 @@ private:
     void OnParentDestroyed(AActor* DestroyedOwner);
 
 protected:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USceneComponent> SceneComponent;
-
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
 

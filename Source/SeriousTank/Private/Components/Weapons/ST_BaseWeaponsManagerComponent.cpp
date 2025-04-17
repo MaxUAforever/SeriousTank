@@ -115,7 +115,7 @@ void UST_BaseWeaponsManagerComponent::InterruptReloading()
 	int32 Index = 0;
 	for (AST_BaseWeapon* Weapon : Weapons)
 	{
-		if (!IsValid(Weapon))
+		if (IsValid(Weapon))
 		{
 			Weapon->InterruptReloading();
 
@@ -276,12 +276,13 @@ void UST_BaseWeaponsManagerComponent::RemoveWeapon(int32 WeaponIndex)
 		return;
 	}
 
+	OnPreWeaponRemoved(WeaponIndex);
+	OnPreWeaponRemovedDelegate.Broadcast(WeaponIndex, RemovedWeapon);
+
 	RemovedWeapon->OnAmmoCountChangedDelegate.RemoveAll(this);
 	RemovedWeapon->SetActorEnableCollision(true);
 	RemovedWeapon->SetEnabled(false);
 	RemovedWeapon->SetWeaponEquipped(false);
-
-	OnPreWeaponRemoved(WeaponIndex);
 
 	Weapons.RemoveAt(WeaponIndex);
 	WeaponsInfo.RemoveAt(WeaponIndex);

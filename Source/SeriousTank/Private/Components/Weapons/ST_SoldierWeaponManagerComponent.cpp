@@ -171,7 +171,7 @@ void UST_SoldierWeaponManagerComponent::OnPreWeaponRemoved(int32 WeaponIndex)
 	RemovedWeapon->OnShootDone.Unbind();
 	if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
 	{
-		RemovedWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		RemovedWeapon->DetachFromParentComponent();
 	}
 
 	RemovedWeapon->SetHidden(false);

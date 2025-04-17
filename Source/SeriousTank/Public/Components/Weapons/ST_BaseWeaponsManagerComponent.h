@@ -24,6 +24,9 @@ public:
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAddedDelegate, int32, AST_BaseWeapon*)
 	FWeaponAddedDelegate OnWeaponAddedDelegate;
 
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPreWeaponRemovedDelegate, int32, AST_BaseWeapon*)
+	FOnPreWeaponRemovedDelegate OnPreWeaponRemovedDelegate;
+
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingStartedDelegate, int32, AST_BaseWeapon*)
     FOnWeaponReloadingStartedDelegate OnWeaponReloadingStartedDelegate;
     

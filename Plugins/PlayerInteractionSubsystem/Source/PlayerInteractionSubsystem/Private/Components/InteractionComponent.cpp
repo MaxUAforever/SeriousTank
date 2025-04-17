@@ -1,5 +1,6 @@
 #include "Components/InteractionComponent.h"
 
+#include "Actions/BaseAutomaticAction.h"
 #include "Actions/BaseInteractionAction.h"
 #include "Components/WidgetComponent.h"
 #include "Components/InteractingComponent.h"
@@ -49,7 +50,7 @@ void UInteractionComponent::SetIsInteractionComponentActive(bool bInIsActive)
 		return;
 	}
 
-	if (bInIsActive)
+	if (bInIsActive && !InteractionActionClass->IsChildOf(UBaseAutomaticAction::StaticClass()))
 	{
 		TSet<AActor*> OverlappingActors;
 		GetOverlappingActors(OverlappingActors);

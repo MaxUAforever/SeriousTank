@@ -49,6 +49,8 @@ void AST_BaseSoldierCharacter::BeginPlay()
 
 	WeaponManagerComponent->SetupSockets(RightHandSocketName, LeftHandSocketName, SecondWeaponSocketName);
 	WeaponManagerComponent->OnWeaponAddedDelegate.AddUObject(this, &ThisClass::OnWeaponEquipped);
+	WeaponManagerComponent->OnPreWeaponRemovedDelegate.AddUObject(this, &ThisClass::OnWeaponUnequipped);
+
 	if (AST_BaseWeapon* Weapon = WeaponManagerComponent->GetCurrentWeapon())
 	{
 		OnWeaponEquipped(WeaponManagerComponent->GetCurrentWeaponIndex(), Weapon);
@@ -106,6 +108,7 @@ void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* Player
 			EnhancedComponent->BindAction(WeaponInputsDataAsset->SwitchToFirstWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToFirstWeapon);
 			EnhancedComponent->BindAction(WeaponInputsDataAsset->SwitchToSecondWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToSecondWeapon);
 			EnhancedComponent->BindAction(WeaponInputsDataAsset->SwitchToThirdWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::SwitchToThirdWeapon);
+			EnhancedComponent->BindAction(WeaponInputsDataAsset->DropCurrentWeaponInputAction, ETriggerEvent::Started, this, &ThisClass::DropCurrentWeapon);
 		}
 
 		if (SoldierInputsDataAsset)
@@ -282,10 +285,20 @@ void AST_BaseSoldierCharacter::Interact()
 
 void AST_BaseSoldierCharacter::OnWeaponEquipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
 {
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	
-	SetActorRotation(CameraSceneComponent->GetComponentRotation());
-	//CameraSceneComponent->SetUsingAbsoluteRotation(false);
+	if (WeaponIndex == WeaponManagerComponent->GetCurrentWeaponIndex())
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+
+		SetActorRotation(CameraSceneComponent->GetComponentRotation());
+	}
+}
+
+void AST_BaseSoldierCharacter::OnWeaponUnequipped(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+{
+	if (WeaponIndex == WeaponManagerComponent->GetCurrentWeaponIndex())
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
 }
 
 void AST_BaseSoldierCharacter::OnWeaponEquippedFinished()
@@ -343,6 +356,30 @@ void AST_BaseSoldierCharacter::Reload()
 			SwitchToActionState(ESoldierActionState::None);
 		}
 	}
+}
+
+void AST_BaseSoldierCharacter::DropCurrentWeapon()
+{
+	AST_BaseWeapon* WeaponToDrop = WeaponManagerComponent->GetCurrentWeapon();
+	if (!IsValid(WeaponToDrop))
+	{
+		return;
+	}
+
+	WeaponManagerComponent->RemoveWeapon(WeaponManagerComponent->GetCurrentWeaponIndex());
+
+	UPrimitiveComponent* WeaponPrimitiveRootComponent = Cast<UPrimitiveComponent>(WeaponToDrop->GetRootComponent());
+	if (!IsValid(WeaponPrimitiveRootComponent))
+	{
+		return;
+	}
+
+	const FVector ImpulseDirection = GetActorForwardVector() + FVector(0.f, 0.f, 0.2f);
+	const float ImpulseStrength = 200.f;
+
+	WeaponPrimitiveRootComponent->SetSimulatePhysics(true);
+	WeaponPrimitiveRootComponent->SetPhysicsLinearVelocity(FVector::ZeroVector);
+	WeaponPrimitiveRootComponent->AddImpulse(ImpulseDirection * ImpulseStrength, NAME_None, true);
 }
 
 void AST_BaseSoldierCharacter::SwitchToFirstWeapon()

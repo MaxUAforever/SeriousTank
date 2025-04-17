@@ -3,17 +3,15 @@
 #include "Components/ArrowComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Core/ST_CoreTypes.h"
+#include "Engine/World.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractionComponent.h"
 #include "Subsystems/PlayerInteractionSubsystem/Actions/ST_WeaponPickUpAction.h"
 #include "TimerManager.h"
 
 AST_BaseWeapon::AST_BaseWeapon()
 {
-	SceneComponent = CreateDefaultSubobject<USceneComponent>("RootComponent");
-	SetRootComponent(SceneComponent);
-
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
-	MeshComponent->SetupAttachment(RootComponent);
+	SetRootComponent(MeshComponent);
 
 	ShootingArrowComponent = CreateDefaultSubobject<UArrowComponent>("ShootingArrowComponent");
 	ShootingArrowComponent->SetupAttachment(RootComponent);
@@ -48,6 +46,7 @@ void AST_BaseWeapon::AddAmmo(int32 AddedAmmoCount)
 
 void AST_BaseWeapon::SetWeaponEquipped(bool bInIsEquipped)
 {
+	MeshComponent->SetSimulatePhysics(!bInIsEquipped);
 	PickUpInteractionComponent->SetIsInteractionComponentActive(!bInIsEquipped);
 }
 
@@ -79,6 +78,17 @@ void AST_BaseWeapon::AttachToParentComponent(USceneComponent* InParentComponent,
 
 		OwnerActor->OnDestroyed.AddDynamic(this, &ThisClass::OnParentDestroyed);
 		bShouldBeDestroyedWithActor = bInShouldBeDestroyedWithActor;
+	}
+}
+
+void AST_BaseWeapon::DetachFromParentComponent()
+{
+	AActor* ParentActor = GetAttachParentActor();
+	if (IsValid(ParentActor))
+	{
+		ParentActor->OnDestroyed.RemoveAll(this);
+		MeshComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	}
 }
 
@@ -141,7 +151,7 @@ void AST_BaseWeapon::SetHidden(bool bIsHidden)
 		return;
 	}
 
-	SceneComponent->SetVisibility(!bIsHidden, true);
+	GetRootComponent()->SetVisibility(!bIsHidden, true);
 }
 
 bool AST_BaseWeapon::CanShoot() const

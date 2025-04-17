@@ -32,4 +32,6 @@ public:
 	UPROPERTY(Category = "Input", EditDefaultsOnly)
 	UInputAction* SwitchToThirdWeaponInputAction;
 
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UInputAction* DropCurrentWeaponInputAction;
 };

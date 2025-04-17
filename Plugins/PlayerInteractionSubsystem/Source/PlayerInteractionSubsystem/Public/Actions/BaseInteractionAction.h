@@ -89,7 +89,7 @@ private:
 	TObjectPtr<UAnimMontage> DeactivationMontage;
 
 	// Determines if action can be deactivated after interaction action.
-	bool bShouldBeDeactivated = true;
+	bool bShouldBeDeactivated = false;
 
 	FText ActionDescription;
 

@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "ST_WeaponReloadingWidget.generated.h"
 
+class AST_BaseWeapon;
 class UBorder;
 class UProgressBar;
 class UTextBlock;
@@ -43,6 +44,7 @@ private:
 	float ReloadingRefreshRate = 0.02f;
 
 	FDelegateHandle OnWeaponAddedDelegateHandle;
+    FDelegateHandle OnWeaponRemovedDelegateHandle;
 	FDelegateHandle OnWeaponSwitchedDelegateHandle;
 
 	FDelegateHandle OnReloadingStartedDelegateHandle;
@@ -55,7 +57,6 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
-	UFUNCTION()
 	void OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 	void OnWeaponRemoved(int32 InWeaponIndex, AST_BaseWeapon* Weapon);
 
