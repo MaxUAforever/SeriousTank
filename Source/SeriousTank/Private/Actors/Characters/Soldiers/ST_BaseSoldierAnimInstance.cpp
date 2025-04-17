@@ -42,7 +42,7 @@ void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()
 		WeaponManagerComponent = Cast<UST_BaseWeaponsManagerComponent>(WeaponManagerComponents[0]);
 		if (WeaponManagerComponent)
 		{
-			WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
+			WeaponManagerComponent->OnWeaponAddedDelegate.AddUObject(this, &ThisClass::OnWeaponEquipped);
 			WeaponManagerComponent->OnWeaponFiredDelegate.BindUObject(this, &ThisClass::OnWeaponFired);
 			WeaponManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloading);
 			WeaponManagerComponent->OnWeaponSwitchingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponSwitchStarted);

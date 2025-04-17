@@ -75,6 +75,11 @@ USkeletalMeshComponent* GetOwnerSkeletalMesh(const AActor* OwnerActor)
 
 } // anonymous namespace
 
+UST_SoldierWeaponManagerComponent::UST_SoldierWeaponManagerComponent()
+{
+	SetCanChangeWeapons(true);
+}
+
 void UST_SoldierWeaponManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -125,16 +130,14 @@ void UST_SoldierWeaponManagerComponent::EndPlay(const EEndPlayReason::Type EndPl
 	Super::EndPlay(EndPlayReason);
 }
 
-void UST_SoldierWeaponManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
+void UST_SoldierWeaponManagerComponent::OnWeaponAdded(AST_BaseWeapon* NewWeapon)
 {
-    if (!NewWeapon)
+    if (!IsValid(NewWeapon))
     {
         return;
     }
     
-    Super::AddWeapon(NewWeapon);
-    NewWeapon->SetActorEnableCollision(false);
-	NewWeapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
+    NewWeapon->OnShootDone.BindUObject(this, &ThisClass::OnWeaponFired);
 
 	if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
 	{
@@ -150,6 +153,28 @@ void UST_SoldierWeaponManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
 				NewWeapon->SetHidden(true);
 		}
 	}
+}
+
+void UST_SoldierWeaponManagerComponent::OnPreWeaponRemoved(int32 WeaponIndex)
+{
+	AST_BaseWeapon* RemovedWeapon = GetWeapon(WeaponIndex);
+	if (!IsValid(RemovedWeapon))
+	{
+		return;
+	}
+
+	if (WeaponIndex == GetCurrentWeaponIndex())
+	{
+		InterruptReloading();
+	}
+
+	RemovedWeapon->OnShootDone.Unbind();
+	if (USkeletalMeshComponent* CharacterSkeletalMesh = GetOwnerSkeletalMesh(GetOwner()))
+	{
+		RemovedWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	}
+
+	RemovedWeapon->SetHidden(false);
 }
 
 void UST_SoldierWeaponManagerComponent::OnWeaponSwitchingStarted(const int32 PrevWeaponIndex, const int32 NewWeaponIndex)

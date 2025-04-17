@@ -48,7 +48,7 @@ void AST_BaseSoldierCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	WeaponManagerComponent->SetupSockets(RightHandSocketName, LeftHandSocketName, SecondWeaponSocketName);
-	WeaponManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponEquipped);
+	WeaponManagerComponent->OnWeaponAddedDelegate.AddUObject(this, &ThisClass::OnWeaponEquipped);
 	if (AST_BaseWeapon* Weapon = WeaponManagerComponent->GetCurrentWeapon())
 	{
 		OnWeaponEquipped(WeaponManagerComponent->GetCurrentWeaponIndex(), Weapon);

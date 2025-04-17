@@ -226,13 +226,18 @@ AST_BaseWeapon* UST_BaseWeaponsManagerComponent::GetWeapon(int32 WeaponIndex) co
 	return Weapons.IsValidIndex(WeaponIndex) ? Weapons[WeaponIndex] : nullptr;
 }
 
-void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
+bool UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
 {
     if (!NewWeapon)
     {
-        return;
+        return false;
     }
     
+	if (Weapons.Num() >= GetMaxWeaponsAmount())
+	{
+		return false;
+	}
+
     NewWeapon->SetOwner(GetOwner());
 	NewWeapon->SetActorEnableCollision(false);
 
@@ -244,9 +249,42 @@ void UST_BaseWeaponsManagerComponent::AddWeapon(AST_BaseWeapon* NewWeapon)
     int32 Index = Weapons.Add(NewWeapon);
 	WeaponsInfo.EmplaceAt(Index);
 
+	NewWeapon->SetWeaponEquipped(true);
 	NewWeapon->OnAmmoCountChangedDelegate.AddUObject(this, &ThisClass::OnAmmoCountChanged, Index);
 
-    OnWeaponAdded.Broadcast(Index, NewWeapon);
+	OnWeaponAdded(NewWeapon);
+	OnWeaponAddedDelegate.Broadcast(Index, NewWeapon);
+
+	return true;
+}
+
+void UST_BaseWeaponsManagerComponent::RemoveWeapon(int32 WeaponIndex)
+{
+	if (!Weapons.IsValidIndex(WeaponIndex))
+	{
+		return;
+	}
+
+	if (!CanChangeWeapons())
+	{
+		return;
+	}
+
+	AST_BaseWeapon* RemovedWeapon = GetWeapon(WeaponIndex);
+	if (!IsValid(RemovedWeapon))
+	{
+		return;
+	}
+
+	RemovedWeapon->OnAmmoCountChangedDelegate.RemoveAll(this);
+	RemovedWeapon->SetActorEnableCollision(true);
+	RemovedWeapon->SetEnabled(false);
+	RemovedWeapon->SetWeaponEquipped(false);
+
+	OnPreWeaponRemoved(WeaponIndex);
+
+	Weapons.RemoveAt(WeaponIndex);
+	WeaponsInfo.RemoveAt(WeaponIndex);
 }
 
 void UST_BaseWeaponsManagerComponent::CompleteWeaponSwitching()

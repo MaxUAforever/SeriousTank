@@ -145,7 +145,7 @@ void UST_WeaponReloadingWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 		UST_BaseWeaponsManagerComponent* OldWeaponsManagerComponent = OldPawn->GetComponentByClass<UST_BaseWeaponsManagerComponent>();
 		if (OldWeaponsManagerComponent)
 		{
-			OldWeaponsManagerComponent->OnWeaponAdded.Remove(OnWeaponAddedDelegateHandle);
+			OldWeaponsManagerComponent->OnWeaponAddedDelegate.Remove(OnWeaponAddedDelegateHandle);
 			OldWeaponsManagerComponent->OnWeaponSwitchingStartedDelegate.Remove(OnWeaponSwitchedDelegateHandle);
 		
 			if (AST_BaseWeapon* OldWeapon = OldWeaponsManagerComponent->GetWeapon(WeaponIndex))
@@ -159,7 +159,7 @@ void UST_WeaponReloadingWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 	if (WeaponsManagerComponent)
 	{
 		// TODO: Bind delegate to parent widget to preventing multiple broadcasting to each rloading widget
-		OnWeaponAddedDelegateHandle = WeaponsManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponAdded);
+		OnWeaponAddedDelegateHandle = WeaponsManagerComponent->OnWeaponAddedDelegate.AddUObject(this, &ThisClass::OnWeaponAdded);
 		OnWeaponSwitchedDelegateHandle = WeaponsManagerComponent->OnWeaponSwitchingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponSelected);
 	
 		if (AST_BaseWeapon* NewWeapon = WeaponsManagerComponent->GetWeapon(WeaponIndex))

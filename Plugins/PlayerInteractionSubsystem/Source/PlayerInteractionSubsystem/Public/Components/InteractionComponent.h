@@ -33,7 +33,10 @@ protected:
 
 public:
 	const TSubclassOf<UBaseInteractionAction> GetActionClass() const { return InteractionActionClass; };
+	void SetActionClass(TSubclassOf<UBaseInteractionAction> InInteractionActionClass) { InteractionActionClass = InInteractionActionClass; }
+	
 	const UBaseInteractionActionDataAsset* GetInteractionActionDataAsset() const { return InteractionActionDataAsset; }
+
 
 	// Allows to control if component should trigger action on request. 
 	bool IsInteractionComponentActive() const { return bIsActive; }

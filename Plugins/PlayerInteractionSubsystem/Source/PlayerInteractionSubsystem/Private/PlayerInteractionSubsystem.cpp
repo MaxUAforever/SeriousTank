@@ -1,5 +1,6 @@
 #include "PlayerInteractionSubsystem.h"
 
+#include "Actions/BaseAutomaticAction.h"
 #include "Actions/BaseInteractionAction.h"
 #include "Data/InteractionSubsystemSettings.h"
 #include "Engine/AssetManager.h"
@@ -51,6 +52,11 @@ void UPlayerInteractionSubsystem::RegisterInteraction(UInteractingComponent* Int
 	if (RegisteredInteractionsMap.Contains(InteractingComponent))
 	{
 		RemoveInteraction(InteractingComponent);
+	}
+
+	if (TryToActivateAutomaticAction(InteractingComponent, InteractionComponent))
+	{
+		return;
 	}
 
 	RegisteredInteractionsMap.Add(InteractingComponent, InteractionComponent);
@@ -136,14 +142,11 @@ bool UPlayerInteractionSubsystem::StartInteractionAction(UInteractingComponent* 
 		return false;
 	}
 
-	UBaseInteractionAction* InteractionAction = NewObject<UBaseInteractionAction>(this, CurrentInteractionComponent->GetActionClass());
+	UBaseInteractionAction* InteractionAction = CreateInteractionAction(CurrentInteractionComponent);
 	if (!IsValid(InteractionAction))
 	{
-		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("PlayerInteractionSubsystem::StartInteractionAction: Failed to create InteractionAction."));
 		return false;
 	}
-
-	InteractionAction->Initialize(CurrentInteractionComponent->GetInteractionActionDataAsset());
 
 	ActiveInteractionsMap.Add(InteractingComponent, { CurrentInteractionComponent, InteractionAction });
 	const bool bSuccessfulAction = InteractionAction->Activate(InteractingComponent, CurrentInteractionComponent);
@@ -191,6 +194,54 @@ bool UPlayerInteractionSubsystem::StopInteractionAction(UInteractingComponent* I
 bool UPlayerInteractionSubsystem::StopInteractionAction(UInteractionComponent* InteractionComponent)
 {
 	return StopInteractionAction(FindBoundInteractingComponent(InteractionComponent));
+}
+
+bool UPlayerInteractionSubsystem::TryToActivateAutomaticAction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)
+{
+	if (!InteractingComponent || !InteractionComponent || !InteractionComponent->GetActionClass() || !InteractionComponent->IsInteractionComponentActive())
+	{
+		return false;
+	}
+
+	if (!InteractionComponent->GetActionClass()->IsChildOf(UBaseAutomaticAction::StaticClass()))
+	{
+		return false;
+	}
+
+	UBaseAutomaticAction* AutomaticAction = Cast<UBaseAutomaticAction>(CreateInteractionAction(InteractionComponent));
+	if (!IsValid(AutomaticAction))
+	{
+		return false;
+	}
+
+	if (!AutomaticAction->CanBeActivatedAutomatically(InteractingComponent, InteractionComponent))
+	{
+		return false;
+	}
+	
+	ActiveInteractionsMap.Add(InteractingComponent, { InteractionComponent, AutomaticAction });
+	bool bSuccessfulAction = AutomaticAction->ActivateAutomatically(InteractingComponent, InteractionComponent);
+	if (!bSuccessfulAction || !AutomaticAction->ShouldBeDeactivated())
+	{
+		ActiveInteractionsMap.Remove(InteractingComponent);
+		return false;
+	}
+
+	return AutomaticAction->ShouldBeDeactivated();
+}
+
+UBaseInteractionAction* UPlayerInteractionSubsystem::CreateInteractionAction(UInteractionComponent* CurrentInteractionComponent)
+{
+	UBaseInteractionAction* InteractionAction = NewObject<UBaseInteractionAction>(this, CurrentInteractionComponent->GetActionClass());
+	if (!IsValid(InteractionAction))
+	{
+		UE_LOG(LogPlayerInteractionSubsystem, Warning, TEXT("PlayerInteractionSubsystem::CreateInteractionAction: Failed to create InteractionAction."));
+		return nullptr;
+	}
+
+	InteractionAction->Initialize(CurrentInteractionComponent->GetInteractionActionDataAsset());
+
+	return InteractionAction;
 }
 
 UInteractingComponent* UPlayerInteractionSubsystem::FindBoundInteractingComponent(const UInteractionComponent* InteractionComponent) const

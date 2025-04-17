@@ -3,6 +3,8 @@
 #include "Components/ArrowComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Core/ST_CoreTypes.h"
+#include "PlayerInteractionSubsystem/Public/Components/InteractionComponent.h"
+#include "Subsystems/PlayerInteractionSubsystem/Actions/ST_WeaponPickUpAction.h"
 #include "TimerManager.h"
 
 AST_BaseWeapon::AST_BaseWeapon()
@@ -15,6 +17,10 @@ AST_BaseWeapon::AST_BaseWeapon()
 
 	ShootingArrowComponent = CreateDefaultSubobject<UArrowComponent>("ShootingArrowComponent");
 	ShootingArrowComponent->SetupAttachment(RootComponent);
+
+	PickUpInteractionComponent = CreateDefaultSubobject<UInteractionComponent>("PickUpInteractionComponent");
+	PickUpInteractionComponent->SetupAttachment(RootComponent);
+	PickUpInteractionComponent->SetActionClass(UST_WeaponPickUpAction::StaticClass());
 
 	bIsFireForced = false;
 	bIsWeaponReloading = false;
@@ -38,6 +44,11 @@ void AST_BaseWeapon::SetTotalAmmoCount(int32 NewAmmoCount)
 void AST_BaseWeapon::AddAmmo(int32 AddedAmmoCount)
 {
 	SetTotalAmmoCount(TotalAmmoCount + AddedAmmoCount);
+}
+
+void AST_BaseWeapon::SetWeaponEquipped(bool bInIsEquipped)
+{
+	PickUpInteractionComponent->SetIsInteractionComponentActive(!bInIsEquipped);
 }
 
 bool AST_BaseWeapon::StartFire()

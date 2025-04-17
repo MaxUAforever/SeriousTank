@@ -7,6 +7,7 @@
 
 class UArrowComponent;
 class USoundCue;
+class UInteractionComponent;
 enum class EWeaponOwnerType : uint8;
 
 UCLASS()
@@ -37,6 +38,8 @@ public:
 	
 	void SetTotalAmmoCount(int32 NewAmmoCount);
 	void AddAmmo(int32 AddedAmmoCount);
+
+	void SetWeaponEquipped(bool bInIsEquipped);
 
 	bool StartFire();
 	void StopFire();
@@ -78,16 +81,19 @@ private:
 
 protected:
 	UPROPERTY(VisibleAnywhere)
-	USceneComponent* SceneComponent;
+	TObjectPtr<USceneComponent> SceneComponent;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* MeshComponent;
+	TObjectPtr<UStaticMeshComponent> MeshComponent;
 
 	UPROPERTY(EditAnywhere)
-	UArrowComponent* ShootingArrowComponent;
+	TObjectPtr<UArrowComponent> ShootingArrowComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInteractionComponent> PickUpInteractionComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
-	USoundCue* ShootSound;
+	TObjectPtr<USoundCue> ShootSound;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")

@@ -21,8 +21,8 @@ public:
 	DECLARE_DELEGATE_OneParam(FOnWeaponFired, AST_BaseWeapon*)
 	FOnWeaponFired OnWeaponFiredDelegate;
 
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAdded, int32, AST_BaseWeapon*)
-	FWeaponAdded OnWeaponAdded;
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAddedDelegate, int32, AST_BaseWeapon*)
+	FWeaponAddedDelegate OnWeaponAddedDelegate;
 
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingStartedDelegate, int32, AST_BaseWeapon*)
     FOnWeaponReloadingStartedDelegate OnWeaponReloadingStartedDelegate;
@@ -64,11 +64,19 @@ public:
 	AST_BaseWeapon* GetCurrentWeapon() const;
 	AST_BaseWeapon* GetWeapon(int32 WeaponIndex) const;
 
-	FORCEINLINE int32 GetCurrentWeaponIndex() const { return CurrentWeaponIndex; }
+	int32 GetCurrentWeaponIndex() const { return CurrentWeaponIndex; }
+	int32 GetMaxWeaponsAmount() const { return MaxWeaponsAmount; }
+
+    bool AddWeapon(AST_BaseWeapon* NewWeapon);
+	void RemoveWeapon(int32 WeaponIndex);
+	
+	bool CanChangeWeapons() const { return bCanChangeWeapons; }
+	void SetCanChangeWeapons(bool bInCanChangeWeapons) { bCanChangeWeapons = bInCanChangeWeapons; }
 
 protected:
-    virtual void AddWeapon(AST_BaseWeapon* NewWeapon);
-    
+	virtual void OnWeaponAdded(AST_BaseWeapon* NewWeapon) {};
+	virtual void OnPreWeaponRemoved(int32 WeaponIndex) {};
+
 	virtual void OnWeaponSwitchingStarted(int32 PrevWeaponIndex, int32 NewWeaponIndex) {};
 	virtual void OnWeaponSwitchingCompleted() {};
 
@@ -90,6 +98,12 @@ protected:
 	const FWeaponAdditionalInfo* GetWeaponInfo(int32 WeaponIndex) const;
 
 private:
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool bCanChangeWeapons = false;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	int32 MaxWeaponsAmount = 3;
+
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	float WeaponSwitchingTime = 0.f;
 

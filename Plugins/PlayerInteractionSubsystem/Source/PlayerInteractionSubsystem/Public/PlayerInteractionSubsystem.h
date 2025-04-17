@@ -84,7 +84,12 @@ public:
 	bool StopInteractionAction(UInteractionComponent* InteractionComponent);
 
 private:
+	bool TryToActivateAutomaticAction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent);
+	bool TryToDeactivateAutomaticAction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent);
+	
 	UInteractingComponent* FindBoundInteractingComponent(const UInteractionComponent* InteractionComponent) const;
+
+	UBaseInteractionAction* CreateInteractionAction(UInteractionComponent* CurrentInteractionComponent);
 
 	void OnSettingsLoaded();
 

@@ -19,13 +19,17 @@ protected:
 	FName SecondWeaponSocketName;
 
 public:
+	UST_SoldierWeaponManagerComponent();
+
 	void SetupSockets(const FName InRightHandSocketName, const FName InLeftHandSocketName, const FName InSecondWeaponSocketName);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-    virtual void AddWeapon(AST_BaseWeapon* NewWeapon) override;
+    virtual void OnWeaponAdded(AST_BaseWeapon* NewWeapon) override;
+	virtual void OnPreWeaponRemoved(int32 WeaponIndex) override;
+
 	virtual void OnWeaponSwitchingStarted(int32 PrevWeaponIndex, int32 NewWeaponIndex) override;
 
 	void OnWeaponFired();

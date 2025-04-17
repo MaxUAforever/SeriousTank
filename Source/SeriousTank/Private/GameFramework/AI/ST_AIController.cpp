@@ -130,7 +130,7 @@ void AST_AIController::SetupWeaponsComponent(APawn* InPawn)
 		return;
 	}
 		
-	WeaponsManagerComponent->OnWeaponAdded.AddUObject(this, &ThisClass::OnWeaponAdded);
+	WeaponsManagerComponent->OnWeaponAddedDelegate.AddUObject(this, &ThisClass::OnWeaponAdded);
 	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
 	{
 		if (Weapon->GetTotalAmmoCount() > 0)
