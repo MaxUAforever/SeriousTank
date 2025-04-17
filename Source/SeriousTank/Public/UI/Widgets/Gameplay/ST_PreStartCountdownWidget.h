@@ -16,10 +16,11 @@ class SERIOUSTANK_API UST_PreStartCountdownWidget : public UUserWidget
 	
 protected:
 	virtual void NativeConstruct() override;
-	
+	virtual void BeginDestroy() override;
+
 private:
-	UFUNCTION()
-	void UpdatePreStartTime(int32 NewTime);
+	void OnPrePreGameCountdownStarted();
+	void UpdatePreStartTime();
 
 	UFUNCTION()
 	void HidePreStartTimeBlock();
@@ -36,4 +37,7 @@ protected:
 
 	UPROPERTY(VisibleAnyWhere, Category = "Audio")
 	UAudioComponent* UISoundsComponent;
+
+private:
+	FTimerHandle CountdownRefreshTimer;
 };

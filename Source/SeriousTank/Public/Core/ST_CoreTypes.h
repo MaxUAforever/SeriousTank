@@ -20,6 +20,9 @@ struct FBaseGameData
 
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
 	bool bShouldGameStopAfterDeath = true;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Game")
+	bool bIsUsingQuestSubsystem = true;
 };
 
 USTRUCT(BlueprintType)

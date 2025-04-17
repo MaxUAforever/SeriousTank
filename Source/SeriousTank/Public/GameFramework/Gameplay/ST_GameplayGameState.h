@@ -5,6 +5,19 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(GameStateLog, Display, All);
 
+UENUM()
+enum class EInternalGameState : uint8
+{
+	WaitingToInitialize,
+	PreGameCountdown,
+	GameInProgress,
+	FinalGameResults,
+	LeavingGame
+};
+
+struct FBaseGameData;
+
+DECLARE_MULTICAST_DELEGATE(FOnGameStateInitializedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnGameIsOver);
 DECLARE_DELEGATE_OneParam(FCountdownChanged, int32);
 DECLARE_MULTICAST_DELEGATE(FOnCountdownEnded);
@@ -15,36 +28,45 @@ class SERIOUSTANK_API AST_GameplayGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+	FOnGameStateInitializedDelegate OnGameStateInitializedDelegate;
 	FOnGameIsOver OnGameIsOver;
-
-	FCountdownChanged OnPreStartCountdownChanged;
 	FOnCountdownEnded OnPreStartCountdownEndedDelegate;
-
-protected:
-	UPROPERTY(VisibleAnywhere)
-	int32 RemainingCountdownTime = 0;
-
-	UPROPERTY(VisibleAnywhere)
-	float TotalPlayTime = 0.f;
-
-	UPROPERTY(VisibleAnywhere, Category = "Timers")
-	FTimerHandle PreStartCountdownTimer;
 
 public:
 	AST_GameplayGameState();
 
+	void Initialize(const FBaseGameData& GameData);
+
 protected:
-	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 	virtual void Tick(float DeltaSeconds) override;
 
 public:
-	float GetTotalPlayTime() const;
+	EInternalGameState GetInternalGameState() const { return InternalGameState; }
 
-	int32 GetPreStartCountdownTime() const;
-	void SetPreStartCountdownTime(int32 NewTime);
+	float GetPreStartCountdownTime() const;
+	float GetTotalPlayTime() const { return TotalPlayTime; };
+	
+	void SwitchToNextState();
 
 private:
-	UFUNCTION()
-	void OnPreStartCountdownTimerFired();
+	void OnStateWaitingToInitializeStarted();
+	void OnStatePreGameCountdownStarted();
+	void OnStateGameInProgressStarted();
+	void OnStateFinalGameResultsStarted();
+	void OnStateLeavingGameStarted();
+
+	void OnSubsystemInitialized();
+	void OnPreGameCountdownFinished();
+
+private:
+	bool bIsUsingQuestSubsystem = false;
+	int32 SubsystemsToInitialize = 0;
+
+	float TotalPlayTime = 0.f;
+	int32 PreStartCountdownTime = 0;
+	FTimerHandle PreStartCountdownTimer;
+
+	EInternalGameState InternalGameState;
 };

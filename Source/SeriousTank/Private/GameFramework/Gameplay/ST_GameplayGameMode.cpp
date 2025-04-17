@@ -69,7 +69,7 @@ void AST_GameplayGameMode::InitGameState()
 
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
-		GameplayGameState->SetPreStartCountdownTime(BaseGameData.PreStartCountdownTime);
+		GameplayGameState->Initialize(BaseGameData);
 		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::OnPreStartCountdownEneded);
 	}
 }
@@ -97,7 +97,10 @@ void AST_GameplayGameMode::TriggerGameFinish()
 {
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
-		GameplayGameState->OnGameIsOver.Broadcast();
+		if (GameplayGameState->GetInternalGameState() == EInternalGameState::GameInProgress)
+		{
+			GameplayGameState->SwitchToNextState();
+		}
 	}
 }
 
