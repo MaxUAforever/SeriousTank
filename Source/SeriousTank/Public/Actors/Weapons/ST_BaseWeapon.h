@@ -95,6 +95,9 @@ protected:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	FTransform AttachmentOffset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	EWeaponOwnerType WeaponOwnerType;
 
 	UPROPERTY(EditAnywhere, Category = "Ammo")

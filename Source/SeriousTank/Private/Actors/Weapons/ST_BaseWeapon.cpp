@@ -72,7 +72,9 @@ void AST_BaseWeapon::AttachToParentComponent(USceneComponent* InParentComponent,
 	if (InParentComponent)
 	{
 		AttachToComponent(InParentComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketName);
-		
+		AddActorLocalOffset(AttachmentOffset.GetLocation());
+		AddActorLocalRotation(AttachmentOffset.GetRotation());
+
 		AActor* OwnerActor = InParentComponent->GetOwner();
 		SetOwner(OwnerActor);
 
