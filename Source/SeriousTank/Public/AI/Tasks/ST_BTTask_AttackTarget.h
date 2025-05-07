@@ -10,9 +10,6 @@ struct FBTAttackTargetTaskMemory
 	UST_BaseWeaponsManagerComponent* OwnerWeaponsManagerComponent;
 };
 
-/**
- * 
- */
 UCLASS()
 class SERIOUSTANK_API UST_BTTask_AttackTarget : public UBTTask_BlackboardBase
 {
@@ -25,12 +22,6 @@ public:
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	
 	virtual uint16 GetInstanceMemorySize() const override;
-
-protected:
-	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
-private:
-	bool CheckAvailableWeapon(UST_BaseWeaponsManagerComponent* WeaponComponent);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Blackboard)

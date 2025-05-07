@@ -8,7 +8,7 @@
 UST_BTTask_AttackTarget::UST_BTTask_AttackTarget(const FObjectInitializer& ObjectInitializer)
 {
 	NodeName = "Attack Target";
-	bTickIntervals = true;
+	bTickIntervals = false;
 	INIT_TASK_NODE_NOTIFY_FLAGS();
 }
 
@@ -42,12 +42,6 @@ EBTNodeResult::Type UST_BTTask_AttackTarget::ExecuteTask(UBehaviorTreeComponent&
 		AIController->SetFocus(TargetActor);
 	}
 
-	if (!CheckAvailableWeapon(WeaponComponent))
-	{
-		OwnerComp.GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, false);
-		return EBTNodeResult::Succeeded;
-	}
-
 	WeaponComponent->StartFire();
 	return EBTNodeResult::InProgress;
 }
@@ -67,63 +61,4 @@ EBTNodeResult::Type UST_BTTask_AttackTarget::AbortTask(UBehaviorTreeComponent& O
 uint16 UST_BTTask_AttackTarget::GetInstanceMemorySize() const
 {
 	return sizeof(FBTAttackTargetTaskMemory);
-}
-
-void UST_BTTask_AttackTarget::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-	FBTAttackTargetTaskMemory* CurrentMemory = CastInstanceNodeMemory<FBTAttackTargetTaskMemory>(NodeMemory);
-	if (!IsValid(CurrentMemory->OwnerWeaponsManagerComponent))
-	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		return;
-	}
-		
-	const bool bCanShoot = CheckAvailableWeapon(CurrentMemory->OwnerWeaponsManagerComponent);
-	const bool bHasTarget = OwnerComp.GetBlackboardComponent()->GetValueAsObject(GetSelectedBlackboardKey()) != nullptr;
-
-	if (!bCanShoot || !bHasTarget)
-	{
-		if (AAIController* AIController = OwnerComp.GetAIOwner())
-		{
-			AIController->ClearFocus(EAIFocusPriority::Gameplay);
-			CurrentMemory->OwnerWeaponsManagerComponent->StopFire();
-
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-		}
-	}
-}
-
-bool UST_BTTask_AttackTarget::CheckAvailableWeapon(UST_BaseWeaponsManagerComponent* WeaponComponent)
-{
-	AST_BaseWeapon* CurrentWeapon = WeaponComponent->GetCurrentWeapon();
-	if (IsValid(CurrentWeapon) && CurrentWeapon->GetTotalAmmoCount() > 0)
-	{
-		if (!CurrentWeapon->IsFireForced())
-		{
-			WeaponComponent->StartFire();
-		}
-
-		return true;
-	}
-
-	if (WeaponComponent->GetWeapons().Num() == 0)
-	{
-		return false;
-	}
-
-	int32 WeaponIndex = 0;
-	for (AST_BaseWeapon* NewWeapon : WeaponComponent->GetWeapons())
-	{
-		if (IsValid(NewWeapon) && NewWeapon->GetTotalAmmoCount() > 0)
-		{
-			WeaponComponent->StartSwitchingWeapon(WeaponIndex);
-			WeaponComponent->StartFire();
-
-			return true;
-		}
-
-		++WeaponIndex;
-	}
-
-	return false;
 }
