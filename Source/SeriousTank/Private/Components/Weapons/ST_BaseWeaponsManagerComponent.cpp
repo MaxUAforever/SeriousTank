@@ -334,7 +334,7 @@ void UST_BaseWeaponsManagerComponent::OnOwnerPawnUnPossessed(AController* OldCon
 	InterruptReloading();
 }
 
-void UST_BaseWeaponsManagerComponent::OnAmmoCountChanged(int32 NewAmmoCount, int32 WeaponIndex)
+void UST_BaseWeaponsManagerComponent::OnAmmoCountChanged(int32 OldAmmoCount, int32 NewAmmoCount, int32 WeaponIndex)
 {
 	AST_BaseWeapon* Weapon = GetWeapon(WeaponIndex);
 	if (!IsValid(Weapon))
@@ -342,6 +342,16 @@ void UST_BaseWeaponsManagerComponent::OnAmmoCountChanged(int32 NewAmmoCount, int
 		return;
 	}
 	
+	
+	if (NewAmmoCount == 0)
+	{
+		OnWeaponOutOfAmmoDelegate.Broadcast(WeaponIndex, Weapon);
+	}
+	else if (NewAmmoCount > OldAmmoCount)
+	{
+		OnAmmoRefilledDelegate.Broadcast(WeaponIndex, Weapon);
+	}
+
 	if (WeaponIndex == GetCurrentWeaponIndex() && NewAmmoCount > 0 && Weapon->IsReloadingNeeded())
 	{
 		ReloadCurrentWeapon();

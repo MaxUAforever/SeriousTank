@@ -36,6 +36,31 @@ void UPlayerInteractionSubsystem::Initialize(FSubsystemCollectionBase& Collectio
 	}
 }
 
+void UPlayerInteractionSubsystem::RegisterInteractionComponent(UInteractionComponent* InInteractionComponent)
+{
+	if (IsValid(InInteractionComponent))
+	{
+		InInteractionComponent->OnIsComponentActiveChangedDelegate.BindUObject(this, &ThisClass::OnIsInteractionComponentActiveChanged);
+		
+		if (InInteractionComponent->IsInteractionComponentActive())
+		{
+			CurrentInteractionComponents.Add(InInteractionComponent);
+			OnIsInteractionComponentActiveChanged(InInteractionComponent, true);
+		}
+	}
+}
+
+void UPlayerInteractionSubsystem::UnregisterInteractionComponent(UInteractionComponent* InInteractionComponent)
+{
+	if (IsValid(InInteractionComponent))
+	{
+		InInteractionComponent->OnIsComponentActiveChangedDelegate.Unbind();
+		CurrentInteractionComponents.Remove(InInteractionComponent);
+
+		OnIsInteractionComponentActiveChanged(InInteractionComponent, false);
+	}
+}
+
 void UPlayerInteractionSubsystem::RegisterInteraction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent)
 {
 	if (!InteractingComponent || !InteractionComponent || !InteractionComponent->GetActionClass())
@@ -261,6 +286,11 @@ UInteractingComponent* UPlayerInteractionSubsystem::FindBoundInteractingComponen
 	}
 
 	return nullptr;
+}
+
+void UPlayerInteractionSubsystem::OnIsInteractionComponentActiveChanged(const UInteractionComponent* InteractionComponent, bool bIsActive)
+{
+	OnIsInteractionComponentActiveChangedDelegate.Broadcast(InteractionComponent, bIsActive);
 }
 
 void UPlayerInteractionSubsystem::OnSettingsLoaded()

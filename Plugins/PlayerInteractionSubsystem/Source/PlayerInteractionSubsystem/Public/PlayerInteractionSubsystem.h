@@ -35,6 +35,7 @@ struct FInteractionComponentInfo
 };
 
 DECLARE_MULTICAST_DELEGATE(FOnInteractionSubsystemInitializedDelegate);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnIsInteractionComponentActiveChangedDelegate, const UInteractionComponent*, bool);
 
 /**
  * Subsystem that provides binding and checks for all interactions between
@@ -49,6 +50,10 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	bool IsInitialized() const { return bIsInitialized; }
 
+	const TSet<TObjectPtr<const UInteractionComponent>>& GetActiveInteractionComponents() const { return CurrentInteractionComponents; }
+	void RegisterInteractionComponent(UInteractionComponent* InInteractionComponent);
+	void UnregisterInteractionComponent(UInteractionComponent* InInteractionComponent);
+
 	void RegisterInteraction(UInteractingComponent* InteractingComponent, UInteractionComponent* InteractionComponent);
 	void RemoveInteraction(UInteractingComponent* InteractingComponent);
 	void RemoveInteraction(UInteractionComponent* InteractionComponent);
@@ -62,7 +67,8 @@ public:
 	const UBaseInteractionAction* GetCurrentInterractionAction(const UInteractingComponent* InteractingComponent) const;
 
 	FOnInteractionSubsystemInitializedDelegate& GetOnSubsystemInitializedDelegate() { return OnInteractionSubsystemInitializedDelegate; }
-	
+	FOnIsInteractionComponentActiveChangedDelegate& GetOnIsInteractionComponentActiveChangedDelegate() { return OnIsInteractionComponentActiveChangedDelegate; }
+
 	/**
 	* Allow to start interaction action with interaction component for interacting component, 
 	* if it's already registered in this subsystem.
@@ -90,6 +96,8 @@ private:
 
 	UBaseInteractionAction* CreateInteractionAction(UInteractionComponent* CurrentInteractionComponent);
 
+	void OnIsInteractionComponentActiveChanged(const UInteractionComponent* InteractionComponent, bool bIsActive);
+
 	void OnSettingsLoaded();
 
 private:
@@ -101,7 +109,10 @@ private:
 private:
 	bool bIsInitialized = false;
 	FOnInteractionSubsystemInitializedDelegate OnInteractionSubsystemInitializedDelegate;
+	FOnIsInteractionComponentActiveChangedDelegate OnIsInteractionComponentActiveChangedDelegate;
 
 	UPROPERTY()
 	TObjectPtr<const UInteractionSubsystemSettings> InteractionSettings;
+
+	TSet<TObjectPtr<const UInteractionComponent>> CurrentInteractionComponents;
 };

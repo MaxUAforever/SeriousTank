@@ -24,6 +24,11 @@ void UInteractionComponent::BeginPlay()
 
 	PlayerInteractionSubsystem = GetWorld() ? GetWorld()->GetSubsystem<UPlayerInteractionSubsystem>() : nullptr;
 
+	if (IsValid(PlayerInteractionSubsystem))
+	{
+		PlayerInteractionSubsystem->RegisterInteractionComponent(this);
+	}
+
 	if (bIsWidgetEnabled && InteractionWidgetClass)
 	{
 		InteractionWidgetComponent = NewObject<UInteractionWidgetComponent>(GetOwner(), UInteractionWidgetComponent::StaticClass(), TEXT("InteractionWidget"));
@@ -41,6 +46,16 @@ void UInteractionComponent::BeginPlay()
 			InteractionWidgetComponent->UpdateWidgetData();
 		}
 	}
+}
+
+void UInteractionComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	if (IsValid(PlayerInteractionSubsystem))
+	{
+		PlayerInteractionSubsystem->UnregisterInteractionComponent(this);
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void UInteractionComponent::SetIsInteractionComponentActive(bool bInIsActive)
@@ -69,6 +84,7 @@ void UInteractionComponent::SetIsInteractionComponentActive(bool bInIsActive)
 	}
 
 	bIsActive = bInIsActive;
+	OnIsComponentActiveChangedDelegate.ExecuteIfBound(this, bIsActive);
 
 	if (InteractionWidgetComponent)
 	{

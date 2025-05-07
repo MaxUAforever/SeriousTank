@@ -22,7 +22,7 @@ public:
 	DECLARE_MULTICAST_DELEGATE(FReloadingStartedDelegate)
 	FReloadingStartedDelegate OnReloadingStartedDelegate;
 
-    DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmmoCountChangedDelegate, int32)
+    DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAmmoCountChangedDelegate, int32 /*OldAmmoCount*/, int32 /*NewAmmoCount*/)
     FOnAmmoCountChangedDelegate OnAmmoCountChangedDelegate;
 
 public:

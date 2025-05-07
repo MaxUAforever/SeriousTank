@@ -131,6 +131,10 @@ void AST_AIController::SetupWeaponsComponent(APawn* InPawn)
 	}
 		
 	WeaponsManagerComponent->OnWeaponAddedDelegate.AddUObject(this, &ThisClass::OnWeaponAdded);
+	WeaponsManagerComponent->OnAmmoRefilledDelegate.AddUObject(this, &ThisClass::OnAmmoRefilled);
+	WeaponsManagerComponent->OnWeaponOutOfAmmoDelegate.AddUObject(this, &ThisClass::OnWeaponOutOfAmmo);
+	WeaponsManagerComponent->OnWeaponSwitchingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponSwitched);
+
 	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
 	{
 		if (Weapon->GetTotalAmmoCount() > 0)
@@ -194,7 +198,56 @@ void AST_AIController::OnWeaponAdded(int32 WeaponIndex, AST_BaseWeapon* Weapon)
 	if (Weapon->GetTotalAmmoCount() > 0)
 	{
 		GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, true);
+		GetBlackboardComponent()->SetValueAsBool(BBHasWeaponKey, true);
 	}
+}
+
+void AST_AIController::OnAmmoRefilled(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+{
+	if (!IsValid(Weapon) || !IsValid(GetBlackboardComponent()))
+	{
+		return;
+	}
+
+	if (Weapon->GetTotalAmmoCount() > 0)
+	{
+		GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, true);
+	}
+}
+
+void AST_AIController::OnWeaponOutOfAmmo(int32 WeaponIndex, AST_BaseWeapon* Weapon)
+{
+	if (!IsValid(Weapon) || !IsValid(GetBlackboardComponent()) || !IsValid(GetPawn()))
+	{
+		return;
+	}
+
+	UST_BaseWeaponsManagerComponent* WeaponsManagerComponent = GetPawn()->GetComponentByClass<UST_BaseWeaponsManagerComponent>();
+	if (!WeaponsManagerComponent)
+	{
+		return;
+	}
+
+	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
+	{
+		if (Weapon->GetTotalAmmoCount() > 0)
+		{
+			GetBlackboardComponent()->SetValueAsBool(BBWeaponSwitchNeededKey, true);
+			return;
+		}
+	}
+
+	GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, false);
+}
+
+void AST_AIController::OnWeaponSwitched(int32 PreviousWeaponIndex, int32 NewWeaponIndex)
+{
+	if (!IsValid(GetBlackboardComponent()))
+	{
+		return;
+	}
+
+	GetBlackboardComponent()->SetValueAsBool(BBWeaponSwitchNeededKey, false);
 }
 
 void AST_AIController::OnTargetDetected(AActor* Target)

@@ -49,6 +49,11 @@ EBTNodeResult::Type UBTTask_GetNextPatrolPoint::ExecuteTask(UBehaviorTreeCompone
 		UpdatePatrollingComponent(PatrollingComponent, NextPointIndex);
 	}
 
+	if (Controller->GetFocalPoint() != TargetDirection)
+	{
+		Controller->SetFocalPoint(TargetDirection);
+	}
+
 	OwnerComp.GetBlackboardComponent()->SetValueAsVector(BlackboardKey.SelectedKeyName, TargetDirection);
 	return EBTNodeResult::Succeeded;
 }

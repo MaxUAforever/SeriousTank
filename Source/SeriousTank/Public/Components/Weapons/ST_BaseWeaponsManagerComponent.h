@@ -12,31 +12,32 @@ struct FWeaponAdditionalInfo
 	FTimerHandle ReloadingTimerHandle;
 };
 
+DECLARE_DELEGATE_OneParam(FOnWeaponFired, AST_BaseWeapon*)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAddedDelegate, int32, AST_BaseWeapon*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponAmmoChangedDelegate, int32, AST_BaseWeapon*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPreWeaponRemovedDelegate, int32, AST_BaseWeapon*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingStartedDelegate, int32, AST_BaseWeapon*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingFinishedDelegate, int32, AST_BaseWeapon*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponSwitchingStartedDelegate, int32 /*PreviousWeaponIndex*/, int32 /*NewWeaponIndex*/);
+DECLARE_MULTICAST_DELEGATE(FOnWeaponSwitchingCompletedDelegate);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SERIOUSTANK_API UST_BaseWeaponsManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	DECLARE_DELEGATE_OneParam(FOnWeaponFired, AST_BaseWeapon*)
 	FOnWeaponFired OnWeaponFiredDelegate;
 
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FWeaponAddedDelegate, int32, AST_BaseWeapon*)
 	FWeaponAddedDelegate OnWeaponAddedDelegate;
-
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPreWeaponRemovedDelegate, int32, AST_BaseWeapon*)
+	FOnWeaponAmmoChangedDelegate OnAmmoRefilledDelegate;
+	FOnWeaponAmmoChangedDelegate OnWeaponOutOfAmmoDelegate;
 	FOnPreWeaponRemovedDelegate OnPreWeaponRemovedDelegate;
 
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingStartedDelegate, int32, AST_BaseWeapon*)
     FOnWeaponReloadingStartedDelegate OnWeaponReloadingStartedDelegate;
-    
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponReloadingFinishedDelegate, int32, AST_BaseWeapon*)
 	FOnWeaponReloadingFinishedDelegate OnWeaponReloadingFinishedDelegate;
 
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponSwitchingStartedDelegate, int32 /*PreviousWeaponIndex*/, int32 /*NewWeaponIndex*/)
 	FOnWeaponSwitchingStartedDelegate OnWeaponSwitchingStartedDelegate;
-
-	DECLARE_MULTICAST_DELEGATE(FOnWeaponSwitchingCompletedDelegate)
 	FOnWeaponSwitchingCompletedDelegate OnWeaponSwitchingCompletedDelegate;
 
 public:
@@ -95,7 +96,7 @@ private:
 	void OnOwnerPawnPossessed(AController* NewController);
 	void OnOwnerPawnUnPossessed(AController* OldController);
 
-	void OnAmmoCountChanged(int32 NewAmmoCount, int32 WeaponIndex);
+	void OnAmmoCountChanged(int32 OldAmmoCount, int32 NewAmmoCount, int32 WeaponIndex);
 
 protected:
 	const FWeaponAdditionalInfo* GetWeaponInfo(int32 WeaponIndex) const;

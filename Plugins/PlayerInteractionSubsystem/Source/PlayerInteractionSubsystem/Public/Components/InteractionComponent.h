@@ -11,6 +11,7 @@ class UInteractionUserWidget;
 class UInteractionWidgetComponent;
 class UPlayerInteractionSubsystem;
 
+DECLARE_DELEGATE_TwoParams(FOnIsComponentActiveChangedDelegate, const UInteractionComponent*, bool);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractionActionStartedDelegate, UBaseInteractionAction*);
 DECLARE_MULTICAST_DELEGATE(FOnInteractionActionStoppedDelegate);
 
@@ -25,18 +26,19 @@ class PLAYERINTERACTIONSUBSYSTEM_API UInteractionComponent : public USphereCompo
 	GENERATED_BODY()
 
 public:
+	FOnIsComponentActiveChangedDelegate OnIsComponentActiveChangedDelegate;
 	FOnInteractionActionStartedDelegate OnInteractionActionStartedDelegate;
 	FOnInteractionActionStoppedDelegate OnInteractionActionStoppedDelegate;
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	const TSubclassOf<UBaseInteractionAction> GetActionClass() const { return InteractionActionClass; };
 	void SetActionClass(TSubclassOf<UBaseInteractionAction> InInteractionActionClass) { InteractionActionClass = InInteractionActionClass; }
 	
 	const UBaseInteractionActionDataAsset* GetInteractionActionDataAsset() const { return InteractionActionDataAsset; }
-
 
 	// Allows to control if component should trigger action on request. 
 	bool IsInteractionComponentActive() const { return bIsActive; }

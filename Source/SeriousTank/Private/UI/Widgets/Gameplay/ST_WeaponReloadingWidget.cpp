@@ -54,7 +54,7 @@ void UST_WeaponReloadingWidget::OnWeaponAdded(int32 InWeaponIndex, AST_BaseWeapo
 	OnReloadingStartedDelegateHandle = WeaponsManagerComponent->OnWeaponReloadingStartedDelegate.AddUObject(this, &ThisClass::OnWeaponReloadingStarted);
 	OnAmmoCountChangedDelegateHandle = Weapon->OnAmmoCountChangedDelegate.AddUObject(this, &ThisClass::UpdateTotalAmmoCount);
     
-	UpdateTotalAmmoCount(Weapon->GetTotalAmmoCount());
+	UpdateTotalAmmoCount(0, Weapon->GetTotalAmmoCount());
     
 	if (Weapon->IsReloading())
 	{
@@ -123,7 +123,7 @@ void UST_WeaponReloadingWidget::OnWeaponSelected(int32 PreviousWeaponIndex, int3
     SelectionBorder->SetVisibility(WeaponIndex == NewWeaponIndex ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 }
 
-void UST_WeaponReloadingWidget::UpdateTotalAmmoCount(int32 TotalAmmoCount)
+void UST_WeaponReloadingWidget::UpdateTotalAmmoCount(int32 OldAmmoCount, int32 TotalAmmoCount)
 {
     TotalAmmoCountBlock->SetText(FText::FromString(FString::FromInt(TotalAmmoCount)));
 }

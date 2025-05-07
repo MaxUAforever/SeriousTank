@@ -35,8 +35,10 @@ void AST_BaseWeapon::SetTotalAmmoCount(int32 NewAmmoCount)
 		return;
 	}
 
+	const float OldAmmoCount = TotalAmmoCount;
 	TotalAmmoCount = FMath::Clamp(NewAmmoCount, 0, MaxAmmoCount);
-	OnAmmoCountChangedDelegate.Broadcast(TotalAmmoCount);
+
+	OnAmmoCountChangedDelegate.Broadcast(OldAmmoCount, TotalAmmoCount);
 }
 
 void AST_BaseWeapon::AddAmmo(int32 AddedAmmoCount)

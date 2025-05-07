@@ -62,13 +62,8 @@ private:
 
 	void OnWeaponReloadingStarted(int32 WeaponIndex, AST_BaseWeapon* Weapon);
 
-    UFUNCTION()
     void OnWeaponSelected(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
-    
-    UFUNCTION()
-    void UpdateTotalAmmoCount(int32 TotalAmmoCount);
-    
-    UFUNCTION()
+    void UpdateTotalAmmoCount(int32 OldAmmoCount, int32 TotalAmmoCount);
     void UpdateClipAmmoCount(int32 ClipAmmoCount);
     
 	UFUNCTION()

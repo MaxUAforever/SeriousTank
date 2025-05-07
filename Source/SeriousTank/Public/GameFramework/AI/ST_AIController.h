@@ -50,6 +50,10 @@ private:
 	void OnPatrollingStateChaned(bool bIsActive);
 
 	void OnWeaponAdded(int32 WeaponIndex, AST_BaseWeapon* Weapon);
+	void OnAmmoRefilled(int32 WeaponIndex, AST_BaseWeapon* Weapon);
+	void OnWeaponOutOfAmmo(int32 WeaponIndex, AST_BaseWeapon* Weapon);
+	void OnWeaponSwitched(int32 PreviousWeaponIndex, int32 NewWeaponIndex);
+
 	void OnTargetDetected(AActor* Target);
 	void OnTargetLost(AActor* OtherActor);
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
@@ -78,6 +82,12 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	FName BBAttackTargetKey = FName("AttackTarget");
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FName BBHasWeaponKey = FName("HasWeapon");
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FName BBWeaponSwitchNeededKey = FName("WeaponSwitchNeeded");
 
 	UPROPERTY(EditAnywhere, Category = Blackboard)
 	FName BBCanAttackKey = FName("CanAttack");
