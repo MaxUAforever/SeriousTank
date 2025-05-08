@@ -58,9 +58,15 @@ private:
 	void OnTargetLost(AActor* OtherActor);
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
 
+	UFUNCTION()
+	void OnTargetVehicleTaken(APawn* InPawn, AController* OldController, AController* NewController);
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* DefaultBehaviourTree;
+
+	UPROPERTY(EditDefaultsOnly)
+	UBehaviorTree* TankBehaviourTree;
 
 	UPROPERTY(EditDefaultsOnly)
 	UAIPerceptionComponent* PerceptionComp;
@@ -74,6 +80,11 @@ protected:
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ViewPerceptionType==EViewPerceptionType::AIPerception", ClampMin = "0.0"))
 	float PerceptionSightRadiusScale = 1.f;
 
+	UPROPERTY(EditAnywhere)
+	bool bCanPossessVehicles = true;
+
+	bool bIsInVehicle = false;
+
 	/**
 	 * Blackboard keys 
 	 */
@@ -82,6 +93,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	FName BBAttackTargetKey = FName("AttackTarget");
+
+	UPROPERTY(EditAnywhere)
+	FName BBFreeTrackedVehicleKey = FName("FreeTrackedVehicle");
 
 	UPROPERTY(EditAnywhere, Category = Blackboard)
 	FName BBHasWeaponKey = FName("HasWeapon");

@@ -10,42 +10,13 @@ class UVehicleInputsDataAsset;
 class UWeaponInputsDataAsset;
 class UInputAction;
 class UInputMappingContext;
+class UST_HealthComponent;
 struct FInputActionValue;
 
 UCLASS(Abstract)
 class SERIOUSTANK_API AST_BaseVehicle : public APawn
 {
 	GENERATED_BODY()
-
-protected:
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* BaseCollisionComponent;
-
-	UPROPERTY(EditAnywhere)
-	UInteractionComponent* InteractionComponent;
-
-	/**
-	 * Gameplay information
-	 */
-
-    UPROPERTY(EditDefaultsOnly, Category = "Info")
-    FString DisplayName;
-    
-    UPROPERTY(EditAnywhere, Category = "Camera");
-    float MaxVisibleDistance;
-    
-	/**
-	 * Common gameplay and weapon inputs
-	 */
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-	UCommonInputsDataAsset* CommonInputsDataAsset;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-	UVehicleInputsDataAsset* VehicleInputsDataAsset;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-	UWeaponInputsDataAsset* WeaponInputsDataAsset;
 
 public:
 	AST_BaseVehicle();
@@ -72,4 +43,37 @@ public:
 
 private:
 	void DisableVehicle();
+
+protected:
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* BaseCollisionComponent;
+
+	UPROPERTY(EditAnywhere)
+	UInteractionComponent* InteractionComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UST_HealthComponent* HealthComponent;
+
+	/**
+	 * Gameplay information
+	 */
+
+	UPROPERTY(EditDefaultsOnly, Category = "Info")
+	FString DisplayName;
+
+	UPROPERTY(EditAnywhere, Category = "Camera");
+	float MaxVisibleDistance;
+
+	/**
+	 * Common gameplay and weapon inputs
+	 */
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UCommonInputsDataAsset* CommonInputsDataAsset;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UVehicleInputsDataAsset* VehicleInputsDataAsset;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UWeaponInputsDataAsset* WeaponInputsDataAsset;
 };

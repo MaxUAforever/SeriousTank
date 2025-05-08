@@ -1,5 +1,6 @@
 #include "GameFramework/AI/ST_AIController.h"
 
+#include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "AIPatrollingSubsystem/Public/Components/AIPatrollingComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
@@ -24,45 +25,71 @@ void AST_AIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetBlackboardComponent())
-	{
-		GetBlackboardComponent()->SetValueAsEnum(BBSightPerceptionTypeKey, static_cast<uint8>(ViewPerceptionType));
-	}
-
-	if (DefaultBehaviourTree)
-	{
-		RunBehaviorTree(DefaultBehaviourTree);
-	}
-
 	SetPerceptionComponent(*PerceptionComp);
 	GetPerceptionComponent()->Deactivate();
-
-	if (PatrollingComponent)
-	{
-		OnPatrollingStateChaned(PatrollingComponent->IsPatrollingActive());
-		PatrollingComponent->OnIsActiveChanged.AddUObject(this, &ThisClass::OnPatrollingStateChaned);
-	}
 }
 
 void AST_AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if (GetWorld()->HasBegunPlay())
+	const UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		return;
+	}
+
+	UBehaviorTreeComponent* BTComponent = GetComponentByClass<UBehaviorTreeComponent>();
+	if (BTComponent && BTComponent->IsRunning())
+	{
+		BTComponent->StopTree();
+	}
+
+	AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(UGameplayStatics::GetGameState(this));
+	const bool bCanStart = IsValid(GameplayGameState) ? GameplayGameState->GetInternalGameState() == EInternalGameState::GameInProgress : World->HasBegunPlay();
+	
+	if (bCanStart)
 	{
 		SetupPawnSettings();
 	}
-	else if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(UGameplayStatics::GetGameState(this)))
+	else if (IsValid(GameplayGameState))
 	{
 		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::SetupPawnSettings);
+	}
+	else
+	{
+		GetWorld()->OnWorldBeginPlay.AddUObject(this, &ThisClass::SetupPawnSettings);
 	}
 }
 
 void AST_AIController::SetupPawnSettings()
 {
-	SetupPerception(GetPawn());
-	SetupHealthSubsystem(GetPawn());
-	SetupWeaponsComponent(GetPawn());
+	APawn* PossessedPawn = GetPawn();
+	if (!IsValid(PossessedPawn))
+	{
+		return;
+	}
+
+	SetupPerception(PossessedPawn);
+	SetupHealthSubsystem(PossessedPawn);
+	SetupWeaponsComponent(PossessedPawn);
+	
+	UBehaviorTree* NeededBehaviorTree = PossessedPawn->IsA(AST_BaseVehicle::StaticClass()) ? TankBehaviourTree : DefaultBehaviourTree;
+	if (NeededBehaviorTree != nullptr)
+	{
+		RunBehaviorTree(NeededBehaviorTree);
+
+		if (GetBlackboardComponent())
+		{
+			GetBlackboardComponent()->SetValueAsEnum(BBSightPerceptionTypeKey, static_cast<uint8>(ViewPerceptionType));
+		}
+
+		if (PatrollingComponent)
+		{
+			OnPatrollingStateChaned(PatrollingComponent->IsPatrollingActive());
+			PatrollingComponent->OnIsActiveChanged.AddUObject(this, &ThisClass::OnPatrollingStateChaned);
+		}
+	}
 }
 
 void AST_AIController::SetupPerception(APawn* InPawn)
@@ -78,6 +105,11 @@ void AST_AIController::SetupPerception(APawn* InPawn)
 		{
 			ViewAreaBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnTargetOverlapViewBox);
 			ViewAreaBoxComponent->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnTargetEndOverlapViewBox);
+		}
+
+		if (GetPerceptionComponent())
+		{
+			GetPerceptionComponent()->Deactivate();
 		}
 	}
 	else if (ViewPerceptionType == EViewPerceptionType::AIPerception)
@@ -263,6 +295,11 @@ void AST_AIController::OnTargetDetected(AActor* Target)
 		{
 			GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
 		}
+		else if (bCanPossessVehicles && TargetPawn->IsA(AST_BaseVehicle::StaticClass()) && !TargetPawn->IsControlled())
+		{
+			GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, Target);
+			TargetPawn->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnTargetVehicleTaken);
+		}
 	}
 }
 
@@ -294,5 +331,14 @@ void AST_AIController::OnHealthChanged(float CurrentHealthValue, EHealthChanging
 
 		BTComponent->StopTree();
 		ClearFocus(EAIFocusPriority::Gameplay);
+	}
+}
+
+void AST_AIController::OnTargetVehicleTaken(APawn* InPawn, AController* OldController, AController* NewController)
+{
+	if (IsValid(NewController))
+	{
+		GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, nullptr);
+		InPawn->ReceiveControllerChangedDelegate.RemoveAll(this);
 	}
 }
