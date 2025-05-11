@@ -1,9 +1,9 @@
 #include "Actors/GameplayActors/ST_LevelStreamingVolume.h"
 
 #include "Components/BoxComponent.h"
-#include "Kismet/GameplayStatics.h"
-
 #include "Components/ST_ViewAreaBoxComponent.h"
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 
 AST_LevelStreamingVolume::AST_LevelStreamingVolume()
 {

@@ -5,6 +5,7 @@
 #include "GameFramework/MainMenu/ST_MainMenuPlayerState.h"
 #include "GameFramework/MainMenu/Utils/ST_VehicleSpawnManager.h"
 #include "GameFramework/ST_GameInstance.h"
+#include "Engine/World.h"
 
 AST_MainMenuGameMode::AST_MainMenuGameMode()
 {

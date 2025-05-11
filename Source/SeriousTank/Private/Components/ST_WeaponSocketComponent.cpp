@@ -1,5 +1,7 @@
 #include "Components/ST_WeaponSocketComponent.h"
 
+#include "Engine/World.h"
+
 AST_BaseWeapon* UST_WeaponSocketComponent::SetWeapon(TSubclassOf<AST_BaseWeapon> WeaponClass)
 {
 	UWorld* World = Weapon ? Weapon->GetWorld() : GetWorld();

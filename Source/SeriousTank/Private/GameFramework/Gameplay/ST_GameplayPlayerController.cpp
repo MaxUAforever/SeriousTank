@@ -1,6 +1,7 @@
 #include "GameFramework/Gameplay/ST_GameplayPlayerController.h"
 
 #include "Engine/World.h"
+#include "Engine/LocalPlayer.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Gameplay/ST_GameplayGameMode.h"
