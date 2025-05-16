@@ -2,6 +2,7 @@
 
 #include "Actors/Pawns/ST_BaseVehicle.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
+#include "AI/Interfaces/ST_AIPawnInterface.h"
 #include "AIPatrollingSubsystem/Public/Components/AIPatrollingComponent.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -14,6 +15,7 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISenseConfig.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "TimerManager.h"
 
 AST_AIController::AST_AIController()
 {
@@ -28,6 +30,16 @@ void AST_AIController::BeginPlay()
 	SetPerceptionComponent(*PerceptionComp);
 	GetPerceptionComponent()->Deactivate();
 	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ThisClass::OnSensePerceptionTriggered);
+}
+
+void AST_AIController::EndPlay(EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(AimUpdateTimerHandle);
+	}
 }
 
 void AST_AIController::OnPossess(APawn* InPawn)
@@ -298,7 +310,9 @@ void AST_AIController::OnTargetDetected(AActor* Target)
 		
 	if (TargetPawn->IsPlayerControlled())
 	{
-		GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+		AttackTarget = TargetPawn;
+
+		OnAttackTargetChanged(Target);
 	}
 	else if (bCanPossessVehicles && TargetPawn->IsA(AST_BaseVehicle::StaticClass()) && !TargetPawn->IsControlled())
 	{
@@ -312,6 +326,8 @@ void AST_AIController::OnTargetDetected(AActor* Target)
 		{
 			CurrentTargetPawn->ReceiveControllerChangedDelegate.RemoveDynamic(this, &ThisClass::OnTargetVehicleTaken);
 		}
+
+		SetFocus(TargetPawn);
 
 		GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, Target);
 		TargetPawn->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnTargetVehicleTaken);
@@ -329,7 +345,9 @@ void AST_AIController::OnTargetLost(AActor* Target)
 	{
 		if (TargetPawn->IsPlayerControlled())
 		{
-			GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, nullptr);
+			AttackTarget = nullptr;
+
+			OnAttackTargetChanged(nullptr);
 		}
 		else if (GetBlackboardComponent()->GetValueAsObject(BBFreeTrackedVehicleKey) == TargetPawn)
 		{
@@ -352,6 +370,33 @@ void AST_AIController::OnHealthChanged(float CurrentHealthValue, EHealthChanging
 		BTComponent->StopTree();
 		ClearFocus(EAIFocusPriority::Gameplay);
 	}
+}
+
+void AST_AIController::OnAttackTargetChanged(AActor* Target)
+{
+	GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, true);
+
+	if (!IsValid(Target))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(AimUpdateTimerHandle);
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(AimUpdateTimerHandle, this, &ThisClass::AimToTarget, 0.25f, true);
+}
+
+void AST_AIController::AimToTarget()
+{
+	IST_AIPawnInterface* AIPawn = Cast<IST_AIPawnInterface>(GetPawn());
+	if (AIPawn == nullptr || !IsValid(AttackTarget))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(AimUpdateTimerHandle);
+		return;
+	}
+
+	AIPawn->AimToLocation(AttackTarget->GetActorLocation());
+	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, AIPawn->IsAiming());
 }
 
 void AST_AIController::OnTargetVehicleTaken(APawn* InPawn, AController* OldController, AController* NewController)

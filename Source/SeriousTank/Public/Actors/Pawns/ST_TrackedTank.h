@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Actors/Pawns/ST_BaseTrackedVehicle.h"
+#include "AI/Interfaces/ST_AIPawnInterface.h"
 #include "ST_TrackedTank.generated.h"
 
 class UArrowComponent;
@@ -10,7 +11,7 @@ class UST_WeaponSocketComponent;
 class UST_VehicleWeaponManagerComponent;
 
 UCLASS()
-class SERIOUSTANK_API AST_TrackedTank : public AST_BaseTrackedVehicle
+class SERIOUSTANK_API AST_TrackedTank : public AST_BaseTrackedVehicle, public IST_AIPawnInterface
 {
 	GENERATED_BODY()
 
@@ -37,8 +38,20 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float TurretRotationSpeed;
 
+	UPROPERTY(EditAnywhere, Category = "Aiming|Debug")
+	bool bDrawDebugAimingTarget;
+
+	UPROPERTY(EditAnywhere, Category = "Aiming|Debug")
+	float DrawHeightOffset;
+
 public:
 	AST_TrackedTank();
+
+public:
+	// IST_AIPawnInterface - Begin
+	virtual void AimToLocation(const FVector& Location) override;
+	virtual bool IsAiming() const override;
+	// IST_AIPawnInterface - End
 
 protected:
 	virtual void BeginPlay() override;

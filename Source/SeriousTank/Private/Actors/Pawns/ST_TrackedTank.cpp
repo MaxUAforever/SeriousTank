@@ -5,6 +5,19 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/ST_WeaponSocketComponent.h"
 #include "Components/Weapons/ST_VehicleWeaponManagerComponent.h"
+#include "Engine.h"
+
+namespace
+{
+
+void DrawDebugAiming(const UWorld* World, const FVector& PawnLocation, const FVector& AimTargetDirection, float HeightOffset, bool bIsAiming, float DrawTime)
+{
+	const FVector DebugPawnLocation = { PawnLocation.X, PawnLocation.Y, HeightOffset };
+	DrawDebugSphere(World, DebugPawnLocation, 25.f, 12, FColor::Red, false, DrawTime);
+	DrawDebugLine(World, DebugPawnLocation, DebugPawnLocation + AimTargetDirection * 150.f, bIsAiming ? FColor::Yellow : FColor::Green, false, DrawTime, 0U, 3.f);
+}
+
+} // anonymous namespace
 
 AST_TrackedTank::AST_TrackedTank()
 {
@@ -26,6 +39,30 @@ AST_TrackedTank::AST_TrackedTank()
 	SecondWeaponSocketComponent->SetupAttachment(TurretSceneComponent);
 
 	WeaponManagerComponent = CreateDefaultSubobject<UST_VehicleWeaponManagerComponent>("WeaponManagerComponent");
+}
+
+void AST_TrackedTank::AimToLocation(const FVector& Location)
+{
+	const FVector TargetDirection = (Location - CameraSceneComponent->GetComponentLocation()).GetSafeNormal();
+	const FRotator TargetRotation = TargetDirection.Rotation();
+	
+	const FRotator CurrentRotation = CameraSceneComponent->GetComponentRotation();
+	const FRotator DesiredRotation = FRotator(CurrentRotation.Pitch, TargetRotation.Yaw, CurrentRotation.Roll);
+
+	CameraSceneComponent->SetWorldRotation(DesiredRotation);
+
+	if (bDrawDebugAimingTarget)
+	{
+		DrawDebugAiming(GetWorld(), GetActorLocation(), TargetDirection, DrawHeightOffset, IsAiming(), 0.25f);
+	}
+}
+
+bool AST_TrackedTank::IsAiming() const
+{
+	const FRotator CameraRotator = CameraSceneComponent->GetComponentRotation();
+	const FRotator TurretRotator = TurretSceneComponent->GetComponentRotation();
+
+	return !FMath::IsNearlyEqual(CameraRotator.Yaw, TurretRotator.Yaw, 0.5f);
 }
 
 void AST_TrackedTank::BeginPlay()

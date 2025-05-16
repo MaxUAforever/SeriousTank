@@ -26,6 +26,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 	virtual void OnPossess(APawn* InPawn) override;
 
@@ -57,6 +58,9 @@ private:
 	void OnTargetDetected(AActor* Target);
 	void OnTargetLost(AActor* OtherActor);
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
+
+	void OnAttackTargetChanged(AActor* Target);
+	void AimToTarget();
 
 	UFUNCTION()
 	void OnTargetVehicleTaken(APawn* InPawn, AController* OldController, AController* NewController);
@@ -108,4 +112,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Blackboard)
 	FName BBCanPatrol = FName("CanPatrol");
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FName BBIsAimingKey = FName("IsAiming");
+
+private:
+	TObjectPtr<const AActor> AttackTarget;
+	FTimerHandle AimUpdateTimerHandle;
 };
