@@ -2,7 +2,42 @@
 
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Controller.h"
+#include "Engine.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Navigation/PathFollowingComponent.h"
+
+namespace
+{
+
+void DrawDebugDirections(const UWorld* World, const FNavPathSharedPtr Path, const FVector& PawnLocation, const FVector& MoveInput, const FVector& RequestedDirection, const FVector& ForwardVector, const FVector& RightVector, float HeightOffset)
+{
+	TOptional<FVector> PreviousPathPoint;
+	for (int Index = 0; Index < Path->GetPathPoints().Num(); Index++)
+	{
+		FVector DebugPathPointLocation = *Path->GetPathPointLocation(Index);
+		DebugPathPointLocation.Z = HeightOffset;
+
+		DrawDebugSphere(World, DebugPathPointLocation, 25.f, 12, FColor::Blue);
+		if (PreviousPathPoint.IsSet())
+		{
+			DrawDebugLine(World, PreviousPathPoint.GetValue(), DebugPathPointLocation, FColor::Blue);
+		}
+
+		PreviousPathPoint = DebugPathPointLocation;
+	}
+
+	const FVector DebugPawnPointLocation = { PawnLocation.X , PawnLocation.Y, HeightOffset };
+	const FVector MoveInputPointLocation = { PawnLocation.X , PawnLocation.Y, HeightOffset + 10.f };
+	const FVector RequestedDirectionPointLocation = { PawnLocation.X , PawnLocation.Y, HeightOffset + 20.f };
+
+	DrawDebugSphere(World, DebugPawnPointLocation, 25.f, 12, FColor::Red, false);
+	DrawDebugLine(World, DebugPawnPointLocation, DebugPawnPointLocation + ForwardVector * 70.f, FColor::Red, false, -1.0f, 0U, 3.f);
+	DrawDebugLine(World, MoveInputPointLocation, MoveInputPointLocation + MoveInput * 70.f, FColor::Green, false, -1.0f, 0U, 3.f);
+	DrawDebugLine(World, RequestedDirectionPointLocation, RequestedDirectionPointLocation + (ForwardVector * RequestedDirection.X + RightVector * RequestedDirection.Y) * 70.f, FColor::Yellow, false, -1.0f, 0U, 3.f);
+}
+
+} // anonymous namespace
 
 UST_TrackMovementComponent::UST_TrackMovementComponent()
 {
@@ -19,7 +54,20 @@ UST_TrackMovementComponent::UST_TrackMovementComponent()
 	bSnapToPlaneAtStart = true;
 	SetPlaneConstraintAxisSetting(EPlaneConstraintAxisSetting::Z);
 
+	bUseAccelerationForPaths = true;
+
+	BreakingDistanceCoef = 1.5f;
+	MinAngleToAccelerate = 15.f;
+	MinPathFollowSpeed = 10.f;
+	bDrawDebugNavigationPath = false;
+	DrawHeightOffset = 250.f;
+
 	CurrentSpeed = 0;
+}
+
+float UST_TrackMovementComponent::GetMaxSpeed() const
+{
+	return MaxSpeed;
 }
 
 EMovingType UST_TrackMovementComponent::GetMovingType() const
@@ -62,6 +110,53 @@ void UST_TrackMovementComponent::MoveForward(const float Value)
 void UST_TrackMovementComponent::MoveRight(const float Value)
 {
 	RequestedDirections.Y = Value;
+}
+
+void UST_TrackMovementComponent::RequestPathMove(const FVector& MoveInput)
+{
+	const AController* OwnerController = GetController();
+	const UPathFollowingComponent* PathFollowingComponent = IsValid(OwnerController) ? OwnerController->GetComponentByClass<UPathFollowingComponent>() : nullptr;
+	if (!IsValid(PathFollowingComponent))
+	{
+		return;
+	}
+	
+	const FNavPathSharedPtr Path = PathFollowingComponent->GetPath();
+	if (!Path.IsValid() || !Path->IsValid())
+	{
+		return;
+	}
+
+	FVector FlatMoveInput = { MoveInput.X, MoveInput.Y, 0.f };
+	FlatMoveInput.Normalize();
+
+	const FVector ForwardVector = UpdatedComponent->GetForwardVector();
+	const float AngleRadians = FMath::Acos(FVector::DotProduct(ForwardVector, FlatMoveInput));
+	const float AngleDegrees = FMath::RadiansToDegrees(AngleRadians);
+
+	const FVector Cross = FVector::CrossProduct(ForwardVector, FlatMoveInput);
+	const float RotationDirection = FMath::Sign(Cross.Z);
+
+	RequestedDirections.Y = AngleDegrees > 2.f ? RotationDirection : 0.f;
+	RequestedDirections.X = 0.f;
+
+	if (AngleDegrees > 90.f && CurrentSpeed > MinPathFollowSpeed)
+	{
+		RequestedDirections.X = -1.f;
+	}
+	else if (AngleDegrees < MinAngleToAccelerate)
+	{
+		const FVector PathEnd = Path->GetEndLocation();
+		const FVector::FReal DistToEndSq = FVector::DistSquared(GetActorFeetLocation(), PathEnd);
+		const bool bShouldDecelerate = DistToEndSq < FMath::Square(GetCurrentBreakingDistance() * BreakingDistanceCoef);
+
+		RequestedDirections.X = bShouldDecelerate && CurrentSpeed > MinPathFollowSpeed ? -1.f : 1.f;
+	}
+
+	if (bDrawDebugNavigationPath)
+	{
+		DrawDebugDirections(GetWorld(), Path, GetActorFeetLocation(), FlatMoveInput, RequestedDirections, ForwardVector, UpdatedComponent->GetRightVector(), DrawHeightOffset);
+	}
 }
 
 void UST_TrackMovementComponent::CalculatePosition(float DeltaTime)
@@ -177,4 +272,9 @@ FVector UST_TrackMovementComponent::ConstrainLocationToPlane(FVector Location) c
     }
     
     return Super::ConstrainLocationToPlane(Location) + OffsetVector;
+}
+
+float UST_TrackMovementComponent::GetCurrentBreakingDistance() const
+{
+	return FMath::Square(CurrentSpeed) / (2 * BreakAcselerationValue);
 }

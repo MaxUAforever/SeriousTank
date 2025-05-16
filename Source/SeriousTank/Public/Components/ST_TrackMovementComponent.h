@@ -14,6 +14,33 @@ public:
 	DECLARE_DELEGATE_OneParam(FOnMovingTypeChanged, EMovingType)
 	FOnMovingTypeChanged OnMovingTypeChanged;
 
+public:	
+	UST_TrackMovementComponent();
+
+	float GetCurrentSpeed() const { return CurrentSpeed; }
+	virtual float GetMaxSpeed() const override;
+
+	EMovingType GetMovingType() const;
+
+public:	
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+
+	virtual void RequestPathMove(const FVector& MoveInput) override;
+
+protected:
+	void CalculatePosition(float DeltaTime);
+
+	void CalculateCurrentSpeed(float DeltaTime);
+	
+	float CalculateAcceleration();
+    
+    virtual FVector ConstrainLocationToPlane(FVector Location) const override;
+
+	float GetCurrentBreakingDistance() const;
+
 protected:
 	UPROPERTY(EditAnywhere)
 	int32 MaxRotationRadius;
@@ -33,6 +60,21 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float BreakAcselerationValue;
 
+	UPROPERTY(EditAnywhere, Category = "Navigation")
+	float BreakingDistanceCoef;
+
+	UPROPERTY(EditAnywhere, Category = "Navigation")
+	float MinAngleToAccelerate;
+
+	UPROPERTY(EditAnywhere, Category = "Navigation")
+	float MinPathFollowSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Navigation|Debug")
+	bool bDrawDebugNavigationPath;
+
+	UPROPERTY(EditAnywhere, Category = "Navigation|Debug")
+	float DrawHeightOffset;
+
 private:
 	// Filled with non-zero values if user initiate moving.
 	// X-Axis is used for forward(+1) / backward(-1) moving,
@@ -41,29 +83,4 @@ private:
 
 	float CurrentSpeed;
 	EMovingType CurrentMovingType;
-
-public:	
-	UST_TrackMovementComponent();
-
-	float GetCurrentSpeed() const
-	{
-		return CurrentSpeed;
-	}
-
-	EMovingType GetMovingType() const;
-
-public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-
-protected:
-	void CalculatePosition(float DeltaTime);
-
-	void CalculateCurrentSpeed(float DeltaTime);
-	
-	float CalculateAcceleration();
-    
-    virtual FVector ConstrainLocationToPlane(FVector Location) const override;
 };

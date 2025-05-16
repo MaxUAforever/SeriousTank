@@ -15,8 +15,8 @@ UBTTask_GetNextPatrolPoint::UBTTask_GetNextPatrolPoint(const FObjectInitializer&
 EBTNodeResult::Type UBTTask_GetNextPatrolPoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AAIController* Controller = OwnerComp.GetAIOwner();
-	APawn* Pawn = Controller->GetPawn();
-	if (!Controller || !Pawn || !OwnerComp.GetBlackboardComponent())
+	APawn* Pawn = IsValid(Controller) ? Controller->GetPawn() : nullptr;
+	if (!IsValid(Pawn) || !OwnerComp.GetBlackboardComponent())
 	{
 		return EBTNodeResult::Failed;
 	}

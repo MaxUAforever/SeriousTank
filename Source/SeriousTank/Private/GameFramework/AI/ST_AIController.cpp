@@ -27,6 +27,7 @@ void AST_AIController::BeginPlay()
 
 	SetPerceptionComponent(*PerceptionComp);
 	GetPerceptionComponent()->Deactivate();
+	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ThisClass::OnSensePerceptionTriggered);
 }
 
 void AST_AIController::OnPossess(APawn* InPawn)
@@ -131,8 +132,8 @@ void AST_AIController::SetupPerception(APawn* InPawn)
 			ViewAreaBoxComponent->OnFrontViewDistanceChanged.AddUObject(this, &ThisClass::ChangeSightRadius);
 		}
 
+
 		GetPerceptionComponent()->Activate();
-		GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &ThisClass::OnSensePerceptionTriggered);
 	}
 }
 
@@ -289,17 +290,31 @@ void AST_AIController::OnTargetDetected(AActor* Target)
 		return;
 	}
 
-	if (APawn* TargetPawn = Cast<APawn>(Target))
+	APawn* TargetPawn = Cast<APawn>(Target);
+	if (!IsValid(TargetPawn))
 	{
-		if (TargetPawn->IsPlayerControlled())
+		return;
+	}
+		
+	if (TargetPawn->IsPlayerControlled())
+	{
+		GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+	}
+	else if (bCanPossessVehicles && TargetPawn->IsA(AST_BaseVehicle::StaticClass()) && !TargetPawn->IsControlled())
+	{
+		APawn* CurrentTargetPawn = Cast<APawn>(GetBlackboardComponent()->GetValueAsObject(BBFreeTrackedVehicleKey));
+		if (TargetPawn == CurrentTargetPawn)
 		{
-			GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+			return;
 		}
-		else if (bCanPossessVehicles && TargetPawn->IsA(AST_BaseVehicle::StaticClass()) && !TargetPawn->IsControlled())
+		
+		if (IsValid(CurrentTargetPawn))
 		{
-			GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, Target);
-			TargetPawn->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnTargetVehicleTaken);
+			CurrentTargetPawn->ReceiveControllerChangedDelegate.RemoveDynamic(this, &ThisClass::OnTargetVehicleTaken);
 		}
+
+		GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, Target);
+		TargetPawn->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnTargetVehicleTaken);
 	}
 }
 
@@ -315,6 +330,11 @@ void AST_AIController::OnTargetLost(AActor* Target)
 		if (TargetPawn->IsPlayerControlled())
 		{
 			GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, nullptr);
+		}
+		else if (GetBlackboardComponent()->GetValueAsObject(BBFreeTrackedVehicleKey) == TargetPawn)
+		{
+			GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, nullptr);
+			TargetPawn->ReceiveControllerChangedDelegate.RemoveDynamic(this, &ThisClass::OnTargetVehicleTaken);
 		}
 	}
 }
