@@ -1,5 +1,6 @@
 #include "Components/ST_TrackMovementComponent.h"
 
+#include "AIController.h"
 #include "Core/ST_CoreTypes.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Controller.h"
@@ -65,6 +66,31 @@ UST_TrackMovementComponent::UST_TrackMovementComponent()
 	CurrentSpeed = 0;
 }
 
+void UST_TrackMovementComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (APawn* CurrentPawnOwner = Cast<APawn>(GetOwner()))
+	{
+		CurrentPawnOwner->ReceiveControllerChangedDelegate.AddDynamic(this, &ThisClass::OnControllerChanged);
+	}
+}
+
+void UST_TrackMovementComponent::EndPlay(EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	if (APawn* CurrentPawnOwner = Cast<APawn>(GetOwner()))
+	{
+		CurrentPawnOwner->ReceiveControllerChangedDelegate.RemoveDynamic(this, &ThisClass::OnControllerChanged);
+	}
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(PathStopMovementsTimer);
+	}
+}
+
 float UST_TrackMovementComponent::GetMaxSpeed() const
 {
 	return MaxSpeed;
@@ -120,7 +146,7 @@ void UST_TrackMovementComponent::RequestPathMove(const FVector& MoveInput)
 	{
 		return;
 	}
-	
+
 	const FNavPathSharedPtr Path = PathFollowingComponent->GetPath();
 	if (!Path.IsValid() || !Path->IsValid())
 	{
@@ -277,4 +303,50 @@ FVector UST_TrackMovementComponent::ConstrainLocationToPlane(FVector Location) c
 float UST_TrackMovementComponent::GetCurrentBreakingDistance() const
 {
 	return FMath::Square(CurrentSpeed) / (2 * BreakAcselerationValue);
+}
+
+void UST_TrackMovementComponent::OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
+{
+	if (IsValid(CurrentPathFollowingComponent))
+	{
+		CurrentPathFollowingComponent->OnRequestFinished.RemoveAll(this);
+	}
+
+	UPathFollowingComponent* PathFollowingComponent = IsValid(NewController) ? NewController->GetComponentByClass<UPathFollowingComponent>() : nullptr;
+	if (IsValid(PathFollowingComponent))
+	{
+		CurrentPathFollowingComponent = PathFollowingComponent;
+		CurrentPathFollowingComponent->OnRequestFinished.AddUObject(this, &ThisClass::OnPathFollowingFinished);
+	}
+}
+
+void UST_TrackMovementComponent::OnPathFollowingFinished(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().SetTimer(PathStopMovementsTimer, this, &ThisClass::StopFollowingMovements, 0.2f, true);
+	}
+}
+
+void UST_TrackMovementComponent::StopFollowingMovements()
+{
+	if (IsValid(CurrentPathFollowingComponent) && CurrentPathFollowingComponent->GetStatus() == EPathFollowingStatus::Moving)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(PathStopMovementsTimer);
+		return;
+	}
+
+	static const float AcceptanceStopSpeed = 30.f;
+	const bool bStoppedMovement = FMath::Abs(CurrentSpeed) < AcceptanceStopSpeed;
+
+	RequestedDirections.Y = 0.f;
+	if (bStoppedMovement)
+	{
+		RequestedDirections.X = 0.f;
+		GetWorld()->GetTimerManager().ClearTimer(PathStopMovementsTimer);
+	}
+	else
+	{
+		RequestedDirections.X = FMath::Sign(CurrentSpeed) * -1;
+	}
 }

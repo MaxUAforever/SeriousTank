@@ -3,7 +3,10 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "ST_TrackMovementComponent.generated.h"
 
+class UPathFollowingComponent;
 enum class EMovingType : uint8;
+struct FAIRequestID;
+struct FPathFollowingResult;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_TrackMovementComponent : public UPawnMovementComponent
@@ -16,6 +19,9 @@ public:
 
 public:	
 	UST_TrackMovementComponent();
+
+	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 	float GetCurrentSpeed() const { return CurrentSpeed; }
 	virtual float GetMaxSpeed() const override;
@@ -40,6 +46,12 @@ protected:
     virtual FVector ConstrainLocationToPlane(FVector Location) const override;
 
 	float GetCurrentBreakingDistance() const;
+
+	UFUNCTION()
+	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+
+	void OnPathFollowingFinished(FAIRequestID RequestID, const FPathFollowingResult& Result);
+	void StopFollowingMovements();
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -83,4 +95,7 @@ private:
 
 	float CurrentSpeed;
 	EMovingType CurrentMovingType;
+
+	TObjectPtr<UPathFollowingComponent> CurrentPathFollowingComponent;
+	FTimerHandle PathStopMovementsTimer;
 };

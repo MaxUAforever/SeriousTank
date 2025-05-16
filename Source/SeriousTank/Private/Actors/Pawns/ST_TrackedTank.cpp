@@ -28,6 +28,13 @@ AST_TrackedTank::AST_TrackedTank()
 	WeaponManagerComponent = CreateDefaultSubobject<UST_VehicleWeaponManagerComponent>("WeaponManagerComponent");
 }
 
+void AST_TrackedTank::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SetActorTickEnabled(IsValid(GetController()));
+}
+
 void AST_TrackedTank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
