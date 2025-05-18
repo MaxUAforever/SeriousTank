@@ -376,13 +376,16 @@ void AST_AIController::OnAttackTargetChanged(AActor* Target)
 {
 	GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
 	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, true);
-
-	if (!IsValid(Target))
+	IST_AIPawnInterface* AIPawn = Cast<IST_AIPawnInterface>(GetPawn());
+	if (!IsValid(Target) || AIPawn == nullptr)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(AimUpdateTimerHandle);
+		ClearFocus(EAIFocusPriority::Gameplay);
+
 		return;
 	}
 
+	SetFocus(Target);
 	GetWorld()->GetTimerManager().SetTimer(AimUpdateTimerHandle, this, &ThisClass::AimToTarget, 0.25f, true);
 }
 
@@ -395,8 +398,11 @@ void AST_AIController::AimToTarget()
 		return;
 	}
 
-	AIPawn->AimToLocation(AttackTarget->GetActorLocation());
 	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, AIPawn->IsAiming());
+	if (!AIPawn->IsAimingToFocusPoint())
+	{
+		AIPawn->AimToLocation(AttackTarget->GetActorLocation());
+	}
 }
 
 void AST_AIController::OnTargetVehicleTaken(APawn* InPawn, AController* OldController, AController* NewController)

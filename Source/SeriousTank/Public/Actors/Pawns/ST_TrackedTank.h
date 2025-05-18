@@ -48,9 +48,12 @@ public:
 	AST_TrackedTank();
 
 public:
+	virtual void FaceRotation(FRotator NewControlRotation, float DeltaTime = 0.f) override;
+
 	// IST_AIPawnInterface - Begin
 	virtual void AimToLocation(const FVector& Location) override;
 	virtual bool IsAiming() const override;
+	virtual bool IsAimingToFocusPoint() const override;
 	// IST_AIPawnInterface - End
 
 protected:

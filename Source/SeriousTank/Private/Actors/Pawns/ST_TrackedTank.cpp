@@ -41,6 +41,19 @@ AST_TrackedTank::AST_TrackedTank()
 	WeaponManagerComponent = CreateDefaultSubobject<UST_VehicleWeaponManagerComponent>("WeaponManagerComponent");
 }
 
+void AST_TrackedTank::FaceRotation(FRotator NewControlRotation, float DeltaTime)
+{
+	const FRotator CurrentRotation = CameraSceneComponent->GetComponentRotation();
+	const FRotator DesiredRotation = FRotator(CurrentRotation.Pitch, NewControlRotation.Yaw, CurrentRotation.Roll);
+
+	CameraSceneComponent->SetWorldRotation(NewControlRotation);
+
+	if (bDrawDebugAimingTarget)
+	{
+		DrawDebugAiming(GetWorld(), GetActorLocation(), DesiredRotation.Vector(), DrawHeightOffset, IsAiming(), -1.f);
+	}
+}
+
 void AST_TrackedTank::AimToLocation(const FVector& Location)
 {
 	const FVector TargetDirection = (Location - CameraSceneComponent->GetComponentLocation()).GetSafeNormal();
@@ -49,12 +62,7 @@ void AST_TrackedTank::AimToLocation(const FVector& Location)
 	const FRotator CurrentRotation = CameraSceneComponent->GetComponentRotation();
 	const FRotator DesiredRotation = FRotator(CurrentRotation.Pitch, TargetRotation.Yaw, CurrentRotation.Roll);
 
-	CameraSceneComponent->SetWorldRotation(DesiredRotation);
-
-	if (bDrawDebugAimingTarget)
-	{
-		DrawDebugAiming(GetWorld(), GetActorLocation(), TargetDirection, DrawHeightOffset, IsAiming(), 0.25f);
-	}
+	FaceRotation(DesiredRotation);
 }
 
 bool AST_TrackedTank::IsAiming() const
@@ -63,6 +71,11 @@ bool AST_TrackedTank::IsAiming() const
 	const FRotator TurretRotator = TurretSceneComponent->GetComponentRotation();
 
 	return !FMath::IsNearlyEqual(CameraRotator.Yaw, TurretRotator.Yaw, 0.5f);
+}
+
+bool AST_TrackedTank::IsAimingToFocusPoint() const
+{
+	return true;
 }
 
 void AST_TrackedTank::BeginPlay()

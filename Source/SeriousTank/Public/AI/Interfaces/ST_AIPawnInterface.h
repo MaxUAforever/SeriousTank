@@ -16,6 +16,7 @@ class IST_AIPawnInterface
     GENERATED_BODY()
 
 public:
-    virtual void AimToLocation(const FVector& Location) = 0;
     virtual bool IsAiming() const = 0;
+    virtual bool IsAimingToFocusPoint() const = 0;
+    virtual void AimToLocation(const FVector& Location) = 0;
 };
