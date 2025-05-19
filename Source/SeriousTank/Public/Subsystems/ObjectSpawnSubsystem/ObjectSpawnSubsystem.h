@@ -54,4 +54,5 @@ private:
 	UObjectSpawnManager* FindObjectSpawnManager(ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner);
 
 	void OnObjectSpawned(AActor* SpawnedActor, ESpawnObjectType SpawnObjectType, const UObject* InSpawnManagerOwner, UObjectSpawnManager* SpawnManager);
+	void OnSpawnerOwnerChanged(ABaseObjectSpawner* ObjectSpawner, UObject* OldOwner,UObject* NewOwner);
 };

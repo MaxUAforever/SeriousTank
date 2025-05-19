@@ -7,10 +7,20 @@ void ABaseObjectSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsValid(SpawnOwner))
+	SetSpawnOwner(SpawnOwner);
+}
+
+void ABaseObjectSpawner::SetSpawnOwner(UObject* InSpawnOwner)
+{
+	if (!IsValid(InSpawnOwner) || SpawnOwner == InSpawnOwner)
 	{
-		SetOwner(SpawnOwner);
+		return;
 	}
+
+	UObject* OldSpawnOwner = SpawnOwner;
+	SpawnOwner = InSpawnOwner;
+
+	OnSpawnOwnerChangedDelegate.ExecuteIfBound(this, OldSpawnOwner, SpawnOwner);
 }
 
 void ABaseObjectSpawner::SetIsEnabled(bool bInIsEnabled)
@@ -68,6 +78,8 @@ AActor* ABaseObjectSpawner::SpawnObject(TSubclassOf<AActor> ClassToSpawn)
 		SpawnedObject->OnDestroyed.AddDynamic(this, &ThisClass::OnSpanwedObjectDestroyed);
 
 		SpawnedObjectsCount += 1;
+
+		OnSpawnerSpawnedObjectDelegete.Broadcast(SpawnedObject);
 	}
 
 	return SpawnedObject;

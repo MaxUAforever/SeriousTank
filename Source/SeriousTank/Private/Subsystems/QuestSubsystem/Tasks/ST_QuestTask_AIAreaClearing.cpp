@@ -95,7 +95,7 @@ void UST_QuestTask_AIAreaClearing::StartWave(int32 WaveIndex)
 	SpawnEnemy();
 }
 
-void UST_QuestTask_AIAreaClearing::OnEnemySpawned(AActor* InTargetActor)
+void UST_QuestTask_AIAreaClearing::OnEnemySpawned(ABaseObjectSpawner* ObjectSpawner, AActor* InTargetActor)
 {
 	UST_HealthComponent* HealthComponent = Cast<UST_HealthComponent>(InTargetActor->GetComponentByClass(UST_HealthComponent::StaticClass()));
 	if (!HealthComponent)

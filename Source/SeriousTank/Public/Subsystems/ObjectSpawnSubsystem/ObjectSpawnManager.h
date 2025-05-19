@@ -7,7 +7,8 @@
 
 class ABaseObjectSpawner;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnObjectSpawnedDelegate, AActor*)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnObjectSpawnedDelegate, ABaseObjectSpawner* /*ObjectSpawner*/, AActor* /*SpawnedActor*/);
+DECLARE_DELEGATE_ThreeParams(FOnSpawnerOwnerChanged, ABaseObjectSpawner*, UObject* /*OldOwner*/, UObject* /*NewOwner*/);
 
 UCLASS()
 class SERIOUSTANK_API UObjectSpawnManager : public UObject
@@ -16,8 +17,12 @@ class SERIOUSTANK_API UObjectSpawnManager : public UObject
 	
 public:
 	FOnObjectSpawnedDelegate OnObjectSpawnedDelegate;
+	FOnSpawnerOwnerChanged OnSpawnerOwnerChangedDelegate;
 
 private:
+	ESpawnObjectType SpawnObjectType;
+	TObjectPtr<const UObject> SpawnOwner;
+
 	FObjectSpawnParameters SpawnParams;
 	FTimerHandle SpawnTimerHandle;
 	TSet<FTimerHandle> DestroyTimerHandles;
@@ -26,7 +31,10 @@ private:
 	int32 SpawnedObjectsCount = 0;
 
 public:
-	void Initialize(const ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner = nullptr);
+	void Initialize(const ESpawnObjectType InSpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner = nullptr);
+	void RegisterSpawner(ABaseObjectSpawner* SpawningActor);
+	void UnregisterSpawner(ABaseObjectSpawner* SpawningActor);
+	
 	virtual void BeginDestroy() override;
 
 	void SetIsAutoSpawnEnabled(bool bIsEnabled);
@@ -49,6 +57,7 @@ private:
 
 	void OnSpawnerSetEnabled(ABaseObjectSpawner* SpawningActor, bool bIsEnabled);
 	void OnSpawnedObjectDestroyed(ABaseObjectSpawner* SpawningActor, AActor* SpawnedObject);
+	void OnSpawnerOwnerChanged(ABaseObjectSpawner* SpawningActor, UObject* OldOwner, UObject* NewOwner);
 
 	void SetSpawnTimerEnabled(bool bIsEnabled);
 

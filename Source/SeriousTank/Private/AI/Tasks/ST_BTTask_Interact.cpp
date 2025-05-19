@@ -1,6 +1,6 @@
 #include "AI/Tasks/ST_BTTask_Interact.h"
 
-#include "Subsystems/AIManagerSubsystem/ST_AIManagerSubsystem.h"
+#include "Subsystems/AIManagerSubsystem/ST_AIInteractionsManagerSubsystem.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"

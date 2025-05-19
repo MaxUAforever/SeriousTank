@@ -1,4 +1,4 @@
-#include "Subsystems/AIManagerSubsystem/ST_AIManagerSubsystem.h"
+#include "Subsystems/AIManagerSubsystem/ST_AIInteractionsManagerSubsystem.h"
 
 
 #include "PlayerInteractionSubsystem/Public/Components/InteractionComponent.h"
@@ -7,14 +7,14 @@
 #include "Subsystems/PlayerInteractionSubsystem/Actions/ST_WeaponPickUpAction.h"
 #include "Engine/World.h"
 
-void UST_AIManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+void UST_AIInteractionsManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 
 	InitInteractionItems(InWorld);
 }
 
-const TSet<TObjectPtr<const AActor>>* UST_AIManagerSubsystem::GetInteractionActors(EAIInteractionType InteractionType) const
+const TSet<TObjectPtr<const AActor>>* UST_AIInteractionsManagerSubsystem::GetInteractionActors(EAIInteractionType InteractionType) const
 {
 	const FInteractionTypeInfo* InteractionTypeInfo = InteractionsInfo.Find(InteractionType);
 	if (InteractionTypeInfo != nullptr)
@@ -25,7 +25,7 @@ const TSet<TObjectPtr<const AActor>>* UST_AIManagerSubsystem::GetInteractionActo
 	return nullptr;
 }
 
-void UST_AIManagerSubsystem::InitInteractionItems(const UWorld& InWorld)
+void UST_AIInteractionsManagerSubsystem::InitInteractionItems(const UWorld& InWorld)
 {
 	UPlayerInteractionSubsystem* InteractionSubsystem = InWorld.GetSubsystem<UPlayerInteractionSubsystem>();
 	if (!IsValid(InteractionSubsystem))
@@ -46,7 +46,7 @@ void UST_AIManagerSubsystem::InitInteractionItems(const UWorld& InWorld)
 	}
 }
 
-void UST_AIManagerSubsystem::AddInteractionComponent(const UInteractionComponent* InteractionComponent)
+void UST_AIInteractionsManagerSubsystem::AddInteractionComponent(const UInteractionComponent* InteractionComponent)
 {
 	if (!IsValid(InteractionComponent))
 	{
@@ -60,7 +60,7 @@ void UST_AIManagerSubsystem::AddInteractionComponent(const UInteractionComponent
 	}
 }
 
-void UST_AIManagerSubsystem::RemoveInteractionComponent(const UInteractionComponent* InteractionComponent)
+void UST_AIInteractionsManagerSubsystem::RemoveInteractionComponent(const UInteractionComponent* InteractionComponent)
 {
 	if (!IsValid(InteractionComponent))
 	{
@@ -74,7 +74,7 @@ void UST_AIManagerSubsystem::RemoveInteractionComponent(const UInteractionCompon
 	}
 }
 
-void UST_AIManagerSubsystem::OnIsInteractionComponentActiveChanged(const UInteractionComponent* InteractionComponent, bool bIsActive)
+void UST_AIInteractionsManagerSubsystem::OnIsInteractionComponentActiveChanged(const UInteractionComponent* InteractionComponent, bool bIsActive)
 {
 	if (!IsValid(InteractionComponent))
 	{
@@ -91,7 +91,7 @@ void UST_AIManagerSubsystem::OnIsInteractionComponentActiveChanged(const UIntera
 	}
 }
 
-EAIInteractionType UST_AIManagerSubsystem::GetInteractionTypeByClass(TSubclassOf<UBaseInteractionAction> ActionClass)
+EAIInteractionType UST_AIInteractionsManagerSubsystem::GetInteractionTypeByClass(TSubclassOf<UBaseInteractionAction> ActionClass)
 {
 	if (ActionClass->IsChildOf(UST_WeaponPickUpAction::StaticClass()))
 	{

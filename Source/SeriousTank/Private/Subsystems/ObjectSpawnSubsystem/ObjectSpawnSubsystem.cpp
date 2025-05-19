@@ -3,6 +3,7 @@
 #include "Engine/EngineBaseTypes.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
+#include "Subsystems/ObjectSpawnSubsystem/BaseObjectSpawner.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
 
 uint32 GetTypeHash(const FObjectSpawnManagerInfo& ObjectSpawnManagerInfo)
@@ -33,6 +34,7 @@ const UObjectSpawnManager* UObjectSpawnSubsystem::AddObjectSpawnManager(ESpawnOb
 	}
 
 	CurrentObjectSpawnManager->Initialize(SpawnObjectType, SpawnParameters, InSpawnManagerOwner);
+	CurrentObjectSpawnManager->OnSpawnerOwnerChangedDelegate.BindUObject(this, &ThisClass::OnSpawnerOwnerChanged);
 
 	return CurrentObjectSpawnManager;
 }
@@ -124,5 +126,25 @@ void UObjectSpawnSubsystem::OnObjectSpawned(AActor* SpawnedActor, ESpawnObjectTy
 	if (IsValid(AIPawn) && SpawnObjectType == ESpawnObjectType::AIPawn)
 	{
 		AIPawn->SpawnDefaultController();
+	}
+}
+
+void UObjectSpawnSubsystem::OnSpawnerOwnerChanged(ABaseObjectSpawner* ObjectSpawner, UObject* OldOwner, UObject* NewOwner)
+{
+	if (!IsValid(ObjectSpawner))
+	{
+		return;
+	}
+
+	UObjectSpawnManager* OldObjectSpawnManager = FindObjectSpawnManager(ObjectSpawner->GetSpawnObjectType(), OldOwner);
+	if (IsValid(OldObjectSpawnManager))
+	{
+		OldObjectSpawnManager->UnregisterSpawner(ObjectSpawner);
+	}
+
+	UObjectSpawnManager* NewObjectSpawnManager = FindObjectSpawnManager(ObjectSpawner->GetSpawnObjectType(), NewOwner);
+	if (IsValid(NewObjectSpawnManager))
+	{
+		NewObjectSpawnManager->RegisterSpawner(ObjectSpawner);
 	}
 }

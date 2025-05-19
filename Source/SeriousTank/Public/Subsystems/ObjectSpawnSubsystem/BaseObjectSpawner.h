@@ -9,6 +9,8 @@ enum class ESpawnObjectType : uint8;
 
 DECLARE_DELEGATE_TwoParams(FOnSpawnedObjectDestroyedDelegate, ABaseObjectSpawner*, AActor*);
 DECLARE_DELEGATE_TwoParams(FOnSetSpawerEnabledDelegate, ABaseObjectSpawner*, bool);
+DECLARE_DELEGATE_ThreeParams(FOnSpawnOwnerChanged, ABaseObjectSpawner*, UObject* /*OldOwner*/, UObject* /*NewOwner*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnSpawnerSpawnedObject, AActor*);
 
 UCLASS()
 class SERIOUSTANK_API ABaseObjectSpawner : public AActor
@@ -18,15 +20,18 @@ class SERIOUSTANK_API ABaseObjectSpawner : public AActor
 public:
 	FOnSpawnedObjectDestroyedDelegate OnSpawnedObjectDestroyedDelegate;
 	FOnSetSpawerEnabledDelegate OnSetSpawerEnabledDelegate;
+	FOnSpawnerSpawnedObject OnSpawnerSpawnedObjectDelegete;
+	FOnSpawnOwnerChanged OnSpawnOwnerChangedDelegate;
+
 protected:
 	UPROPERTY(EditAnywhere)
-	TArray<ESpawnObjectType> SpawnObjectTypes;
+	ESpawnObjectType SpawnObjectType;
 
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<AActor>> ClassesToSpawn;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<AActor> SpawnOwner;
+	TObjectPtr<UObject> SpawnOwner;
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxSpawnedObjects = 0;
@@ -41,8 +46,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	FORCEINLINE bool HasSpawnObjectType(ESpawnObjectType SpawnObjectType) { return SpawnObjectTypes.Contains(SpawnObjectType); }
 	FORCEINLINE const UObject* GetSpawnOwner() const { return SpawnOwner.Get(); }
+	void SetSpawnOwner(UObject* InSpawnOwner);
+
+	FORCEINLINE ESpawnObjectType GetSpawnObjectType() const { return SpawnObjectType; }
+	FORCEINLINE bool HasSpawnObjectType(ESpawnObjectType InSpawnObjectType) { return SpawnObjectType == InSpawnObjectType; }
 
 	FORCEINLINE int32 GetSpawnedObjectsCount() const { return SpawnedObjectsCount; }
 	FORCEINLINE int32 GetMaxObjectsCount() const { return MaxSpawnedObjects; }
