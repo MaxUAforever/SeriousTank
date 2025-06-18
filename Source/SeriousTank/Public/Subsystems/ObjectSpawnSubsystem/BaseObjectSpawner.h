@@ -25,6 +25,9 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere)
+	TObjectPtr<USceneComponent> SceneRootComponent;
+
+	UPROPERTY(EditAnywhere)
 	ESpawnObjectType SpawnObjectType;
 
 	UPROPERTY(EditAnywhere)
@@ -32,6 +35,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UObject> SpawnOwner;
+
+	UPROPERTY(EditAnywhere)
+	FName SpawnTag;
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxSpawnedObjects = 0;
@@ -42,22 +48,28 @@ protected:
 private:
 	int32 SpawnedObjectsCount = 0;
 
+public:
+	ABaseObjectSpawner();
+
 protected:
 	virtual void BeginPlay() override;
 
 public:
-	FORCEINLINE const UObject* GetSpawnOwner() const { return SpawnOwner.Get(); }
+	inline UObject* GetSpawnOwner() const { return SpawnOwner.Get(); }
 	void SetSpawnOwner(UObject* InSpawnOwner);
 
-	FORCEINLINE ESpawnObjectType GetSpawnObjectType() const { return SpawnObjectType; }
-	FORCEINLINE bool HasSpawnObjectType(ESpawnObjectType InSpawnObjectType) { return SpawnObjectType == InSpawnObjectType; }
+	inline FName GetSpawnTag() const { return SpawnTag; }
+	inline void SetSpawnTag(FName InSpawnTag) { SpawnTag = InSpawnTag; }
 
-	FORCEINLINE int32 GetSpawnedObjectsCount() const { return SpawnedObjectsCount; }
-	FORCEINLINE int32 GetMaxObjectsCount() const { return MaxSpawnedObjects; }
-	FORCEINLINE bool HasMaxObjectsCount() const { return MaxSpawnedObjects > 0 && SpawnedObjectsCount >= MaxSpawnedObjects; }
+	inline ESpawnObjectType GetSpawnObjectType() const { return SpawnObjectType; }
+	inline bool HasSpawnObjectType(ESpawnObjectType InSpawnObjectType) { return SpawnObjectType == InSpawnObjectType; }
 
-	FORCEINLINE bool IsEnabled() const { return bIsEnabled; }
-	FORCEINLINE void SetIsEnabled(bool bInIsEnabled);
+	inline int32 GetSpawnedObjectsCount() const { return SpawnedObjectsCount; }
+	inline int32 GetMaxObjectsCount() const { return MaxSpawnedObjects; }
+	inline bool HasMaxObjectsCount() const { return MaxSpawnedObjects > 0 && SpawnedObjectsCount >= MaxSpawnedObjects; }
+
+	inline bool IsEnabled() const { return bIsEnabled; }
+	inline void SetIsEnabled(bool bInIsEnabled);
 
 	bool CanSpawnObject() const;
 

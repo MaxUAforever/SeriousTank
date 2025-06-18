@@ -1,0 +1,82 @@
+#include "Subsystems/QuestSubsystem/Tasks/ST_QuestTask_AITeamMatch.h"
+
+#include "Engine/World.h"
+#include "Subsystems/AIManagerSubsystem/ST_AITeamsManagerSubsystem.h"
+#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
+#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
+#include "Subsystems/QuestSubsystem/Tasks/Data/ST_AITeamMatchTaskInfoDataAsset.h"
+
+void UST_QuestTask_AITeamMatch::FillTaskInfo(const UQuestTaskInfoDataAsset* QuestInfoDataAsset)
+{
+	const UST_AITeamMatchTaskInfoDataAsset* AreaClearingDataAsset = Cast<UST_AITeamMatchTaskInfoDataAsset>(QuestInfoDataAsset);
+	if (!IsValid(AreaClearingDataAsset))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UST_QuestTask_AIAreaClearing::FillQuestInfo: AIAreaClearingTaskInfoDataAsset is not valid!"));
+		return;
+	}
+
+	RoundsToWin = AreaClearingDataAsset->RoundsToWin;
+	for (uint8 TeamID : AreaClearingDataAsset->TeamIDs)
+	{
+		TeamScores.Add({ TeamID, 0 });
+	}
+}
+
+void UST_QuestTask_AITeamMatch::OnTaskStarted()
+{
+	CurrentRound = 0;
+	for (auto& [TeamID, TeamScore] : TeamScores)
+	{
+		TeamScore = 0;
+	}
+
+	CachedAITeamsManagerSubsystem = GetWorld()->GetSubsystem<UST_AITeamsManagerSubsystem>();
+	if (!IsValid(CachedAITeamsManagerSubsystem))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UST_QuestTask_AITeamMatch::StartNextRound: AITeamsManagerSubsystem is nullptr!"));
+		return;
+	}
+
+	CachedAITeamsManagerSubsystem->OnTeamMemberDestroyedDelegate.AddUObject(this, &ThisClass::OnTeamMemberDestroyed);
+
+	StartNextRound();
+}
+
+void UST_QuestTask_AITeamMatch::OnTaskCompleted(EQuestCompleteRelust CompleteResult)
+{
+
+}
+
+void UST_QuestTask_AITeamMatch::StartNextRound()
+{
+	if (!IsValid(CachedAITeamsManagerSubsystem))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UST_QuestTask_AITeamMatch::StartNextRound: AITeamsManagerSubsystem is nullptr!"));
+		return;
+	}
+
+	CachedAITeamsManagerSubsystem->RespawnAllTeamsMembers();
+}
+
+void UST_QuestTask_AITeamMatch::OnTeamMemberDestroyed(uint8 TeamId, const AActor* DestroyedActor)
+{
+	if (!IsValid(CachedAITeamsManagerSubsystem))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UST_QuestTask_AITeamMatch::OnTeamMemberDestroyed: AITeamsManagerSubsystem is nullptr!"));
+		return;
+	}
+
+	if (CachedAITeamsManagerSubsystem->GetActiveTeamMembersCount(TeamId) <= 0)
+	{
+		TeamScores[TeamId] += 1;
+		if (TeamScores[TeamId] >= RoundsToWin)
+		{
+			FinishTask(EQuestCompleteRelust::Succeeded);
+		}
+		else
+		{
+			++CurrentRound;
+			StartNextRound();
+		}
+	}
+}

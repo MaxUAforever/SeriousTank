@@ -25,7 +25,7 @@ void UST_HealthComponent::AddHealthValue(float DeltaHealthValue)
 
 	if (FMath::IsNearlyZero(CurrentHealthValue))
 	{
-		OnOwnerKilledDelegate.Broadcast();
+		OnOwnerKilledDelegate.Broadcast(GetOwner());
 	}
 }
 

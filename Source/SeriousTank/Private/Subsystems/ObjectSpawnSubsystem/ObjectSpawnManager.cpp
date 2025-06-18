@@ -5,7 +5,7 @@
 #include "Subsystems/ObjectSpawnSubsystem/BaseObjectSpawner.h"
 #include "TimerManager.h"
 
-void UObjectSpawnManager::Initialize(const ESpawnObjectType InSpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner)
+void UObjectSpawnManager::Initialize(const ESpawnObjectType InSpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner, FName InSpawnTag)
 {
 	const UWorld* World = GetWorld();
 	if (!World)
@@ -16,6 +16,7 @@ void UObjectSpawnManager::Initialize(const ESpawnObjectType InSpawnObjectType, c
 
 	SpawnObjectType = InSpawnObjectType;
 	SpawnOwner = SpawnerOwner;
+	SpawnTag = InSpawnTag;
 
 	TArray<AActor*> FoundSpawningActors;
 	UGameplayStatics::GetAllActorsOfClass(World, ABaseObjectSpawner::StaticClass(), FoundSpawningActors);
@@ -51,16 +52,16 @@ void UObjectSpawnManager::RegisterSpawner(ABaseObjectSpawner* SpawningActor)
 		return;
 	}
 
+	const bool bHasNeededTag = SpawningActor->GetSpawnTag() == SpawnTag;
 	const bool bIsNeededOwner = SpawningActor->GetSpawnOwner() == SpawnOwner || (SpawningActor->GetSpawnOwner() == nullptr && SpawnOwner->IsA<UWorld>());
-	if (!bIsNeededOwner)
+	if (!bHasNeededTag || !bIsNeededOwner)
 	{
 		return;
 	}
 
 	SpawningActor->OnSetSpawerEnabledDelegate.BindUObject(this, &ThisClass::OnSpawnerSetEnabled);
 	SpawningActor->OnSpawnedObjectDestroyedDelegate.BindUObject(this, &ThisClass::OnSpawnedObjectDestroyed);
-	SpawningActor->OnSpawnOwnerChangedDelegate.BindUObject(this, &ThisClass::OnSpawnerOwnerChanged);
-
+	
 	if (SpawningActor->CanSpawnObject())
 	{
 		AvailableSpawnActors.Add(SpawningActor);
@@ -76,7 +77,6 @@ void UObjectSpawnManager::UnregisterSpawner(ABaseObjectSpawner* SpawningActor)
 
 	SpawningActor->OnSetSpawerEnabledDelegate.Unbind();
 	SpawningActor->OnSpawnedObjectDestroyedDelegate.Unbind();
-	SpawningActor->OnSpawnOwnerChangedDelegate.Unbind();
 
 	AvailableSpawnActors.Remove(SpawningActor);
 }
@@ -145,6 +145,23 @@ void UObjectSpawnManager::SetMaxObjectsCount(int32 Count)
 AActor* UObjectSpawnManager::SpawnRandomObject()
 {
 	return SpawnRandomObject(FMath::RandRange(0, AvailableSpawnActors.Num() - 1));
+}
+
+TArray<AActor*> UObjectSpawnManager::SpawnInAllAvailabeSpawners()
+{
+	TArray<AActor*> SpawnedObjects;
+	if (AvailableSpawnActors.Num() <= 0)
+	{
+		return SpawnedObjects;
+	}
+
+	SpawnedObjects.Reserve(AvailableSpawnActors.Num());
+	for (int32 Index = 0; Index < AvailableSpawnActors.Num(); ++Index)
+	{
+		SpawnedObjects.Add(SpawnRandomObject(Index));
+	}
+
+	return SpawnedObjects;
 }
 
 AActor* UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
@@ -262,11 +279,6 @@ void UObjectSpawnManager::OnSpawnedObjectDestroyed(ABaseObjectSpawner* SpawningA
 	}
 }
 
-void UObjectSpawnManager::OnSpawnerOwnerChanged(ABaseObjectSpawner* SpawningActor, UObject* OldOwner, UObject* NewOwner)
-{
-	OnSpawnerOwnerChangedDelegate.ExecuteIfBound(SpawningActor, OldOwner, NewOwner);
-}
-
 void UObjectSpawnManager::SetSpawnTimerEnabled(bool bIsEnabled)
 {
 	UWorld* World = GetWorld();
@@ -298,9 +310,4 @@ void UObjectSpawnManager::SetSpawnTimerEnabled(bool bIsEnabled)
 	{
 		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
 	}
-}
-
-void UObjectSpawnManager::UpdateAvailableSpawners()
-{
-
 }

@@ -104,7 +104,7 @@ void UST_QuestTask_AIAreaClearing::OnEnemySpawned(ABaseObjectSpawner* ObjectSpaw
 		return;
 	}
 
-	auto OnEnemyKilledLambda = [this, HealthComponent]()
+	auto OnEnemyKilledLambda = [this, HealthComponent](AActor* Actor)
 	{
 		if (IsValid(HealthComponent))
 		{

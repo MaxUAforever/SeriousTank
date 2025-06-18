@@ -9,6 +9,11 @@ AST_AITeamPawnSpawner::AST_AITeamPawnSpawner()
 	TeamOwnershipComponent = CreateDefaultSubobject<UST_TeamOwnershipComponent>("TeamOwnershipComponent");
 }
 
+uint8 AST_AITeamPawnSpawner::GetTeamId() const
+{
+	return IsValid(TeamOwnershipComponent) ? TeamOwnershipComponent->GetGenericTeamId().GetId() : 0;
+}
+
 void AST_AITeamPawnSpawner::BeginPlay()
 {
 	Super::BeginPlay();
@@ -16,12 +21,14 @@ void AST_AITeamPawnSpawner::BeginPlay()
 	const UWorld* World = GetWorld();
 	if (!IsValid(World))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Invalid World context"), *GetClass()->GetName(), TEXT("BeginPlay"));
 		return;
 	}
 
 	UST_AITeamsManagerSubsystem* AITeamsManagerSubsystem = World->GetSubsystem<UST_AITeamsManagerSubsystem>();
-	if (IsValid(AITeamsManagerSubsystem))
+	if (!IsValid(AITeamsManagerSubsystem))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Invalid AITeamsManagerSubsystem context"), *GetClass()->GetName(), TEXT("BeginPlay"));
 		return;
 	}
 

@@ -13,6 +13,8 @@ class SERIOUSTANK_API AST_AITeamPawnSpawner : public ABaseObjectSpawner
 public:
 	AST_AITeamPawnSpawner();
 
+	uint8 GetTeamId() const;
+
 protected:
 	virtual void BeginPlay() override;
 

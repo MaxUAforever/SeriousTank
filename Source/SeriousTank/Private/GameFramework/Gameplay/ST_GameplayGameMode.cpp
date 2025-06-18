@@ -115,6 +115,6 @@ void AST_GameplayGameMode::SetupSpawnSubsystem()
 	
 	for (const FObjectTypeSpawnParams& TypeSpawnParams : ObjectsSpawnParameters)
 	{
-		ObjectSpawnSubsystem->AddObjectSpawnManager(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
+		ObjectSpawnSubsystem->AddDefaultSpawnParameters(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
 	}
 }
