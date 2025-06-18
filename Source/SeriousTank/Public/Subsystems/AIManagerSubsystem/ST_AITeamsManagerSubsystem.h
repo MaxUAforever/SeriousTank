@@ -63,7 +63,7 @@ private:
 	void OnTeamMemberDestroyed(AActor* DestroyedActor);
 
 	bool HasAliveTeamMembers(uint8 TeamId) const;
-	bool ResetTeamMemberState(const FTeamMemberInfo& MemberToReset);
+	bool ResetTeamMemberState(FTeamMemberInfo& MemberToReset);
 
 private:
 	TMap<uint8, FTeamInfo> TeamsInfo;

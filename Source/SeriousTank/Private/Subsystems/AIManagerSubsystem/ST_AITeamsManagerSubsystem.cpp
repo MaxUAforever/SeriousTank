@@ -68,14 +68,35 @@ const TSet<FTeamMemberInfo>* UST_AITeamsManagerSubsystem::GetTeamMembers(uint8 T
 
 int32 UST_AITeamsManagerSubsystem::GetActiveTeamMembersCount(uint8 TeamId) const
 {
+	int32 Result = 0;
 	const TSet<FTeamMemberInfo>* TeamMembers = GetTeamMembers(TeamId);
 	if (TeamMembers == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Team with ID %d not found"), *GetClass()->GetName(), TEXT("GetActiveTeamMembersCount"), TeamId);
-		return -1;
+		return Result;
 	}
 
-	return TeamMembers->Num();
+	for (const FTeamMemberInfo& Member : *TeamMembers)
+	{
+		if (!IsValid(Member.PossessedPawn))
+		{
+			continue;
+		}
+
+		const UST_HealthComponent* HealthComponent = Member.PossessedPawn->GetComponentByClass<UST_HealthComponent>();
+		if (!IsValid(HealthComponent))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s::%s: Team member %s does not have a valid HealthComponent"), *GetClass()->GetName(), TEXT("GetActiveTeamMembersCount"), *Member.PossessedPawn->GetName());
+			continue;
+		}
+
+		if (HealthComponent->GetCurrentHealth() > 0.f)
+		{
+			Result++;
+		}
+	}
+
+	return Result;
 }
 
 void UST_AITeamsManagerSubsystem::RespawnAllTeamsMembers()
@@ -86,9 +107,9 @@ void UST_AITeamsManagerSubsystem::RespawnAllTeamsMembers()
 		return;
 	}
 
-	for (const auto& [TeamId, TeamInfo] : TeamsInfo)
+	for (auto& [TeamId, TeamInfo] : TeamsInfo)
 	{
-		for (const FTeamMemberInfo& Member : TeamInfo.TeamMembers)
+		for (FTeamMemberInfo& Member : TeamInfo.TeamMembers)
 		{
 			const bool bResetSuccessfully = ResetTeamMemberState(Member);
 			
@@ -182,38 +203,10 @@ void UST_AITeamsManagerSubsystem::OnTeamMemberDestroyed(AActor* DestroyedActor)
 
 bool UST_AITeamsManagerSubsystem::HasAliveTeamMembers(uint8 TeamId) const
 {
-	const TSet<FTeamMemberInfo>* TeamMembers = GetTeamMembers(TeamId);
-	if (TeamMembers == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Team with ID %d not found"), *GetClass()->GetName(), TEXT("HasAliveTeamMembers"), TeamId);
-		return false;
-	}
-
-	for (const FTeamMemberInfo& Member : *TeamMembers)
-	{
-		if (!IsValid(Member.PossessedPawn))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s::%s: Team member %s is not valid"), *GetClass()->GetName(), TEXT("HasAliveTeamMembers"), *Member.PossessedPawn->GetName());
-			continue;
-		}
-
-		const UST_HealthComponent* HealthComponent = Member.PossessedPawn->GetComponentByClass<UST_HealthComponent>();
-		if (!IsValid(HealthComponent))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s::%s: Team member %s does not have a valid HealthComponent"), *GetClass()->GetName(), TEXT("HasAliveTeamMembers"), *Member.PossessedPawn->GetName());
-			continue;
-		}
-
-		if (HealthComponent->GetCurrentHealth() > 0.f)
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return GetActiveTeamMembersCount(TeamId) > 0;
 }
 
-bool UST_AITeamsManagerSubsystem::ResetTeamMemberState(const FTeamMemberInfo& MemberToReset)
+bool UST_AITeamsManagerSubsystem::ResetTeamMemberState(FTeamMemberInfo& MemberToReset)
 {
 	if (!IsValid(MemberToReset.PossessedPawn) || !IsValid(MemberToReset.Controller))
 	{
@@ -231,8 +224,13 @@ bool UST_AITeamsManagerSubsystem::ResetTeamMemberState(const FTeamMemberInfo& Me
 	if (HealthComponent->GetCurrentHealth() > 0.f)
 	{
 		HealthComponent->AddHealthValue(HealthComponent->GetMaxHealth());
+		MemberToReset.PossessedPawn->SetActorLocation(MemberToReset.Spawner->GetActorLocation());
+	}
+	else
+	{
+		MemberToReset.PossessedPawn->Destroy();
+		MemberToReset.PossessedPawn = nullptr;
 	}
 
-	MemberToReset.PossessedPawn->SetActorLocation(MemberToReset.Spawner->GetActorLocation());
 	return true;
 }

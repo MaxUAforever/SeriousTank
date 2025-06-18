@@ -155,10 +155,11 @@ TArray<AActor*> UObjectSpawnManager::SpawnInAllAvailabeSpawners()
 		return SpawnedObjects;
 	}
 
-	SpawnedObjects.Reserve(AvailableSpawnActors.Num());
-	for (int32 Index = 0; Index < AvailableSpawnActors.Num(); ++Index)
+	const int32 AvailableSpawnersCount = AvailableSpawnActors.Num();
+	SpawnedObjects.Reserve(AvailableSpawnersCount);
+	for (int32 Index = 0; Index < AvailableSpawnersCount; ++Index)
 	{
-		SpawnedObjects.Add(SpawnRandomObject(Index));
+		SpawnedObjects.Add(SpawnRandomObject());
 	}
 
 	return SpawnedObjects;
