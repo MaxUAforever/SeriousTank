@@ -1,6 +1,6 @@
 #include "Subsystems/AIManagerSubsystem/ST_AITeamsManagerSubsystem.h"
 
-#include "AIController.h"
+#include "GameFramework/AI/ST_AIController.h"
 #include "Components/Teams/ST_TeamOwnershipComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Subsystems/AIManagerSubsystem/Actors/ST_AITeamPawnSpawner.h"
@@ -117,17 +117,19 @@ void UST_AITeamsManagerSubsystem::OnTeamMemberSpawned(ABaseObjectSpawner* Object
 		return;
 	}
 
-	AAIController* AIController = Cast<AAIController>(SpawnedPawn->GetController());
+	AST_AIController* AIController = Cast<AST_AIController>(SpawnedPawn->GetController());
 	if (!IsValid(AIController))
 	{
 		SpawnedPawn->SpawnDefaultController();
 
-		AIController = Cast<AAIController>(SpawnedPawn->GetController());
+		AIController = Cast<AST_AIController>(SpawnedPawn->GetController());
 		if (!IsValid(AIController))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s::%s: SpawnedPawn does not have a valid AIController"), *GetClass()->GetName(), TEXT("OnTeamMemberSpawned"));
 			return;
 		}
+
+		AIController->SetEnemyType(EEnemyType::Team);
 	}
 
 	UST_HealthComponent* HealthComponent = SpawnedPawn->GetComponentByClass<UST_HealthComponent>();

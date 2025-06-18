@@ -308,8 +308,30 @@ void AST_AIController::OnTargetDetected(AActor* Target)
 		return;
 	}
 		
-	if (TargetPawn->IsPlayerControlled())
+	bool bIsAttackTarget = false;
+	if (EnemyType == EEnemyType::Player)
 	{
+		bIsAttackTarget = TargetPawn->IsPlayerControlled();
+	}
+	else if (EnemyType == EEnemyType::Team)
+	{
+		IGenericTeamAgentInterface* TeamAgentInterface = Cast<IGenericTeamAgentInterface>(TargetPawn->GetController());
+		if (TeamAgentInterface)
+		{
+			const uint8 TargetTeamId = TeamAgentInterface->GetGenericTeamId().GetId();
+			const uint8 MyTeamId = GetGenericTeamId().GetId();
+			bIsAttackTarget = TargetTeamId != MyTeamId;
+		}
+	}
+
+	if (bIsAttackTarget)
+	{
+		UST_HealthComponent* TargetHealthComponent = TargetPawn->GetComponentByClass<UST_HealthComponent>();
+		if (IsValid(TargetHealthComponent) && TargetHealthComponent->GetCurrentHealth() <= 0.f)
+		{
+			return;
+		}
+
 		AttackTarget = TargetPawn;
 
 		OnAttackTargetChanged(Target);
@@ -357,6 +379,32 @@ void AST_AIController::OnTargetLost(AActor* Target)
 	}
 }
 
+void AST_AIController::UpdateTargetDetection()
+{
+	TArray<AActor*> KnownActors;
+	if (ViewPerceptionType == EViewPerceptionType::PlayerView)
+	{
+		if (UST_ViewAreaBoxComponent* ViewAreaBoxComponent = Cast<UST_ViewAreaBoxComponent>(GetPawn()->GetComponentByClass(UST_ViewAreaBoxComponent::StaticClass())))
+		{
+			ViewAreaBoxComponent->GetOverlappingActors(KnownActors);
+		}
+	}
+	else
+	{
+		GetPerceptionComponent()->GetKnownPerceivedActors(UAISense_Sight::StaticClass(), KnownActors);
+	}
+
+	for (AActor* Actor : KnownActors)
+	{
+		OnTargetDetected(Actor);
+
+		if (IsValid(AttackTarget))
+		{
+			return;
+		}
+	}
+}
+
 void AST_AIController::OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType)
 {
 	if (FMath::IsNearlyZero(CurrentHealthValue))
@@ -372,12 +420,40 @@ void AST_AIController::OnHealthChanged(float CurrentHealthValue, EHealthChanging
 	}
 }
 
+void AST_AIController::OnAttackTargetHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType)
+{
+	if (!IsValid(AttackTarget))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AST_AIController::OnAttackTargetHealthChanged: AttackTarget is not valid!"));
+		return;
+	}
+
+	if (FMath::IsNearlyZero(CurrentHealthValue))
+	{
+		AttackTarget = nullptr;
+		OnAttackTargetChanged(nullptr);
+
+		UpdateTargetDetection();
+	}
+}
+
 void AST_AIController::OnAttackTargetChanged(AActor* Target)
 {
-	GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
-	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, true);
+	const APawn* OldAttackTarget = Cast<APawn>(GetBlackboardComponent()->GetValueAsObject(BBAttackTargetKey));
+	if (IsValid(OldAttackTarget))
+	{
+		if (UST_HealthComponent* HealthComponent = OldAttackTarget->GetComponentByClass<UST_HealthComponent>())
+		{
+			HealthComponent->OnHealthValueChangedDelegate.RemoveAll(this);
+		}
+	}
+
 	IST_AIPawnInterface* AIPawn = Cast<IST_AIPawnInterface>(GetPawn());
-	if (!IsValid(Target) || AIPawn == nullptr)
+
+	GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, AIPawn != nullptr && IsValid(Target));
+
+	if (!IsValid(Target))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(AimUpdateTimerHandle);
 		ClearFocus(EAIFocusPriority::Gameplay);
@@ -386,7 +462,16 @@ void AST_AIController::OnAttackTargetChanged(AActor* Target)
 	}
 
 	SetFocus(Target);
-	GetWorld()->GetTimerManager().SetTimer(AimUpdateTimerHandle, this, &ThisClass::AimToTarget, 0.25f, true);
+
+	if (AIPawn != nullptr)
+	{
+		GetWorld()->GetTimerManager().SetTimer(AimUpdateTimerHandle, this, &ThisClass::AimToTarget, 0.25f, true);
+	}
+
+	if (UST_HealthComponent* HealthComponent = Target->GetComponentByClass<UST_HealthComponent>())
+	{
+		HealthComponent->OnHealthValueChangedDelegate.AddUObject(this, &ThisClass::OnAttackTargetHealthChanged);
+	}
 }
 
 void AST_AIController::AimToTarget()

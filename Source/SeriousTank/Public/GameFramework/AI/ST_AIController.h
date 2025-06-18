@@ -16,6 +16,13 @@ enum class EViewPerceptionType : uint8
 	AIPerception
 };
 
+UENUM(BlueprintType)
+enum class EEnemyType : uint8
+{
+	Player,
+	Team
+};
+
 UCLASS()
 class SERIOUSTANK_API AST_AIController : public AAIController
 {
@@ -23,6 +30,8 @@ class SERIOUSTANK_API AST_AIController : public AAIController
 	
 public:
 	AST_AIController();
+
+	inline void SetEnemyType(EEnemyType NewEnemyType) { EnemyType = NewEnemyType; };
 
 protected:
 	virtual void BeginPlay() override;
@@ -57,7 +66,10 @@ private:
 
 	void OnTargetDetected(AActor* Target);
 	void OnTargetLost(AActor* OtherActor);
+	void UpdateTargetDetection();
+
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
+	void OnAttackTargetHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
 
 	void OnAttackTargetChanged(AActor* Target);
 	void AimToTarget();
@@ -83,6 +95,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ViewPerceptionType==EViewPerceptionType::AIPerception", ClampMin = "0.0"))
 	float PerceptionSightRadiusScale = 1.f;
+
+	UPROPERTY(EditAnywhere)
+	EEnemyType EnemyType = EEnemyType::Player;
 
 	UPROPERTY(EditAnywhere)
 	bool bCanPossessVehicles = true;

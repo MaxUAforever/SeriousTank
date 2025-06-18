@@ -50,5 +50,7 @@ EBTNodeResult::Type UST_BTTask_Interact::ExecuteTask(UBehaviorTreeComponent& Own
 		OwnerComp.GetBlackboardComponent()->SetValueAsFloat(BBInteractionActivationTimeKey, IsValid(InterruptibleAction) ? InterruptibleAction->GetTotalActivationTime() : 0.f);
 	}
 
+	Controller->ClearFocus(EAIFocusPriority::Gameplay);
+
 	return EBTNodeResult::Succeeded;
 }
