@@ -59,17 +59,16 @@ void AST_AIController::OnPossess(APawn* InPawn)
 	}
 
 	AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(UGameplayStatics::GetGameState(this));
-	const bool bCanStart = IsValid(GameplayGameState) ? GameplayGameState->GetInternalGameState() == EInternalGameState::GameInProgress : World->HasBegunPlay();
 	
+	GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::SetupPawnSettings);
+
+	const bool bCanStart = IsValid(GameplayGameState) ? GameplayGameState->GetInternalGameState() == EInternalGameState::GameInProgress : World->HasBegunPlay();
 	if (bCanStart)
 	{
 		SetupPawnSettings();
 	}
-	else if (IsValid(GameplayGameState))
-	{
-		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::SetupPawnSettings);
-	}
-	else
+	
+	if (!IsValid(GameplayGameState))
 	{
 		GetWorld()->OnWorldBeginPlay.AddUObject(this, &ThisClass::SetupPawnSettings);
 	}
@@ -103,6 +102,12 @@ void AST_AIController::SetupPawnSettings()
 			PatrollingComponent->OnIsActiveChanged.AddUObject(this, &ThisClass::OnPatrollingStateChaned);
 		}
 	}
+
+	AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(UGameplayStatics::GetGameState(this));
+	GameplayGameState->OnPreStartCountdownEndedDelegate.RemoveAll(this);
+
+	GameplayGameState->OnPreStartCountdownStartedDelegate.AddUObject(this, &ThisClass::StopBehaviourTree);
+	GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::StartBehaviourTree);
 }
 
 void AST_AIController::SetupPerception(APawn* InPawn)
@@ -409,13 +414,7 @@ void AST_AIController::OnHealthChanged(float CurrentHealthValue, EHealthChanging
 {
 	if (FMath::IsNearlyZero(CurrentHealthValue))
 	{
-		UBehaviorTreeComponent* BTComponent = GetComponentByClass<UBehaviorTreeComponent>();
-		if (!BTComponent)
-		{
-			return;
-		}
-
-		BTComponent->StopTree();
+		StopBehaviourTree();
 		ClearFocus(EAIFocusPriority::Gameplay);
 	}
 }
@@ -496,5 +495,30 @@ void AST_AIController::OnTargetVehicleTaken(APawn* InPawn, AController* OldContr
 	{
 		GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, nullptr);
 		InPawn->ReceiveControllerChangedDelegate.RemoveAll(this);
+	}
+}
+
+void AST_AIController::StartBehaviourTree()
+{
+	APawn* PossessedPawn = GetPawn();
+	if (!IsValid(PossessedPawn))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AST_AIController::StartBehaviourTree: PossessedPawn is not valid!"));
+		return;
+	}
+
+	UBehaviorTree* NeededBehaviorTree = PossessedPawn->IsA(AST_BaseVehicle::StaticClass()) ? TankBehaviourTree : DefaultBehaviourTree;
+	if (NeededBehaviorTree != nullptr)
+	{
+		RunBehaviorTree(NeededBehaviorTree);
+	}
+}
+
+void AST_AIController::StopBehaviourTree()
+{
+	UBehaviorTreeComponent* BTComponent = GetComponentByClass<UBehaviorTreeComponent>();
+	if (BTComponent && BTComponent->IsRunning())
+	{
+		BTComponent->StopTree();
 	}
 }

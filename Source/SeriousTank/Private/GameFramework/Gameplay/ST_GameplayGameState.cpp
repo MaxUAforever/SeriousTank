@@ -96,6 +96,26 @@ void AST_GameplayGameState::SwitchToNextState()
 			break;
 		}
 	}
+
+	OnInternalGameStateChangedDelegate.Broadcast(InternalGameState);
+}
+
+void AST_GameplayGameState::SwitchToSpecificState(EInternalGameState NewState)
+{
+	TMap<EInternalGameState, EInternalGameState> PreviousStateMap = {
+		{EInternalGameState::PreGameCountdown, EInternalGameState::WaitingToInitialize},
+		{EInternalGameState::GameInProgress, EInternalGameState::PreGameCountdown},
+		{EInternalGameState::FinalGameResults, EInternalGameState::GameInProgress},
+		{EInternalGameState::LeavingGame, EInternalGameState::FinalGameResults}
+	};
+
+	if (NewState == InternalGameState || !PreviousStateMap.Contains(NewState))
+	{
+		return;
+	}
+
+	InternalGameState = *PreviousStateMap.Find(NewState);
+	SwitchToNextState();
 }
 
 void AST_GameplayGameState::OnStateWaitingToInitializeStarted()
@@ -161,6 +181,8 @@ void AST_GameplayGameState::OnStatePreGameCountdownStarted()
 	if (PreStartCountdownTime > 0.f)
 	{
 		World->GetTimerManager().SetTimer(PreStartCountdownTimer, this, &ThisClass::OnPreGameCountdownFinished, PreStartCountdownTime, false);
+		
+		OnPreStartCountdownStartedDelegate.Broadcast();
 	}
 	else
 	{

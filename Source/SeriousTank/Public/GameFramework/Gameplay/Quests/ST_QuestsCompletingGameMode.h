@@ -18,6 +18,8 @@ public:
 protected:
 	virtual void OnPreStartCountdownEneded() override;
 
+	virtual void OnQuestsStarted() {};
+
 private:
 	void StartQuests();
 	

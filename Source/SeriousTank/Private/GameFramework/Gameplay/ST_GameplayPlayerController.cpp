@@ -22,6 +22,7 @@ void AST_GameplayPlayerController::BeginPlay()
 	{
 		if (AST_GameplayGameState* GameState = World->GetGameState<AST_GameplayGameState>())
 		{
+			GameState->OnPreStartCountdownStartedDelegate.AddUObject(this, &ThisClass::SetPawnInputEnabled, false);
 			GameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::SetPawnInputEnabled, true);
 			GameState->OnGameIsOver.AddUObject(this, &ThisClass::SetOnlyUIInputEnabled, true);
 		}

@@ -77,6 +77,9 @@ private:
 	UFUNCTION()
 	void OnTargetVehicleTaken(APawn* InPawn, AController* OldController, AController* NewController);
 
+	void StartBehaviourTree();
+	void StopBehaviourTree();
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* DefaultBehaviourTree;

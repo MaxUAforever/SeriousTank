@@ -14,4 +14,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Quest Settings")
 	TArray<uint8> TeamIDs;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Quest Settings")
+	int32 DelayBetweenRounds;
 };

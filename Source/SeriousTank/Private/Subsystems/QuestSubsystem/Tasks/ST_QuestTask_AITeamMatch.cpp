@@ -5,6 +5,7 @@
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 #include "Subsystems/QuestSubsystem/Tasks/Data/ST_AITeamMatchTaskInfoDataAsset.h"
+#include "TimerManager.h"
 
 void UST_QuestTask_AITeamMatch::FillTaskInfo(const UQuestTaskInfoDataAsset* QuestInfoDataAsset)
 {
@@ -16,6 +17,8 @@ void UST_QuestTask_AITeamMatch::FillTaskInfo(const UQuestTaskInfoDataAsset* Ques
 	}
 
 	RoundsToWin = AreaClearingDataAsset->RoundsToWin;
+	DelayBetweenRounds = AreaClearingDataAsset->DelayBetweenRounds;
+
 	for (uint8 TeamID : AreaClearingDataAsset->TeamIDs)
 	{
 		TeamScores.Add({ TeamID, 0 });
@@ -42,9 +45,19 @@ void UST_QuestTask_AITeamMatch::OnTaskStarted()
 	StartNextRound();
 }
 
-void UST_QuestTask_AITeamMatch::OnTaskCompleted(EQuestCompleteRelust CompleteResult)
+void UST_QuestTask_AITeamMatch::BeginDestroy()
 {
+	if (IsValid(CachedAITeamsManagerSubsystem))
+	{
+		CachedAITeamsManagerSubsystem->OnTeamMemberDestroyedDelegate.RemoveAll(this);
+	}
 
+	if (GetWorld() && GetWorld()->GetTimerManager().IsTimerActive(FinishRoundDelayTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FinishRoundDelayTimer);
+	}
+
+	Super::BeginDestroy();
 }
 
 void UST_QuestTask_AITeamMatch::StartNextRound()
@@ -55,6 +68,7 @@ void UST_QuestTask_AITeamMatch::StartNextRound()
 		return;
 	}
 
+	OnRoundStartedDelegate.Broadcast(CurrentRound);
 	CachedAITeamsManagerSubsystem->RespawnAllTeamsMembers();
 }
 
@@ -66,17 +80,28 @@ void UST_QuestTask_AITeamMatch::OnTeamMemberDestroyed(uint8 TeamId, const AActor
 		return;
 	}
 
-	if (CachedAITeamsManagerSubsystem->GetActiveTeamMembersCount(TeamId) <= 0)
+	if (CachedAITeamsManagerSubsystem->GetActiveTeamMembersCount(TeamId) > 0)
 	{
-		TeamScores[TeamId] += 1;
-		if (TeamScores[TeamId] >= RoundsToWin)
+		return;
+	}
+	
+	TeamScores[TeamId] += 1;
+	OnRoundFinishedDelegate.Broadcast(CurrentRound);
+
+	GetWorld()->GetTimerManager().SetTimer(FinishRoundDelayTimer, this, &ThisClass::OnNextRoundDelayFinished, DelayBetweenRounds, false);
+}
+
+void UST_QuestTask_AITeamMatch::OnNextRoundDelayFinished()
+{
+	for (auto& [TeamID, TeamScore] : TeamScores)
+	{
+		if (TeamScores[TeamID] >= RoundsToWin)
 		{
 			FinishTask(EQuestCompleteRelust::Succeeded);
-		}
-		else
-		{
-			++CurrentRound;
-			StartNextRound();
+			return;
 		}
 	}
+
+	++CurrentRound;
+	StartNextRound();
 }
