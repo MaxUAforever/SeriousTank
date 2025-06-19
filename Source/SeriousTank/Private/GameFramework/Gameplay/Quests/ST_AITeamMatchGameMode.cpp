@@ -1,9 +1,12 @@
 #include "GameFramework/Gameplay/Quests/ST_AITeamMatchGameMode.h"
 
+#include "Components/Teams/ST_TeamOwnershipComponent.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
+#include "GenericTeamAgentInterface.h"
 #include "QuestSubsystem/Public/QuestSubsystem.h"
+#include "Subsystems/AIManagerSubsystem/ST_AITeamsManagerSubsystem.h"
 #include "Subsystems/QuestSubsystem/Tasks/ST_QuestTask_AITeamMatch.h"
 
 void AST_AITeamMatchGameMode::OnQuestsStarted()
@@ -36,4 +39,57 @@ void AST_AITeamMatchGameMode::OnRoundStarted(int32 RoundNumber)
 	{
 		GameplayGameState->SwitchToSpecificState(EInternalGameState::PreGameCountdown);
 	}
+}
+
+void AST_AITeamMatchGameMode::OnPostLogin(AController* NewPlayer)
+{
+	UST_AITeamsManagerSubsystem* AITeamsManagerSubsystem = GetWorld()->GetSubsystem<UST_AITeamsManagerSubsystem>();
+	if (!IsValid(AITeamsManagerSubsystem) || !IsValid(NewPlayer))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::OnPostLogin: Invalid AITeamsManagerSubsystem or NewPlayer"));
+		return;
+	}
+	
+	if (!IsValid(NewPlayer->GetPawn()))
+	{
+		static TMap<AController*, FDelegateHandle> OnPostLoginHandles;
+		auto OnNewPawnSet = [this, NewPlayer](APawn* NewPawn)
+		{
+			FDelegateHandle* PlayerDelegateHandle = OnPostLoginHandles.Find(NewPlayer);
+			if (PlayerDelegateHandle != nullptr && PlayerDelegateHandle->IsValid())
+			{
+				NewPlayer->GetOnNewPawnNotifier().Remove(*PlayerDelegateHandle);
+				OnPostLoginHandles.Remove(NewPlayer);
+			}
+			
+			OnPostLogin(NewPlayer);
+		};
+
+		OnPostLoginHandles.Add(NewPlayer, NewPlayer->GetOnNewPawnNotifier().AddLambda(OnNewPawnSet));
+		return;
+	}
+
+	TWeakObjectPtr<AActor> SpawnPoint = NewPlayer->StartSpot;
+	if (!SpawnPoint.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::OnPostLogin: Invalid SpawnPoint for NewPlayer"));
+		return;
+	}
+
+	UST_TeamOwnershipComponent* TeamOwnershipComponent = SpawnPoint->GetComponentByClass<UST_TeamOwnershipComponent>();
+	if (!IsValid(TeamOwnershipComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::OnPostLogin: Invalid TeamOwnershipComponent on SpawnPoint"));
+		return;
+	}
+
+	const FGenericTeamId& TeamId = TeamOwnershipComponent->GetGenericTeamId();
+
+	IGenericTeamAgentInterface* TeamAgentInterface = Cast<IGenericTeamAgentInterface>(NewPlayer);
+	if (TeamAgentInterface != nullptr)
+	{
+		TeamAgentInterface->SetGenericTeamId(TeamId);
+	}
+
+	AITeamsManagerSubsystem->AddTeamMember(TeamId.GetId(), { NewPlayer->GetPawn(), NewPlayer, SpawnPoint.Get()});
 }

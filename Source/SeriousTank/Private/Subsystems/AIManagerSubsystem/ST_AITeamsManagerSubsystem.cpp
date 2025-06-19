@@ -35,23 +35,12 @@ void UST_AITeamsManagerSubsystem::RegisterTeamSpawner(AST_AITeamPawnSpawner* AIT
 		return;
 	}
 
-	const FName TeamTag = (AITeamPawnSpawner->GetSpawnTag() == NAME_None)
-		? FName(*FString::Printf(TEXT("Team_%d"), AITeamPawnSpawner->GetTeamId()))
-		: AITeamPawnSpawner->GetSpawnTag();
+	const FName TeamTag = FName(*FString::Printf(TEXT("Team_%d"), AITeamPawnSpawner->GetTeamId()));
 
 	AITeamPawnSpawner->SetSpawnTag(TeamTag);
 	AITeamPawnSpawner->SetSpawnOwner(this);
 
-	if (!TeamsInfo.Contains(AITeamPawnSpawner->GetTeamId()))
-	{
-		TeamsInfo.Add(AITeamPawnSpawner->GetTeamId());
-
-		FOnObjectSpawnedDelegate* OnObjectSpawnedDelegate = CachedObjectSpawnSubsystem->GetManagerObjectSpawnedDelegate(ESpawnObjectType::AIPawn, this, TeamTag);
-		if (OnObjectSpawnedDelegate != nullptr)
-		{
-			OnObjectSpawnedDelegate->AddUObject(this, &ThisClass::OnTeamMemberSpawned);
-		}
-	}
+	AddTeam(AITeamPawnSpawner->GetTeamId());
 }
 
 const TSet<FTeamMemberInfo>* UST_AITeamsManagerSubsystem::GetTeamMembers(uint8 TeamId) const
@@ -127,6 +116,26 @@ void UST_AITeamsManagerSubsystem::RespawnAllTeamsMembers()
 			UE_LOG(LogTemp, Warning, TEXT("%s::%s: Failed to respawn team members for team ID %d"), *GetClass()->GetName(), TEXT("RespawnAllTeamsMembers"), TeamId);
 		}
 	}
+}
+
+void UST_AITeamsManagerSubsystem::AddTeamMember(uint8 TeamId, const FTeamMemberInfo& NewTeamMemberInfo)
+{
+	FTeamInfo* TeamInfo = TeamsInfo.Find(TeamId);
+	if (TeamInfo == nullptr)
+	{
+		TeamInfo = &AddTeam(TeamId);
+	}
+
+	for (const FTeamMemberInfo& TeamMemberInfo : TeamInfo->TeamMembers)
+	{
+		if (TeamMemberInfo.Controller == NewTeamMemberInfo.Controller || TeamMemberInfo.PossessedPawn == NewTeamMemberInfo.PossessedPawn || TeamMemberInfo.Spawner == NewTeamMemberInfo.Spawner)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s::%s: Team member with the same controller or pawn already exists in team %d"), *GetClass()->GetName(), TEXT("AddTeamMember"), TeamId);
+			return;
+		}
+	}
+
+	TeamInfo->TeamMembers.Add(NewTeamMemberInfo);
 }
 
 void UST_AITeamsManagerSubsystem::OnTeamMemberSpawned(ABaseObjectSpawner* ObjectSpawner, AActor* SpawnedActor)
@@ -221,7 +230,7 @@ bool UST_AITeamsManagerSubsystem::ResetTeamMemberState(FTeamMemberInfo& MemberTo
 		return false;
 	}
 
-	if (HealthComponent->GetCurrentHealth() > 0.f)
+	if (HealthComponent->GetCurrentHealth() > 0.f && IsValid(MemberToReset.Spawner))
 	{
 		HealthComponent->AddHealthValue(HealthComponent->GetMaxHealth());
 		MemberToReset.PossessedPawn->SetActorLocation(MemberToReset.Spawner->GetActorLocation());
@@ -233,4 +242,25 @@ bool UST_AITeamsManagerSubsystem::ResetTeamMemberState(FTeamMemberInfo& MemberTo
 	}
 
 	return true;
+}
+
+FTeamInfo& UST_AITeamsManagerSubsystem::AddTeam(uint8 TeamId)
+{
+	const FName TeamTag = FName(*FString::Printf(TEXT("Team_%d"), TeamId));
+
+	if (IsValid(CachedObjectSpawnSubsystem))
+	{
+		FOnObjectSpawnedDelegate* OnObjectSpawnedDelegate = CachedObjectSpawnSubsystem->GetManagerObjectSpawnedDelegate(ESpawnObjectType::AIPawn, this, TeamTag);
+		if (OnObjectSpawnedDelegate != nullptr && !OnObjectSpawnedDelegate->IsBoundToObject(this))
+		{
+			OnObjectSpawnedDelegate->AddUObject(this, &ThisClass::OnTeamMemberSpawned);
+		}
+	}
+
+	if (TeamsInfo.Contains(TeamId))
+	{
+		return TeamsInfo[TeamId];
+	}
+
+	return TeamsInfo.Add(TeamId);
 }

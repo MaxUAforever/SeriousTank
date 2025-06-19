@@ -17,7 +17,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnTeamDestroyedDelegate, uint8 TeamId);
 struct FTeamMemberInfo
 {
 public:
-	FTeamMemberInfo(APawn* InPossessedPawn, AController* InController, ABaseObjectSpawner* InSpawner)
+	FTeamMemberInfo(APawn* InPossessedPawn, AController* InController, AActor* InSpawner)
 		: PossessedPawn(InPossessedPawn), Controller(InController), Spawner(InSpawner)
 	{
 	}
@@ -32,7 +32,7 @@ public:
 public:
 	TObjectPtr<APawn> PossessedPawn;
 	TObjectPtr<AController> Controller;
-	TObjectPtr<ABaseObjectSpawner> Spawner;
+	TObjectPtr<AActor> Spawner;
 };
 
 struct FTeamInfo
@@ -58,12 +58,16 @@ public:
 
 	void RespawnAllTeamsMembers();
 
+	void AddTeamMember(uint8 TeamId, const FTeamMemberInfo& TeamMemberInfo);
+
 private:
 	void OnTeamMemberSpawned(ABaseObjectSpawner* ObjectSpawner, AActor* SpawnedActor);
 	void OnTeamMemberDestroyed(AActor* DestroyedActor);
 
 	bool HasAliveTeamMembers(uint8 TeamId) const;
 	bool ResetTeamMemberState(FTeamMemberInfo& MemberToReset);
+
+	FTeamInfo& AddTeam(uint8 TeamId);
 
 private:
 	TMap<uint8, FTeamInfo> TeamsInfo;

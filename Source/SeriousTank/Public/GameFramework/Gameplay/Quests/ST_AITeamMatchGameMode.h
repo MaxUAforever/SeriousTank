@@ -12,6 +12,8 @@ class SERIOUSTANK_API AST_AITeamMatchGameMode : public AST_QuestsCompletingGameM
 protected:
 	virtual void OnQuestsStarted() override;
 
+	virtual void OnPostLogin(AController* NewPlayer) override;
+
 private:
 	void OnRoundStarted(int32 RoundNumber);
 };
