@@ -3,6 +3,8 @@
 #include "Components/ActorComponent.h"
 #include "ST_DamageDealingComponent.generated.h"
 
+class AController;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_DamageDealingComponent : public UActorComponent
 {
@@ -16,5 +18,5 @@ public:
 	float GetDamageValue() const { return DamageValue; };
 	void SetDamageValue(float InDamageValue) { DamageValue = InDamageValue; };
 
-	void StartDealingDamage(AActor* ContactActor, const FVector& DealingLocation);	
+	void StartDealingDamage(AController* DamageDealer, AActor* DamageReciever, const FVector& DealingLocation);	
 };

@@ -16,4 +16,6 @@ protected:
 
 private:
 	void OnRoundStarted(int32 RoundNumber);
+
+	void OnActorEliminated(const AController* EliminatingPlayer, const AActor* EliminatedActor);
 };

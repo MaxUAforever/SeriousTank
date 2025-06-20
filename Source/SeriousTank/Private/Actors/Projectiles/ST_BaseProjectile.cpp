@@ -46,12 +46,7 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
     UWorld* World = GetWorld();
     if (!World)
     {
-        return;
-    }
-    
-    APlayerController* PC = World->GetFirstPlayerController();
-    if (!PC)
-    {
+		UE_LOG(LogTemp, Warning, TEXT("ST_BaseProjectile::OnBeginOverlap: World is not valid for projectile"));
         return;
     }
     
@@ -60,13 +55,20 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		return;
 	}
 	
+	AController* OwningController = Cast<AController>(GetOwner());
+	if (!IsValid(OwningController))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OwningController is not valid for projectile %s"), *GetName());
+		return;
+	}
+
 	UObjectPoolSubsystem* ObjectPoolSubsystem = World->GetSubsystem<UObjectPoolSubsystem>();
 	if (IsValid(ObjectPoolSubsystem))
 	{
 		ObjectPoolSubsystem->ReturnToPool(this);
 	}
 
-	DamageDealingComponent->StartDealingDamage(OtherActor, SweepResult.ImpactPoint);
+	DamageDealingComponent->StartDealingDamage(OwningController, OtherActor, SweepResult.ImpactPoint);
 
 	if (ExplosionSound)
 	{

@@ -160,6 +160,7 @@ void UST_AITeamsManagerSubsystem::OnTeamMemberSpawned(ABaseObjectSpawner* Object
 		}
 
 		AIController->SetEnemyType(EEnemyType::Team);
+		AIController->InitPlayerState();
 	}
 
 	UST_HealthComponent* HealthComponent = SpawnedPawn->GetComponentByClass<UST_HealthComponent>();

@@ -1,12 +1,12 @@
 #include "Subsystems/HealthSubsystem/ST_DamageDealingComponent.h"
 
 #include "Engine/World.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/ST_HealthSubsystem.h"
 
-void UST_DamageDealingComponent::StartDealingDamage(AActor* ContactActor, const FVector& DealingLocation)
+void UST_DamageDealingComponent::StartDealingDamage(AController* DamageDealer, AActor* DamageReciever, const FVector& DealingLocation)
 {
-	if (UST_HealthComponent* HealthComponent = ContactActor->GetComponentByClass<UST_HealthComponent>())
+	if (UST_HealthSubsystem* HealthSubsystem = GetWorld()->GetSubsystem<UST_HealthSubsystem>())
 	{
-		HealthComponent->AddHealthValue(DamageValue * -1.f);
+		HealthSubsystem->DealDamage(this, DamageDealer, DamageReciever, DealingLocation);
 	}
 }

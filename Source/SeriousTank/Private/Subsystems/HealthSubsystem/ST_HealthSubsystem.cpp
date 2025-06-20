@@ -2,6 +2,7 @@
 
 #include "Engine/EngineBaseTypes.h"
 #include "Engine/World.h"
+#include "GameFramework/Controller.h"
 #include "Subsystems/HealthSubsystem/ST_DamageDealingComponent.h"
 #include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
 
@@ -14,21 +15,36 @@ bool UST_HealthSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 
 void UST_HealthSubsystem::RegisterHealthActor(AActor* Actor)
 {
-	HealthActors.Add(Actor);
+	RegisteredHealthActors.Add(Actor);
 }
 
-void UST_HealthSubsystem::DealDamage(UST_DamageDealingComponent* DamageDealingComponent, AActor* ContactActor, const FVector& DealingLocation)
+void UST_HealthSubsystem::DealDamage(UST_DamageDealingComponent* DamageDealingComponent, AController* DamageDealer, AActor* DamageReciever, const FVector& DealingLocation)
 {
 	if (!DamageDealingComponent)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UST_HealthSubsystem::DealDamage: DamageDealingComponent is null"));
 		return;
 	}
 
-	if (HealthActors.Contains(ContactActor))
+	if (!IsValid(DamageReciever) || !IsValid(DamageDealer))
 	{
-		if (UST_HealthComponent* HealthComponent = ContactActor->GetComponentByClass<UST_HealthComponent>())
+		UE_LOG(LogTemp, Warning, TEXT("UST_HealthSubsystem::DealDamage: DamageReciever or DamageDealer is invalid"));
+		return;
+	}
+
+	if (!RegisteredHealthActors.Contains(DamageReciever))
+	{
+		UE_LOG(LogTemp, Display, TEXT("UST_HealthSubsystem::DealDamage: DamageReciever is not registered in the health subsystem"));
+		return;
+	}
+
+	if (UST_HealthComponent* HealthComponent = DamageReciever->GetComponentByClass<UST_HealthComponent>())
+	{
+		HealthComponent->AddHealthValue(DamageDealingComponent->GetDamageValue() * -1.f);
+
+		if (FMath::IsNearlyZero(HealthComponent->GetCurrentHealth()))
 		{
-			HealthComponent->AddHealthValue(DamageDealingComponent->GetDamageValue() * -1.f);
+			OnActorEliminatedDelegate.Broadcast(DamageDealer, DamageReciever);
 		}
 	}
 }
