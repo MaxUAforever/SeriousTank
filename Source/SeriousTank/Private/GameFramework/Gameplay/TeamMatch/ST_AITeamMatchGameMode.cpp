@@ -11,6 +11,13 @@
 #include "Subsystems/HealthSubsystem/ST_HealthSubsystem.h"
 #include "Subsystems/QuestSubsystem/Tasks/ST_QuestTask_AITeamMatch.h"
 
+void AST_AITeamMatchGameMode::OnPreStartCountdownStarted()
+{
+	Super::OnPreStartCountdownStarted();
+
+	StartQuests();
+}
+
 void AST_AITeamMatchGameMode::OnQuestsStarted()
 {
 	UQuestSubsystem* QuestSubsystem = GetGameInstance()->GetSubsystem<UQuestSubsystem>();
@@ -51,45 +58,34 @@ void AST_AITeamMatchGameMode::OnRoundStarted(int32 RoundNumber)
 	}
 }
 
-void AST_AITeamMatchGameMode::OnPostLogin(AController* NewPlayer)
+void AST_AITeamMatchGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
 {
+	Super::FinishRestartPlayer(NewPlayer, StartRotation);
+
 	UST_AITeamsManagerSubsystem* AITeamsManagerSubsystem = GetWorld()->GetSubsystem<UST_AITeamsManagerSubsystem>();
 	if (!IsValid(AITeamsManagerSubsystem) || !IsValid(NewPlayer))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::OnPostLogin: Invalid AITeamsManagerSubsystem or NewPlayer"));
+		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::FinishRestartPlayer: Invalid AITeamsManagerSubsystem or NewPlayer"));
 		return;
 	}
 	
 	if (!IsValid(NewPlayer->GetPawn()))
 	{
-		static TMap<AController*, FDelegateHandle> OnPostLoginHandles;
-		auto OnNewPawnSet = [this, NewPlayer](APawn* NewPawn)
-		{
-			FDelegateHandle* PlayerDelegateHandle = OnPostLoginHandles.Find(NewPlayer);
-			if (PlayerDelegateHandle != nullptr && PlayerDelegateHandle->IsValid())
-			{
-				NewPlayer->GetOnNewPawnNotifier().Remove(*PlayerDelegateHandle);
-				OnPostLoginHandles.Remove(NewPlayer);
-			}
-			
-			OnPostLogin(NewPlayer);
-		};
-
-		OnPostLoginHandles.Add(NewPlayer, NewPlayer->GetOnNewPawnNotifier().AddLambda(OnNewPawnSet));
+		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::FinishRestartPlayer: NewPlayer's Pawn is not valid"));
 		return;
 	}
 
 	TWeakObjectPtr<AActor> SpawnPoint = NewPlayer->StartSpot;
 	if (!SpawnPoint.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::OnPostLogin: Invalid SpawnPoint for NewPlayer"));
+		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::FinishRestartPlayer: Invalid SpawnPoint for NewPlayer"));
 		return;
 	}
 
 	UST_TeamOwnershipComponent* TeamOwnershipComponent = SpawnPoint->GetComponentByClass<UST_TeamOwnershipComponent>();
 	if (!IsValid(TeamOwnershipComponent))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::OnPostLogin: Invalid TeamOwnershipComponent on SpawnPoint"));
+		UE_LOG(LogTemp, Warning, TEXT("AST_AITeamMatchGameMode::FinishRestartPlayer: Invalid TeamOwnershipComponent on SpawnPoint"));
 		return;
 	}
 

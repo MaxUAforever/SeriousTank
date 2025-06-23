@@ -15,21 +15,28 @@ void ABaseObjectSpawner::BeginPlay()
 	Super::BeginPlay();
 
 	SetSpawnOwner(SpawnOwner);
-
-	UObjectSpawnSubsystem* SpawnSubsystem = GetWorld()->GetSubsystem<UObjectSpawnSubsystem>();
-	if (IsValid(SpawnSubsystem))
-	{
-		SpawnSubsystem->RegisterSpawner(this);
-	}
 }
 
 void ABaseObjectSpawner::SetSpawnOwner(UObject* InSpawnOwner)
 {
-	if (SpawnOwner != InSpawnOwner)
+	if (SpawnOwner == InSpawnOwner)
 	{
-		UObject* OldSpawnOwner = SpawnOwner;
-		SpawnOwner = InSpawnOwner;
+		return;
+	}
 
+	UObject* OldSpawnOwner = SpawnOwner;
+	SpawnOwner = InSpawnOwner;
+
+	if (OldSpawnOwner == nullptr)
+	{
+		UObjectSpawnSubsystem* SpawnSubsystem = GetWorld()->GetSubsystem<UObjectSpawnSubsystem>();
+		if (IsValid(SpawnSubsystem))
+		{
+			SpawnSubsystem->RegisterSpawner(this);
+		}
+	}
+	else if (SpawnOwner != InSpawnOwner)
+	{
 		OnSpawnOwnerChangedDelegate.ExecuteIfBound(this, OldSpawnOwner, SpawnOwner);
 	}
 }

@@ -1,4 +1,4 @@
-#include "Subsystems/HealthSubsystem/ST_DamageDealingComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_DamageDealingComponent.h"
 
 #include "Engine/World.h"
 #include "Subsystems/HealthSubsystem/ST_HealthSubsystem.h"

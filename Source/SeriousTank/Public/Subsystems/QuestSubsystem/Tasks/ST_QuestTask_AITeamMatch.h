@@ -27,6 +27,7 @@ public:
 protected:
 	virtual void OnTaskStarted() override;
     virtual void BeginDestroy() override;
+
 private:
     void StartNextRound();
 

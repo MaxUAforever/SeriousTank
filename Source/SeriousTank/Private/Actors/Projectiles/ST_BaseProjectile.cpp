@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ObjectPoolSubsystem/Public/ObjectPoolSubsystem.h"
 #include "Sound/SoundCue.h"
-#include "Subsystems/HealthSubsystem/ST_DamageDealingComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_DamageDealingComponent.h"
 #include "TimerManager.h"
 
 AST_BaseProjectile::AST_BaseProjectile()

@@ -9,6 +9,8 @@ class UAIPatrollingComponent;
 class UAIPerceptionComponent;
 enum class EHealthChangingType : uint8;
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAITeamWasChangedDelegate, const AController*, uint8);
+
 UENUM(BlueprintType)
 enum class EViewPerceptionType : uint8
 {
@@ -23,13 +25,26 @@ enum class EEnemyType : uint8
 	Team
 };
 
+UENUM(BlueprintType)
+enum class ETeamRelationType : uint8
+{
+	Neutral,
+	Ally,
+	Enemy
+};
+
 UCLASS()
 class SERIOUSTANK_API AST_AIController : public AAIController
 {
 	GENERATED_BODY()
 	
 public:
+	FOnAITeamWasChangedDelegate OnAITeamWasChangedDelegate;
+
+public:
 	AST_AIController();
+
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
 
 	inline void SetEnemyType(EEnemyType NewEnemyType) { EnemyType = NewEnemyType; };
 
@@ -82,10 +97,10 @@ private:
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* DefaultBehaviourTree;
+	UBehaviorTree* DefaultBehaviourTree = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* TankBehaviourTree;
+	UBehaviorTree* TankBehaviourTree = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
 	UAIPerceptionComponent* PerceptionComp;

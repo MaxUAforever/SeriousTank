@@ -3,14 +3,29 @@
 #include "GameFramework/AI/ST_AIController.h"
 #include "Components/Teams/ST_TeamOwnershipComponent.h"
 #include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
 #include "Subsystems/AIManagerSubsystem/Actors/ST_AITeamPawnSpawner.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 #include "Engine/World.h"
 
 uint32 GetTypeHash(const FTeamMemberInfo& Info)
 {
 	return HashCombine(GetTypeHash(Info.Controller), GetTypeHash(Info.PossessedPawn));
+}
+
+void UST_AITeamsManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	TArray<AActor*> TeamSpawnerActors;
+	UGameplayStatics::GetAllActorsOfClass(&InWorld, AST_AITeamPawnSpawner::StaticClass(), TeamSpawnerActors);
+	for (AActor* Actor : TeamSpawnerActors)
+	{
+		AST_AITeamPawnSpawner* AITeamPawnSpawner = Cast<AST_AITeamPawnSpawner>(Actor);
+		if (IsValid(AITeamPawnSpawner))
+		{
+			RegisterTeamSpawner(AITeamPawnSpawner);
+		}
+	}
 }
 
 void UST_AITeamsManagerSubsystem::RegisterTeamSpawner(AST_AITeamPawnSpawner* AITeamPawnSpawner)
@@ -21,26 +36,21 @@ void UST_AITeamsManagerSubsystem::RegisterTeamSpawner(AST_AITeamPawnSpawner* AIT
 		return;
 	}
 
-	const UWorld* World = GetWorld();
-	if (!IsValid(World))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Invalid World context"), *GetClass()->GetName(), TEXT("RegisterTeamSpawner"));
-		return;
-	}
-
-	CachedObjectSpawnSubsystem = World->GetSubsystem<UObjectSpawnSubsystem>();
-	if (!IsValid(CachedObjectSpawnSubsystem))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Invalid ObjectSpawnSubsystem context"), *GetClass()->GetName(), TEXT("RegisterTeamSpawner"));
-		return;
-	}
-
 	const FName TeamTag = FName(*FString::Printf(TEXT("Team_%d"), AITeamPawnSpawner->GetTeamId()));
 
 	AITeamPawnSpawner->SetSpawnTag(TeamTag);
 	AITeamPawnSpawner->SetSpawnOwner(this);
-
 	AddTeam(AITeamPawnSpawner->GetTeamId());
+
+	CachedObjectSpawnSubsystem = GetWorld() ? GetWorld()->GetSubsystem<UObjectSpawnSubsystem>() : nullptr;
+	if (IsValid(CachedObjectSpawnSubsystem))
+	{
+		FOnObjectSpawnedDelegate* OnObjectSpawnedDelegate = CachedObjectSpawnSubsystem->GetManagerObjectSpawnedDelegate(ESpawnObjectType::AIPawn, this, TeamTag);
+		if (OnObjectSpawnedDelegate != nullptr && !OnObjectSpawnedDelegate->IsBoundToObject(this))
+		{
+			OnObjectSpawnedDelegate->AddUObject(this, &ThisClass::OnTeamMemberSpawned);
+		}
+	}
 }
 
 const TSet<FTeamMemberInfo>* UST_AITeamsManagerSubsystem::GetTeamMembers(uint8 TeamId) const
@@ -90,6 +100,7 @@ int32 UST_AITeamsManagerSubsystem::GetActiveTeamMembersCount(uint8 TeamId) const
 
 void UST_AITeamsManagerSubsystem::RespawnAllTeamsMembers()
 {
+	CachedObjectSpawnSubsystem = GetWorld() ? GetWorld()->GetSubsystem<UObjectSpawnSubsystem>() : nullptr;
 	if (!IsValid(CachedObjectSpawnSubsystem))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s::%s: CachedObjectSpawnSubsystem is not valid"), *GetClass()->GetName(), TEXT("RespawnAllTeamsMembers"));
@@ -249,19 +260,5 @@ FTeamInfo& UST_AITeamsManagerSubsystem::AddTeam(uint8 TeamId)
 {
 	const FName TeamTag = FName(*FString::Printf(TEXT("Team_%d"), TeamId));
 
-	if (IsValid(CachedObjectSpawnSubsystem))
-	{
-		FOnObjectSpawnedDelegate* OnObjectSpawnedDelegate = CachedObjectSpawnSubsystem->GetManagerObjectSpawnedDelegate(ESpawnObjectType::AIPawn, this, TeamTag);
-		if (OnObjectSpawnedDelegate != nullptr && !OnObjectSpawnedDelegate->IsBoundToObject(this))
-		{
-			OnObjectSpawnedDelegate->AddUObject(this, &ThisClass::OnTeamMemberSpawned);
-		}
-	}
-
-	if (TeamsInfo.Contains(TeamId))
-	{
-		return TeamsInfo[TeamId];
-	}
-
-	return TeamsInfo.Add(TeamId);
+	return TeamsInfo.Contains(TeamId) ? TeamsInfo[TeamId] : TeamsInfo.Add(TeamId);
 }

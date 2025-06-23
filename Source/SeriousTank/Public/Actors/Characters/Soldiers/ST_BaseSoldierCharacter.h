@@ -3,6 +3,7 @@
 #include "GameFramework/Character.h"
 #include "ST_BaseSoldierCharacter.generated.h"
 
+class AAIController;
 class AST_BaseWeapon;
 class UCameraComponent;
 class UCommonInputsDataAsset;
@@ -12,6 +13,7 @@ class UST_HealthComponent;
 class UST_SoldierWeaponManagerComponent;
 class UST_ViewAreaBoxComponent;
 class UWeaponInputsDataAsset;
+class UST_HealthBarWidgetComponent;
 
 class UAIPerceptionStimuliSourceComponent;
 enum class EHealthChangingType : uint8;
@@ -35,6 +37,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UST_SoldierWeaponManagerComponent* WeaponManagerComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UST_HealthBarWidgetComponent* HealthBarWidgetComponent;
 
 	UPROPERTY(EditDefaultsOnly)
 	UST_HealthComponent* HealthComponent;
@@ -76,8 +81,6 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
-
-	virtual void PossessedBy(AController* NewController) override;
 
 public:	
 	AST_BaseSoldierCharacter(const class FObjectInitializer& ObjectInitializer);
@@ -125,5 +128,9 @@ private:
 	void MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis);
 
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
+	void OnTeamWasChanged(const AController* InController, uint8 TeamId);
 	void OnInteractionStopped();
+
+	void OnAIControllerChanged(AAIController* OldAIController, AAIController* NewAIController);
+	void OnPlayerControllerChanged(APlayerController* OldPlayerController, APlayerController* NewPlayerController);
 };

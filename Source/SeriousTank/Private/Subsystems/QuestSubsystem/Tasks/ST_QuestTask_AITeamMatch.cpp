@@ -52,10 +52,7 @@ void UST_QuestTask_AITeamMatch::BeginDestroy()
 		CachedAITeamsManagerSubsystem->OnTeamMemberDestroyedDelegate.RemoveAll(this);
 	}
 
-	if (GetWorld() && GetWorld()->GetTimerManager().IsTimerActive(FinishRoundDelayTimer))
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FinishRoundDelayTimer);
-	}
+	FinishRoundDelayTimer.Invalidate();
 
 	Super::BeginDestroy();
 }

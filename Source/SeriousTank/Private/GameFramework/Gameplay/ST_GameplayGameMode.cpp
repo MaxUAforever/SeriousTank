@@ -70,6 +70,7 @@ void AST_GameplayGameMode::InitGameState()
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
 		GameplayGameState->Initialize(BaseGameData);
+		GameplayGameState->OnPreStartCountdownStartedDelegate.AddUObject(this, &ThisClass::OnPreStartCountdownStarted);
 		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::OnPreStartCountdownEneded);
 	}
 }

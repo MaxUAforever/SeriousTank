@@ -11,6 +11,14 @@ AST_QuestsCompletingGameMode::AST_QuestsCompletingGameMode()
 	QuestProvider = CreateDefaultSubobject<UQuestProvider>(TEXT("QuestProvider"));
 }
 
+void AST_QuestsCompletingGameMode::OnPreStartCountdownStarted()
+{
+	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
+	{
+		GameplayGameState->OnPreStartCountdownStartedDelegate.RemoveAll(this);
+	}
+}
+
 void AST_QuestsCompletingGameMode::OnPreStartCountdownEneded()
 {
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))

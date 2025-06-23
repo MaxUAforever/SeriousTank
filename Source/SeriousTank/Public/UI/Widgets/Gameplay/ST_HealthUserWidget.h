@@ -20,6 +20,8 @@ public:
 	void SetMaxHealthValue(float InMaxHealth);
 	void SetHealthValue(float InHealth);
 
+	void SetProgressBarColor(const FLinearColor& InColor);
+
 private:
 	void UpdateView();
 

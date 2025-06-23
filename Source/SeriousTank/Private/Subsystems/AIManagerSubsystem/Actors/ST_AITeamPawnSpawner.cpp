@@ -31,6 +31,9 @@ void AST_AITeamPawnSpawner::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Invalid AITeamsManagerSubsystem context"), *GetClass()->GetName(), TEXT("BeginPlay"));
 		return;
 	}
-
-	AITeamsManagerSubsystem->RegisterTeamSpawner(this);
+	
+	if (GetSpawnOwner() != AITeamsManagerSubsystem)
+	{
+		AITeamsManagerSubsystem->RegisterTeamSpawner(this);
+	}
 }

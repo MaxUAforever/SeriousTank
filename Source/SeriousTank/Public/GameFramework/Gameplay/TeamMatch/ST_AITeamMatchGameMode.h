@@ -10,10 +10,12 @@ class SERIOUSTANK_API AST_AITeamMatchGameMode : public AST_QuestsCompletingGameM
 	GENERATED_BODY()
 
 protected:
+	virtual void OnPreStartCountdownStarted() override;
+
 	virtual void OnQuestsStarted() override;
 
-	virtual void OnPostLogin(AController* NewPlayer) override;
-
+	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
+	
 private:
 	void OnRoundStarted(int32 RoundNumber);
 

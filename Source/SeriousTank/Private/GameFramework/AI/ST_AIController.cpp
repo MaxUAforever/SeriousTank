@@ -10,7 +10,7 @@
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "Kismet/GameplayStatics.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISenseConfig.h"
@@ -21,6 +21,13 @@ AST_AIController::AST_AIController()
 {
 	PerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>("PerceptionComponent");
 	PatrollingComponent = CreateDefaultSubobject<UAIPatrollingComponent>("PatrollingComponent");
+}
+
+void AST_AIController::SetGenericTeamId(const FGenericTeamId& NewTeamID)
+{
+	Super::SetGenericTeamId(NewTeamID);
+
+	OnAITeamWasChangedDelegate.Broadcast(this, NewTeamID.GetId());
 }
 
 void AST_AIController::BeginPlay()

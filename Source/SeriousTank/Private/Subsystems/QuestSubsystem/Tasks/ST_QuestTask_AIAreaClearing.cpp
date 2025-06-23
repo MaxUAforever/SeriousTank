@@ -1,7 +1,7 @@
 #include "Subsystems/QuestSubsystem/Tasks/ST_QuestTask_AIAreaClearing.h"
 
 #include "Engine/World.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 #include "Subsystems/QuestSubsystem/Tasks/Data/ST_AIAreaClearingTaskInfoDataAsset.h"

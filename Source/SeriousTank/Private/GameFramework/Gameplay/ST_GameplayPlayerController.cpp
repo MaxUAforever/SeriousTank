@@ -9,7 +9,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerInput.h"
 #include "InputAction.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
 void AST_GameplayPlayerController::BeginPlay()
 {

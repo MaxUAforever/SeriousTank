@@ -100,9 +100,7 @@ void UObjectSpawnSubsystem::RegisterSpawner(ABaseObjectSpawner* ObjectSpawner)
 	}
 
 	ObjectSpawner->OnSpawnOwnerChangedDelegate.BindUObject(this, &ThisClass::OnSpawnerOwnerChanged);
-
-	UObjectSpawnManager* ObjectSpawnManager = FindOrAddObjectSpawnManager_Internal(ObjectSpawner->GetSpawnObjectType(), ObjectSpawner->GetSpawnOwner(), ObjectSpawner->GetSpawnTag());
-	ObjectSpawnManager->RegisterSpawner(ObjectSpawner);
+	OnSpawnerOwnerChanged(ObjectSpawner, nullptr, ObjectSpawner->GetSpawnOwner());
 }
 
 void UObjectSpawnSubsystem::UnregisterSpawner(ABaseObjectSpawner* ObjectSpawner)

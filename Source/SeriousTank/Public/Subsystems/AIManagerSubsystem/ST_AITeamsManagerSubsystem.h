@@ -51,6 +51,8 @@ public:
 	FOnTeamDestroyedDelegate OnTeamDestroyedDelegate;
 
 public:
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+
 	void RegisterTeamSpawner(AST_AITeamPawnSpawner* AITeamPawnSpawner);
 
 	const TSet<FTeamMemberInfo>* GetTeamMembers(uint8 TeamId) const;

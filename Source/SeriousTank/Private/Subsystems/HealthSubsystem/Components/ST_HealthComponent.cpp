@@ -1,4 +1,4 @@
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
 #include "Engine/World.h"
 #include "Subsystems/HealthSubsystem/ST_HealthSubsystem.h"
@@ -19,6 +19,11 @@ void UST_HealthComponent::AddHealthValue(float DeltaHealthValue)
 {
 	const float OldHealthValue = CurrentHealthValue;
 	CurrentHealthValue = FMath::Clamp(CurrentHealthValue + DeltaHealthValue, 0.f, MaxHealthvalue);
+
+	if (OldHealthValue == CurrentHealthValue)
+	{
+		return;
+	}
 
 	EHealthChangingType HealthChangingType = CurrentHealthValue < OldHealthValue ? EHealthChangingType::Damage : EHealthChangingType::Healing;
 	OnHealthValueChangedDelegate.Broadcast(CurrentHealthValue, HealthChangingType);

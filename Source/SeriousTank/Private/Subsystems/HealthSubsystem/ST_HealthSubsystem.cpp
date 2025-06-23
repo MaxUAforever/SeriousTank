@@ -3,8 +3,8 @@
 #include "Engine/EngineBaseTypes.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
-#include "Subsystems/HealthSubsystem/ST_DamageDealingComponent.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_DamageDealingComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
 bool UST_HealthSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {

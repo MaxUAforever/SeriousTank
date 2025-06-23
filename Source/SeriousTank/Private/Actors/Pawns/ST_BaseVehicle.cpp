@@ -15,7 +15,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractionComponent.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
 AST_BaseVehicle::AST_BaseVehicle()
 {
