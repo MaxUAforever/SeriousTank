@@ -8,7 +8,7 @@ public class SeriousTank : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.NoPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "GameplayTasks", "PlayerInteractionSubsystem", "AIPatrollingSubsystem", "NavigationSystem", "ObjectPoolSubsystem", "QuestSubsystem" });
 

@@ -4,6 +4,8 @@
 
 void UObjectPoolSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
+	Super::OnWorldBeginPlay(InWorld);
+
 	const UObjectPoolSubsystemSettings* ObjectPoolSubsystemSettings = GetDefault<UObjectPoolSubsystemSettings>();
 	if (!IsValid(ObjectPoolSubsystemSettings))
 	{

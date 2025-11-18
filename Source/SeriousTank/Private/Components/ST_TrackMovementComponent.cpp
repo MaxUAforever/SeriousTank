@@ -55,7 +55,7 @@ UST_TrackMovementComponent::UST_TrackMovementComponent()
 	bSnapToPlaneAtStart = true;
 	SetPlaneConstraintAxisSetting(EPlaneConstraintAxisSetting::Z);
 
-	bUseAccelerationForPaths = true;
+	NavMovementProperties.bUseAccelerationForPaths = true;
 
 	BreakingDistanceCoef = 1.5f;
 	MinAngleToAccelerate = 15.f;
