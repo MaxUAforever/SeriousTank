@@ -1,45 +1,49 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "",
-	"Category": "",
-	"Description": "",
-	"Modules": [
-		{
-			"Name": "SeriousTank",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"UMG",
-				"CoreUObject",
-				"AIModule"
-			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "OnlineSubsystemGooglePlay",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Android"
-			]
-		},
-		{
-			"Name": "Fab",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Mac",
-				"Linux"
-			]
-		}
-	],
-	"TargetPlatforms": [
-		"Windows",
-		"WindowsNoEditor",
-		"Android",
-		"IOS",
-		"Linux",
-		"Mac"
-	]
+  "FileVersion": 3,
+  "EngineAssociation": "",
+  "Category": "",
+  "Description": "",
+  "Modules": [
+    {
+      "Name": "SeriousTank",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "OnlineSubsystemGooglePlay",
+      "Enabled": false,
+      "SupportedTargetPlatforms": [
+        "Android"
+      ]
+    },
+    {
+      "Name": "Fab",
+      "Enabled": false,
+      "SupportedTargetPlatforms": [
+        "Win64",
+        "Mac",
+        "Linux"
+      ]
+    },
+    {
+      "Name": "VisualStudioTools",
+      "Enabled": true,
+      "SupportedTargetPlatforms": [
+        "Win64"
+      ]
+    }
+  ],
+  "TargetPlatforms": [
+    "Windows",
+    "WindowsNoEditor",
+    "Android",
+    "IOS",
+    "Linux",
+    "Mac"
+  ],
+  "AdditionalRootDirectories": [],
+  "AdditionalPluginDirectories": [],
+  "EpicSampleNameHash": ""
 }
