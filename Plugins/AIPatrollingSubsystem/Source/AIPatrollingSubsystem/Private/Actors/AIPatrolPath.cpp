@@ -48,7 +48,7 @@ int32 AAIPatrolPath::GetNextPatrolPoint(const int32 CurrentIndex, EDirectionType
 
 FVector AAIPatrolPath::GetPointLocation(int32 Index) const
 {
-	FVector Result;
+	FVector Result {};
 	if (Index < 0 || Index >= PathPoints.Num())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AAIPatrolPath::GetPointLocation: Index is out of bounds."));
