@@ -2,6 +2,8 @@
 
 #include "SpawnSubsystemTypes.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogSpawnSubsystem, Log, All);
+
 UENUM()
 enum class ESpawnObjectType : uint8
 {

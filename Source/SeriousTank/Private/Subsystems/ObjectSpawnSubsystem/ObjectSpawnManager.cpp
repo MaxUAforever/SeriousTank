@@ -3,6 +3,7 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystems/ObjectSpawnSubsystem/BaseObjectSpawner.h"
+#include "Subsystems/ObjectSpawnSubsystem/SpawnSubsystemTypes.h"
 #include "TimerManager.h"
 
 void UObjectSpawnManager::Initialize(const ESpawnObjectType InSpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner, FName InSpawnTag)
@@ -49,13 +50,21 @@ void UObjectSpawnManager::RegisterSpawner(ABaseObjectSpawner* SpawningActor)
 {
 	if (!SpawningActor || !SpawningActor->HasSpawnObjectType(SpawnObjectType))
 	{
+		UE_LOG(LogSpawnSubsystem, Warning, TEXT("%s: Invalid spawner or spawner doesn't contain needed spawn object type (%s)."), ANSI_TO_TCHAR(__FUNCTION__), *StaticEnum<ESpawnObjectType>()->GetNameStringByValue((uint8)SpawnObjectType));
 		return;
 	}
 
 	const bool bHasNeededTag = SpawningActor->GetSpawnTag() == SpawnTag;
-	const bool bIsNeededOwner = SpawningActor->GetSpawnOwner() == SpawnOwner || (SpawningActor->GetSpawnOwner() == nullptr && SpawnOwner->IsA<UWorld>());
-	if (!bHasNeededTag || !bIsNeededOwner)
+	if (!bHasNeededTag)
 	{
+		UE_LOG(LogSpawnSubsystem, Log, TEXT("%s: Spawner doesn't have needed tag (%s, needed tag: %s)"), ANSI_TO_TCHAR(__FUNCTION__), *StaticEnum<ESpawnObjectType>()->GetNameStringByValue((uint8)SpawnObjectType), *SpawningActor->GetSpawnTag().ToString());
+		return;
+	}
+
+	const bool bIsNeededOwner = SpawningActor->GetSpawnOwner() == SpawnOwner || (SpawningActor->GetSpawnOwner() == nullptr && SpawnOwner->IsA<UWorld>());
+	if (!bIsNeededOwner)
+	{
+		UE_LOG(LogSpawnSubsystem, Log, TEXT("%s: Spawner doesn't have needed owner (%s)"), ANSI_TO_TCHAR(__FUNCTION__), *StaticEnum<ESpawnObjectType>()->GetNameStringByValue((uint8)SpawnObjectType));
 		return;
 	}
 
@@ -169,12 +178,14 @@ AActor* UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
 {
 	if (SpawnVolumeIndex >= AvailableSpawnActors.Num())
 	{
+		UE_LOG(LogSpawnSubsystem, Warning, TEXT("%s: Index (%d) of spawner is bigger than number of available spawn actors (%d)"), ANSI_TO_TCHAR(__FUNCTION__), SpawnVolumeIndex, AvailableSpawnActors.Num());
 		return nullptr;
 	}
 
 	const bool bIsOverMaxCount = SpawnParams.bIsSpawnLimited && SpawnedObjectsCount >= SpawnParams.MaxObjectsCount;
 	if (bIsOverMaxCount)
 	{
+		UE_LOG(LogSpawnSubsystem, Log, TEXT("%s: Max amount of objects was already spawned."), ANSI_TO_TCHAR(__FUNCTION__));
 		return nullptr;
 	}
 
@@ -187,10 +198,17 @@ AActor* UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
 	ABaseObjectSpawner* SpawningActor = *SpawnActorsIt;
 	if (!IsValid(SpawningActor))
 	{
+		UE_LOG(LogSpawnSubsystem, Warning, TEXT("%s: Failed to get valid spawner actor."), ANSI_TO_TCHAR(__FUNCTION__));
 		return nullptr;
 	}
 
 	AActor* NewObject = SpawningActor->SpawnRandomObject();
+	if (!IsValid(NewObject))
+	{
+		UE_LOG(LogSpawnSubsystem, Warning, TEXT("%s: Failed to spawn valid object."), ANSI_TO_TCHAR(__FUNCTION__));
+		return nullptr;
+	}
+
 	OnObjectIsSpawned(SpawningActor, NewObject);
 
 	return NewObject;
@@ -200,7 +218,7 @@ void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* ObjectSpawner, A
 {
 	if (!ObjectSpawner || !SpawnedObject)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ObjectSpawnSubsystem::SpawnRandomObject: Spawn volume or object are not presented."));
+		UE_LOG(LogSpawnSubsystem, Warning, TEXT("%s: Spawn volume or object are not presented."), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
@@ -209,7 +227,7 @@ void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* ObjectSpawner, A
 		UWorld* World = GetWorld();
 		if (!World)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ObjectSpawnManager::OnObjectIsSpawned: Failed to get world"));
+			UE_LOG(LogSpawnSubsystem, Warning, TEXT("%s: Failed to get world"), ANSI_TO_TCHAR(__FUNCTION__));
 			return;
 		}
 
@@ -264,7 +282,7 @@ void UObjectSpawnManager::OnSpawnedObjectDestroyed(ABaseObjectSpawner* SpawningA
 {
 	if (!SpawningActor || !SpawnedObject)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ObjectSpawnSubsystem::OnSpawnedObjectHandled: Spawn volume or object are not presented."));
+		UE_LOG(LogTemp, Warning, TEXT("%s: Spawn volume or object are not presented."), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
