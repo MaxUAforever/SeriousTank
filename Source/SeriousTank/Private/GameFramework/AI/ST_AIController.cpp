@@ -314,7 +314,7 @@ void AST_AIController::OnTargetDetected(AActor* Target)
 
 		OnAttackTargetChanged(Target);
 	}
-	else if (bCanPossessVehicles && TargetPawn->IsA(AST_BaseVehicle::StaticClass()) && !TargetPawn->IsControlled())
+	else if (bCanPossessVehicles && TargetPawn->IsA(AST_BaseVehicle::StaticClass()) && !TargetPawn->IsPawnControlled())
 	{
 		APawn* CurrentTargetPawn = Cast<APawn>(GetBlackboardComponent()->GetValueAsObject(BBFreeTrackedVehicleKey));
 		if (TargetPawn == CurrentTargetPawn)

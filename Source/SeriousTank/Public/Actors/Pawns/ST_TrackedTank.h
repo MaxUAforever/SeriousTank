@@ -15,35 +15,6 @@ class SERIOUSTANK_API AST_TrackedTank : public AST_BaseTrackedVehicle, public IS
 {
 	GENERATED_BODY()
 
-protected:
-	UPROPERTY(EditAnywhere)
-	USceneComponent* TurretSceneComponent;
-
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* TurretMeshComponent;
-
-	UPROPERTY(EditAnywhere)
-	UST_WeaponSocketComponent* MainWeaponSocketComponent;
-
-	UPROPERTY(EditAnywhere)
-	UST_WeaponSocketComponent* SecondWeaponSocketComponent;
-
-	UPROPERTY(EditAnywhere)
-	UAudioComponent* TurretRotationSound;
-
-	UPROPERTY(EditDefaultsOnly)
-	UST_VehicleWeaponManagerComponent* WeaponManagerComponent;
-
-protected:
-	UPROPERTY(EditAnywhere)
-	float TurretRotationSpeed;
-
-	UPROPERTY(EditAnywhere, Category = "Aiming|Debug")
-	bool bDrawDebugAimingTarget;
-
-	UPROPERTY(EditAnywhere, Category = "Aiming|Debug")
-	float DrawHeightOffset;
-
 public:
 	AST_TrackedTank();
 
@@ -51,6 +22,7 @@ public:
 	virtual void FaceRotation(FRotator NewControlRotation, float DeltaTime = 0.f) override;
 
 	// IST_AIPawnInterface - Begin
+	virtual void FaceToControllerRotation(const FRotator& NewControlRotation) override;
 	virtual void AimToLocation(const FVector& Location) override;
 	virtual bool IsAiming() const override;
 	virtual bool IsAimingToFocusPoint() const override;
@@ -71,4 +43,33 @@ private:
 
 	virtual void SwitchToFirstWeapon() override;
 	virtual void SwitchToSecondWeapon() override;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USceneComponent> TurretSceneComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UStaticMeshComponent> TurretMeshComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UST_WeaponSocketComponent> MainWeaponSocketComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UST_WeaponSocketComponent> SecondWeaponSocketComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAudioComponent> TurretRotationSound;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UST_VehicleWeaponManagerComponent> WeaponManagerComponent;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	float TurretRotationSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Aiming|Debug")
+	bool bDrawDebugAimingTarget;
+
+	UPROPERTY(EditAnywhere, Category = "Aiming|Debug")
+	float DrawHeightOffset;
 };

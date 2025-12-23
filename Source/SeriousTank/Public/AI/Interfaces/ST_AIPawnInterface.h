@@ -18,5 +18,7 @@ class IST_AIPawnInterface
 public:
     virtual bool IsAiming() const = 0;
     virtual bool IsAimingToFocusPoint() const = 0;
+
+	virtual void FaceToControllerRotation(const FRotator& NewControlRotation) = 0;
     virtual void AimToLocation(const FVector& Location) = 0;
 };

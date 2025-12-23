@@ -1,5 +1,6 @@
 #include "Actors/Pawns/ST_TrackedTank.h"
 
+#include "AIController.h"
 #include "Components/ArrowComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -42,6 +43,14 @@ AST_TrackedTank::AST_TrackedTank()
 }
 
 void AST_TrackedTank::FaceRotation(FRotator NewControlRotation, float DeltaTime)
+{
+	if (IsValid(GetController()) && GetController()->IsA(AAIController::StaticClass()))
+	{
+		FaceToControllerRotation(NewControlRotation);
+	}
+}
+
+void AST_TrackedTank::FaceToControllerRotation(const FRotator& NewControlRotation)
 {
 	const FRotator CurrentRotation = CameraSceneComponent->GetComponentRotation();
 	const FRotator DesiredRotation = FRotator(CurrentRotation.Pitch, NewControlRotation.Yaw, CurrentRotation.Roll);
