@@ -15,6 +15,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractionComponent.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthBarWidgetComponent.h"
 #include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
 AST_BaseVehicle::AST_BaseVehicle()
@@ -26,6 +27,10 @@ AST_BaseVehicle::AST_BaseVehicle()
 
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>("InteractionComponent");
 	InteractionComponent->SetupAttachment(BaseCollisionComponent);
+
+	HealthBarWidgetComponent = CreateDefaultSubobject<UST_HealthBarWidgetComponent>("HealthBarWidgetComponent");
+	HealthBarWidgetComponent->SetupAttachment(RootComponent);
+	HealthBarWidgetComponent->SetVisibility(true);
 
 	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
 }
@@ -124,15 +129,9 @@ void AST_BaseVehicle::UnPossessed()
 
 void AST_BaseVehicle::ExitVehicle()
 {
-	AST_GameplayPlayerController* PlayerController = Cast<AST_GameplayPlayerController>(GetController());
-	if (!IsValid(PlayerController))
+	if (!IsValid(InteractionComponent))
 	{
-		return;
-	}
-		
-	APawn* SoldierPawn = PlayerController->GetPreviousPawn();
-	if (!IsValid(SoldierPawn) || !IsValid(InteractionComponent))
-	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: Failed to get valid InteractionComponent."), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 	
