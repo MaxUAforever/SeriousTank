@@ -194,7 +194,7 @@ void AST_AIController::SetupWeaponsComponent(APawn* InPawn)
 
 	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
 	{
-		if (Weapon->GetTotalAmmoCount() > 0)
+		if (Weapon->GetTotalAmmoCount() > 0 && GetBlackboardComponent())
 		{
 			GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, true);
 			return;
@@ -285,9 +285,9 @@ void AST_AIController::OnWeaponOutOfAmmo(int32 WeaponIndex, AST_BaseWeapon* Weap
 		return;
 	}
 
-	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
+	for (AST_BaseWeapon* NewWeapon : WeaponsManagerComponent->GetWeapons())
 	{
-		if (Weapon->GetTotalAmmoCount() > 0)
+		if (NewWeapon->GetTotalAmmoCount() > 0)
 		{
 			GetBlackboardComponent()->SetValueAsBool(BBWeaponSwitchNeededKey, true);
 			return;

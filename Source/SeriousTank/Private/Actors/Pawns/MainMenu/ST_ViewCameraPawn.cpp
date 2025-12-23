@@ -52,7 +52,6 @@ void AST_ViewCameraPawn::NotifyControllerChanged()
 	Super::NotifyControllerChanged();
 
 	const bool bIsUnPossessed = Controller == nullptr;
-	
 	APlayerController* PC = Cast<APlayerController>(bIsUnPossessed ? PreviousController : Controller);
 	if (!PC)
 	{

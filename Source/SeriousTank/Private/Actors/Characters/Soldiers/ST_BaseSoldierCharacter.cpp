@@ -129,16 +129,18 @@ void AST_BaseSoldierCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
 
-	AController* CurrentController = Controller == nullptr ? PreviousController : Controller;
+	AController* HandledController = Controller == nullptr ? CachedPreviousController : Controller;
 	
-	if (Cast<AAIController>(CurrentController))
+	if (Cast<AAIController>(HandledController))
 	{
-		OnAIControllerChanged(Cast<AAIController>(PreviousController), Cast<AAIController>(Controller));
+		OnAIControllerChanged(Cast<AAIController>(CachedPreviousController), Cast<AAIController>(Controller));
 	}
-	else if (Cast<APlayerController>(CurrentController))
+	else if (Cast<APlayerController>(HandledController))
 	{
-		OnPlayerControllerChanged(Cast<APlayerController>(PreviousController), Cast<APlayerController>(Controller));
+		OnPlayerControllerChanged(Cast<APlayerController>(CachedPreviousController), Cast<APlayerController>(Controller));
 	}
+
+	CachedPreviousController = Controller;
 }
 
 float AST_BaseSoldierCharacter::GetCameraYawAngle() const

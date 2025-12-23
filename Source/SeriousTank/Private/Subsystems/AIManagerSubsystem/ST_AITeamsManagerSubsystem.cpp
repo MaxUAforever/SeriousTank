@@ -16,6 +16,8 @@ uint32 GetTypeHash(const FTeamMemberInfo& Info)
 
 void UST_AITeamsManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
+	Super::OnWorldBeginPlay(InWorld);
+
 	TArray<AActor*> TeamSpawnerActors;
 	UGameplayStatics::GetAllActorsOfClass(&InWorld, AST_AITeamPawnSpawner::StaticClass(), TeamSpawnerActors);
 	for (AActor* Actor : TeamSpawnerActors)
