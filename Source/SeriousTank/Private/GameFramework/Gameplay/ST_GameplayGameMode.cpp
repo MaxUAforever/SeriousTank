@@ -70,6 +70,7 @@ void AST_GameplayGameMode::InitGameState()
 	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
 	{
 		GameplayGameState->Initialize(BaseGameData);
+		GameplayGameState->OnPreStartCountdownStartedDelegate.AddUObject(this, &ThisClass::OnPreStartCountdownStarted);
 		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::OnPreStartCountdownEneded);
 	}
 }
@@ -115,6 +116,6 @@ void AST_GameplayGameMode::SetupSpawnSubsystem()
 	
 	for (const FObjectTypeSpawnParams& TypeSpawnParams : ObjectsSpawnParameters)
 	{
-		ObjectSpawnSubsystem->AddObjectSpawnManager(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
+		ObjectSpawnSubsystem->AddDefaultSpawnParameters(TypeSpawnParams.SpawnObjectType, TypeSpawnParams.SpawnParameters);
 	}
 }

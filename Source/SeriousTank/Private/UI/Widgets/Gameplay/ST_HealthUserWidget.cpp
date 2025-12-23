@@ -3,7 +3,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/Pawn.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
 void UST_HealthUserWidget::NativeConstruct()
 {
@@ -34,6 +34,14 @@ void UST_HealthUserWidget::SetHealthValue(float InHealth)
 	CurrentHealthValue = InHealth;
 
 	UpdateView();
+}
+
+void UST_HealthUserWidget::SetProgressBarColor(const FLinearColor& InColor)
+{
+	if (HealthProgressBar)
+	{
+		HealthProgressBar->SetFillColorAndOpacity(InColor);
+	}
 }
 
 void UST_HealthUserWidget::UpdateView()

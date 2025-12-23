@@ -12,7 +12,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "TimerManager.h"
 
 void UST_BaseSoldierAnimInstance::NativeInitializeAnimation()

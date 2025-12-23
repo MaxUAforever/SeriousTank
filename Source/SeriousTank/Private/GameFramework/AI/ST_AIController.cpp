@@ -10,7 +10,7 @@
 #include "Components/Weapons/ST_BaseWeaponsManagerComponent.h"
 #include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "Kismet/GameplayStatics.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISenseConfig.h"
@@ -21,6 +21,13 @@ AST_AIController::AST_AIController()
 {
 	PerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>("PerceptionComponent");
 	PatrollingComponent = CreateDefaultSubobject<UAIPatrollingComponent>("PatrollingComponent");
+}
+
+void AST_AIController::SetGenericTeamId(const FGenericTeamId& NewTeamID)
+{
+	Super::SetGenericTeamId(NewTeamID);
+
+	OnAITeamWasChangedDelegate.Broadcast(this, NewTeamID.GetId());
 }
 
 void AST_AIController::BeginPlay()
@@ -59,17 +66,16 @@ void AST_AIController::OnPossess(APawn* InPawn)
 	}
 
 	AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(UGameplayStatics::GetGameState(this));
-	const bool bCanStart = IsValid(GameplayGameState) ? GameplayGameState->GetInternalGameState() == EInternalGameState::GameInProgress : World->HasBegunPlay();
 	
+	GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::SetupPawnSettings);
+
+	const bool bCanStart = IsValid(GameplayGameState) ? GameplayGameState->GetInternalGameState() == EInternalGameState::GameInProgress : World->HasBegunPlay();
 	if (bCanStart)
 	{
 		SetupPawnSettings();
 	}
-	else if (IsValid(GameplayGameState))
-	{
-		GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::SetupPawnSettings);
-	}
-	else
+	
+	if (!IsValid(GameplayGameState))
 	{
 		GetWorld()->OnWorldBeginPlay.AddUObject(this, &ThisClass::SetupPawnSettings);
 	}
@@ -103,6 +109,12 @@ void AST_AIController::SetupPawnSettings()
 			PatrollingComponent->OnIsActiveChanged.AddUObject(this, &ThisClass::OnPatrollingStateChaned);
 		}
 	}
+
+	AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(UGameplayStatics::GetGameState(this));
+	GameplayGameState->OnPreStartCountdownEndedDelegate.RemoveAll(this);
+
+	GameplayGameState->OnPreStartCountdownStartedDelegate.AddUObject(this, &ThisClass::StopBehaviourTree);
+	GameplayGameState->OnPreStartCountdownEndedDelegate.AddUObject(this, &ThisClass::StartBehaviourTree);
 }
 
 void AST_AIController::SetupPerception(APawn* InPawn)
@@ -182,7 +194,7 @@ void AST_AIController::SetupWeaponsComponent(APawn* InPawn)
 
 	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
 	{
-		if (Weapon->GetTotalAmmoCount() > 0)
+		if (Weapon->GetTotalAmmoCount() > 0 && GetBlackboardComponent())
 		{
 			GetBlackboardComponent()->SetValueAsBool(BBCanAttackKey, true);
 			return;
@@ -273,9 +285,9 @@ void AST_AIController::OnWeaponOutOfAmmo(int32 WeaponIndex, AST_BaseWeapon* Weap
 		return;
 	}
 
-	for (AST_BaseWeapon* Weapon : WeaponsManagerComponent->GetWeapons())
+	for (AST_BaseWeapon* NewWeapon : WeaponsManagerComponent->GetWeapons())
 	{
-		if (Weapon->GetTotalAmmoCount() > 0)
+		if (NewWeapon->GetTotalAmmoCount() > 0)
 		{
 			GetBlackboardComponent()->SetValueAsBool(BBWeaponSwitchNeededKey, true);
 			return;
@@ -308,8 +320,30 @@ void AST_AIController::OnTargetDetected(AActor* Target)
 		return;
 	}
 		
-	if (TargetPawn->IsPlayerControlled())
+	bool bIsAttackTarget = false;
+	if (EnemyType == EEnemyType::Player)
 	{
+		bIsAttackTarget = TargetPawn->IsPlayerControlled();
+	}
+	else if (EnemyType == EEnemyType::Team)
+	{
+		IGenericTeamAgentInterface* TeamAgentInterface = Cast<IGenericTeamAgentInterface>(TargetPawn->GetController());
+		if (TeamAgentInterface)
+		{
+			const uint8 TargetTeamId = TeamAgentInterface->GetGenericTeamId().GetId();
+			const uint8 MyTeamId = GetGenericTeamId().GetId();
+			bIsAttackTarget = TargetTeamId != MyTeamId;
+		}
+	}
+
+	if (bIsAttackTarget)
+	{
+		UST_HealthComponent* TargetHealthComponent = TargetPawn->GetComponentByClass<UST_HealthComponent>();
+		if (IsValid(TargetHealthComponent) && TargetHealthComponent->GetCurrentHealth() <= 0.f)
+		{
+			return;
+		}
+
 		AttackTarget = TargetPawn;
 
 		OnAttackTargetChanged(Target);
@@ -357,27 +391,75 @@ void AST_AIController::OnTargetLost(AActor* Target)
 	}
 }
 
+void AST_AIController::UpdateTargetDetection()
+{
+	TArray<AActor*> KnownActors;
+	if (ViewPerceptionType == EViewPerceptionType::PlayerView)
+	{
+		if (UST_ViewAreaBoxComponent* ViewAreaBoxComponent = Cast<UST_ViewAreaBoxComponent>(GetPawn()->GetComponentByClass(UST_ViewAreaBoxComponent::StaticClass())))
+		{
+			ViewAreaBoxComponent->GetOverlappingActors(KnownActors);
+		}
+	}
+	else
+	{
+		GetPerceptionComponent()->GetKnownPerceivedActors(UAISense_Sight::StaticClass(), KnownActors);
+	}
+
+	for (AActor* Actor : KnownActors)
+	{
+		OnTargetDetected(Actor);
+
+		if (IsValid(AttackTarget))
+		{
+			return;
+		}
+	}
+}
+
 void AST_AIController::OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType)
 {
 	if (FMath::IsNearlyZero(CurrentHealthValue))
 	{
-		UBehaviorTreeComponent* BTComponent = GetComponentByClass<UBehaviorTreeComponent>();
-		if (!BTComponent)
-		{
-			return;
-		}
-
-		BTComponent->StopTree();
+		StopBehaviourTree();
 		ClearFocus(EAIFocusPriority::Gameplay);
+	}
+}
+
+void AST_AIController::OnAttackTargetHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType)
+{
+	if (!IsValid(AttackTarget))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AST_AIController::OnAttackTargetHealthChanged: AttackTarget is not valid!"));
+		return;
+	}
+
+	if (FMath::IsNearlyZero(CurrentHealthValue))
+	{
+		AttackTarget = nullptr;
+		OnAttackTargetChanged(nullptr);
+
+		UpdateTargetDetection();
 	}
 }
 
 void AST_AIController::OnAttackTargetChanged(AActor* Target)
 {
-	GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
-	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, true);
+	const APawn* OldAttackTarget = Cast<APawn>(GetBlackboardComponent()->GetValueAsObject(BBAttackTargetKey));
+	if (IsValid(OldAttackTarget))
+	{
+		if (UST_HealthComponent* HealthComponent = OldAttackTarget->GetComponentByClass<UST_HealthComponent>())
+		{
+			HealthComponent->OnHealthValueChangedDelegate.RemoveAll(this);
+		}
+	}
+
 	IST_AIPawnInterface* AIPawn = Cast<IST_AIPawnInterface>(GetPawn());
-	if (!IsValid(Target) || AIPawn == nullptr)
+
+	GetBlackboardComponent()->SetValueAsObject(BBAttackTargetKey, Target);
+	GetBlackboardComponent()->SetValueAsBool(BBIsAimingKey, AIPawn != nullptr && IsValid(Target));
+
+	if (!IsValid(Target))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(AimUpdateTimerHandle);
 		ClearFocus(EAIFocusPriority::Gameplay);
@@ -386,7 +468,16 @@ void AST_AIController::OnAttackTargetChanged(AActor* Target)
 	}
 
 	SetFocus(Target);
-	GetWorld()->GetTimerManager().SetTimer(AimUpdateTimerHandle, this, &ThisClass::AimToTarget, 0.25f, true);
+
+	if (AIPawn != nullptr)
+	{
+		GetWorld()->GetTimerManager().SetTimer(AimUpdateTimerHandle, this, &ThisClass::AimToTarget, 0.25f, true);
+	}
+
+	if (UST_HealthComponent* HealthComponent = Target->GetComponentByClass<UST_HealthComponent>())
+	{
+		HealthComponent->OnHealthValueChangedDelegate.AddUObject(this, &ThisClass::OnAttackTargetHealthChanged);
+	}
 }
 
 void AST_AIController::AimToTarget()
@@ -411,5 +502,30 @@ void AST_AIController::OnTargetVehicleTaken(APawn* InPawn, AController* OldContr
 	{
 		GetBlackboardComponent()->SetValueAsObject(BBFreeTrackedVehicleKey, nullptr);
 		InPawn->ReceiveControllerChangedDelegate.RemoveAll(this);
+	}
+}
+
+void AST_AIController::StartBehaviourTree()
+{
+	APawn* PossessedPawn = GetPawn();
+	if (!IsValid(PossessedPawn))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AST_AIController::StartBehaviourTree: PossessedPawn is not valid!"));
+		return;
+	}
+
+	UBehaviorTree* NeededBehaviorTree = PossessedPawn->IsA(AST_BaseVehicle::StaticClass()) ? TankBehaviourTree : DefaultBehaviourTree;
+	if (NeededBehaviorTree != nullptr)
+	{
+		RunBehaviorTree(NeededBehaviorTree);
+	}
+}
+
+void AST_AIController::StopBehaviourTree()
+{
+	UBehaviorTreeComponent* BTComponent = GetComponentByClass<UBehaviorTreeComponent>();
+	if (BTComponent && BTComponent->IsRunning())
+	{
+		BTComponent->StopTree();
 	}
 }

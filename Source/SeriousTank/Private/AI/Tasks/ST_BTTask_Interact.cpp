@@ -1,6 +1,6 @@
 #include "AI/Tasks/ST_BTTask_Interact.h"
 
-#include "Subsystems/AIManagerSubsystem/ST_AIManagerSubsystem.h"
+#include "Subsystems/AIManagerSubsystem/ST_AIInteractionsManagerSubsystem.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -49,6 +49,8 @@ EBTNodeResult::Type UST_BTTask_Interact::ExecuteTask(UBehaviorTreeComponent& Own
 
 		OwnerComp.GetBlackboardComponent()->SetValueAsFloat(BBInteractionActivationTimeKey, IsValid(InterruptibleAction) ? InterruptibleAction->GetTotalActivationTime() : 0.f);
 	}
+
+	Controller->ClearFocus(EAIFocusPriority::Gameplay);
 
 	return EBTNodeResult::Succeeded;
 }

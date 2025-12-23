@@ -1,7 +1,7 @@
 #include "Subsystems/QuestSubsystem/Tasks/ST_QuestTask_AIAreaClearing.h"
 
 #include "Engine/World.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnManager.h"
 #include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 #include "Subsystems/QuestSubsystem/Tasks/Data/ST_AIAreaClearingTaskInfoDataAsset.h"
@@ -95,7 +95,7 @@ void UST_QuestTask_AIAreaClearing::StartWave(int32 WaveIndex)
 	SpawnEnemy();
 }
 
-void UST_QuestTask_AIAreaClearing::OnEnemySpawned(AActor* InTargetActor)
+void UST_QuestTask_AIAreaClearing::OnEnemySpawned(ABaseObjectSpawner* ObjectSpawner, AActor* InTargetActor)
 {
 	UST_HealthComponent* HealthComponent = Cast<UST_HealthComponent>(InTargetActor->GetComponentByClass(UST_HealthComponent::StaticClass()));
 	if (!HealthComponent)
@@ -104,7 +104,7 @@ void UST_QuestTask_AIAreaClearing::OnEnemySpawned(AActor* InTargetActor)
 		return;
 	}
 
-	auto OnEnemyKilledLambda = [this, HealthComponent]()
+	auto OnEnemyKilledLambda = [this, HealthComponent](AActor* Actor)
 	{
 		if (IsValid(HealthComponent))
 		{

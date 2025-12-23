@@ -2,7 +2,7 @@
 
 #include "Subsystems/WorldSubsystem.h"
 #include "Subsystems/AIManagerSubsystem/ST_AIManagerTypes.h"
-#include "ST_AIManagerSubsystem.generated.h"
+#include "ST_AIInteractionsManagerSubsystem.generated.h"
 
 
 struct FInteractionTypeInfo
@@ -14,7 +14,7 @@ class UBaseInteractionAction;
 class UInteractionComponent;
 
 UCLASS()
-class SERIOUSTANK_API UST_AIManagerSubsystem : public UWorldSubsystem
+class SERIOUSTANK_API UST_AIInteractionsManagerSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

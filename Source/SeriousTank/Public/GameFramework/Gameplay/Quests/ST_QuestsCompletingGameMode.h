@@ -16,11 +16,15 @@ public:
 	AST_QuestsCompletingGameMode();
 
 protected:
+	virtual void OnPreStartCountdownStarted() override;
 	virtual void OnPreStartCountdownEneded() override;
 
-private:
+	virtual void OnQuestsStarted() {};
+
+protected:
 	void StartQuests();
 	
+private:
 	void OnQuestTaskCompleted(FTaskID TaskID, EQuestCompleteRelust TaskCompleteResult);
 
 protected:

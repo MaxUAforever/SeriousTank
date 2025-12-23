@@ -84,7 +84,7 @@ void UST_QuestTask_TargetShooting::OnTargetDestroyed(AActor* DestroyedActor)
 	ObjectSpawnSubsystem->SpawnObject(ESpawnObjectType::Target, GetQuestProviderObject());
 }
 
-void UST_QuestTask_TargetShooting::OnTargetSpawned(AActor* InTargetActor)
+void UST_QuestTask_TargetShooting::OnTargetSpawned(ABaseObjectSpawner* ObjectSpawner, AActor* InTargetActor)
 {
 	AST_ShootTarget* Target = Cast<AST_ShootTarget>(InTargetActor);
 	if (!Target)

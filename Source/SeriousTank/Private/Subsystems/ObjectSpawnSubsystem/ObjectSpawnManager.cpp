@@ -5,7 +5,7 @@
 #include "Subsystems/ObjectSpawnSubsystem/BaseObjectSpawner.h"
 #include "TimerManager.h"
 
-void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner)
+void UObjectSpawnManager::Initialize(const ESpawnObjectType InSpawnObjectType, const FObjectSpawnParameters& NewSpawnParameters, const UObject* SpawnerOwner, FName InSpawnTag)
 {
 	const UWorld* World = GetWorld();
 	if (!World)
@@ -13,6 +13,10 @@ void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, con
 		UE_LOG(LogTemp, Warning, TEXT("ObjectSpawnManager::Initialize: Failed to get world"));
 		return;
 	}
+
+	SpawnObjectType = InSpawnObjectType;
+	SpawnOwner = SpawnerOwner;
+	SpawnTag = InSpawnTag;
 
 	TArray<AActor*> FoundSpawningActors;
 	UGameplayStatics::GetAllActorsOfClass(World, ABaseObjectSpawner::StaticClass(), FoundSpawningActors);
@@ -24,25 +28,7 @@ void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, con
 
 	for (AActor* FoundSpawingActor : FoundSpawningActors)
 	{
-		ABaseObjectSpawner* SpawningActor = Cast<ABaseObjectSpawner>(FoundSpawingActor);
-		if (!SpawningActor || !SpawningActor->HasSpawnObjectType(SpawnObjectType))
-		{
-			continue;
-		}
-
-		const bool bIsNeededOwner = SpawningActor->GetSpawnOwner() == SpawnerOwner || (SpawningActor->GetSpawnOwner() == nullptr && SpawnerOwner->IsA<UWorld>());
-		if (!bIsNeededOwner)
-		{
-			continue;
-		}
-
-		SpawningActor->OnSetSpawerEnabledDelegate.BindUObject(this, &ThisClass::OnSpawnerSetEnabled);
-		SpawningActor->OnSpawnedObjectDestroyedDelegate.BindUObject(this, &ThisClass::OnSpawnedObjectDestroyed);
-
-		if (SpawningActor->CanSpawnObject())
-		{
-			AvailableSpawnActors.Add(SpawningActor);
-		}
+		RegisterSpawner(Cast<ABaseObjectSpawner>(FoundSpawingActor));
 	}
 
 	SetSpawnTime(NewSpawnParameters.SpawnTime);
@@ -57,6 +43,42 @@ void UObjectSpawnManager::Initialize(const ESpawnObjectType SpawnObjectType, con
 	{
 		SpawnRandomObject();
 	}
+}
+
+void UObjectSpawnManager::RegisterSpawner(ABaseObjectSpawner* SpawningActor)
+{
+	if (!SpawningActor || !SpawningActor->HasSpawnObjectType(SpawnObjectType))
+	{
+		return;
+	}
+
+	const bool bHasNeededTag = SpawningActor->GetSpawnTag() == SpawnTag;
+	const bool bIsNeededOwner = SpawningActor->GetSpawnOwner() == SpawnOwner || (SpawningActor->GetSpawnOwner() == nullptr && SpawnOwner->IsA<UWorld>());
+	if (!bHasNeededTag || !bIsNeededOwner)
+	{
+		return;
+	}
+
+	SpawningActor->OnSetSpawerEnabledDelegate.BindUObject(this, &ThisClass::OnSpawnerSetEnabled);
+	SpawningActor->OnSpawnedObjectDestroyedDelegate.BindUObject(this, &ThisClass::OnSpawnedObjectDestroyed);
+	
+	if (SpawningActor->CanSpawnObject())
+	{
+		AvailableSpawnActors.Add(SpawningActor);
+	}
+}
+
+void UObjectSpawnManager::UnregisterSpawner(ABaseObjectSpawner* SpawningActor)
+{
+	if (!IsValid(SpawningActor) || !SpawningActor->OnSetSpawerEnabledDelegate.IsBoundToObject(this))
+	{
+		return;
+	}
+
+	SpawningActor->OnSetSpawerEnabledDelegate.Unbind();
+	SpawningActor->OnSpawnedObjectDestroyedDelegate.Unbind();
+
+	AvailableSpawnActors.Remove(SpawningActor);
 }
 
 void UObjectSpawnManager::BeginDestroy()
@@ -125,6 +147,24 @@ AActor* UObjectSpawnManager::SpawnRandomObject()
 	return SpawnRandomObject(FMath::RandRange(0, AvailableSpawnActors.Num() - 1));
 }
 
+TArray<AActor*> UObjectSpawnManager::SpawnInAllAvailabeSpawners()
+{
+	TArray<AActor*> SpawnedObjects;
+	if (AvailableSpawnActors.Num() <= 0)
+	{
+		return SpawnedObjects;
+	}
+
+	const int32 AvailableSpawnersCount = AvailableSpawnActors.Num();
+	SpawnedObjects.Reserve(AvailableSpawnersCount);
+	for (int32 Index = 0; Index < AvailableSpawnersCount; ++Index)
+	{
+		SpawnedObjects.Add(SpawnRandomObject());
+	}
+
+	return SpawnedObjects;
+}
+
 AActor* UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
 {
 	if (SpawnVolumeIndex >= AvailableSpawnActors.Num())
@@ -156,9 +196,9 @@ AActor* UObjectSpawnManager::SpawnRandomObject(int32 SpawnVolumeIndex)
 	return NewObject;
 }
 
-void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* SpawnVolume, AActor* SpawnedObject)
+void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* ObjectSpawner, AActor* SpawnedObject)
 {
-	if (!SpawnVolume || !SpawnedObject)
+	if (!ObjectSpawner || !SpawnedObject)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ObjectSpawnSubsystem::SpawnRandomObject: Spawn volume or object are not presented."));
 		return;
@@ -184,9 +224,9 @@ void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* SpawnVolume, AAc
 	}
 
 	SpawnedObjectsCount += 1;
-	if (SpawnVolume->HasMaxObjectsCount())
+	if (ObjectSpawner->HasMaxObjectsCount())
 	{
-		AvailableSpawnActors.Remove(SpawnVolume);
+		AvailableSpawnActors.Remove(ObjectSpawner);
 	}
 
 	const bool bIsOverMaxCount = SpawnParams.bIsSpawnLimited && SpawnedObjectsCount >= SpawnParams.MaxObjectsCount;
@@ -195,7 +235,7 @@ void UObjectSpawnManager::OnObjectIsSpawned(ABaseObjectSpawner* SpawnVolume, AAc
 		SetSpawnTimerEnabled(false);
 	}
 
-	OnObjectSpawnedDelegate.Broadcast(SpawnedObject);
+	OnObjectSpawnedDelegate.Broadcast(ObjectSpawner, SpawnedObject);
 }
 
 void UObjectSpawnManager::OnDestroyTimerFinished(AActor* SpawnedObject)
@@ -271,9 +311,4 @@ void UObjectSpawnManager::SetSpawnTimerEnabled(bool bIsEnabled)
 	{
 		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
 	}
-}
-
-void UObjectSpawnManager::UpdateAvailableSpawners()
-{
-
 }

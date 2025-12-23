@@ -11,6 +11,7 @@ class UWeaponInputsDataAsset;
 class UInputAction;
 class UInputMappingContext;
 class UST_HealthComponent;
+class UST_HealthBarWidgetComponent;
 struct FInputActionValue;
 
 UCLASS(Abstract)
@@ -53,6 +54,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UST_HealthComponent* HealthComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UST_HealthBarWidgetComponent* HealthBarWidgetComponent;
 
 	/**
 	 * Gameplay information

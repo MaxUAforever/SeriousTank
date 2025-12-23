@@ -1,15 +1,43 @@
 #include "Subsystems/ObjectSpawnSubsystem/BaseObjectSpawner.h"
 
+#include "Subsystems/ObjectSpawnSubsystem/ObjectSpawnSubsystem.h"
 #include "Subsystems/ObjectSpawnSubsystem/SpawnSubsystemTypes.h"
 #include "Engine/World.h"
+
+ABaseObjectSpawner::ABaseObjectSpawner()
+{
+	SceneRootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	SetRootComponent(SceneRootComponent);
+}
 
 void ABaseObjectSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsValid(SpawnOwner))
+	SetSpawnOwner(SpawnOwner);
+}
+
+void ABaseObjectSpawner::SetSpawnOwner(UObject* InSpawnOwner)
+{
+	if (SpawnOwner == InSpawnOwner)
 	{
-		SetOwner(SpawnOwner);
+		return;
+	}
+
+	UObject* OldSpawnOwner = SpawnOwner;
+	SpawnOwner = InSpawnOwner;
+
+	if (OldSpawnOwner == nullptr)
+	{
+		UObjectSpawnSubsystem* SpawnSubsystem = GetWorld()->GetSubsystem<UObjectSpawnSubsystem>();
+		if (IsValid(SpawnSubsystem))
+		{
+			SpawnSubsystem->RegisterSpawner(this);
+		}
+	}
+	else if (SpawnOwner != InSpawnOwner)
+	{
+		OnSpawnOwnerChangedDelegate.ExecuteIfBound(this, OldSpawnOwner, SpawnOwner);
 	}
 }
 
@@ -28,7 +56,7 @@ AActor* ABaseObjectSpawner::SpawnRandomObject()
 {
 	if (ClassesToSpawn.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ABaseObjectSpawner::SpawnRandomObject: classes for spawning are not defined."));
+		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Invalid spawn owner or already set."), *GetClass()->GetName(), TEXT("SpawnRandomObject"));
 		return nullptr;
 	}
 
@@ -68,6 +96,8 @@ AActor* ABaseObjectSpawner::SpawnObject(TSubclassOf<AActor> ClassToSpawn)
 		SpawnedObject->OnDestroyed.AddDynamic(this, &ThisClass::OnSpanwedObjectDestroyed);
 
 		SpawnedObjectsCount += 1;
+
+		OnSpawnerSpawnedObjectDelegete.Broadcast(SpawnedObject);
 	}
 
 	return SpawnedObject;

@@ -50,7 +50,10 @@ void AST_FireArmWeapon::Shoot()
 	}
 
 	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Owner = this;
+	if (APawn* OwnerPawn = GetOwner<APawn>())
+	{
+		SpawnParameters.Owner = OwnerPawn->GetController();
+	}
 
 	FTransform SpawnTransform = ShootingArrowComponent->GetComponentTransform();
 	SpawnTransform.SetScale3D(GetActorScale3D());

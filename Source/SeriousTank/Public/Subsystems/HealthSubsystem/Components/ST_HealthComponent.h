@@ -9,7 +9,7 @@ enum class EHealthChangingType : uint8
 	Healing
 };
 
-DECLARE_MULTICAST_DELEGATE(FOnOwnerKilledDelegate)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOwnerKilledDelegate, AActor*)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthValueChangedDelegate, float /*CurrentHealthValue*/, EHealthChangingType /*HealthChangingType*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMaxHealthValueChangedDelegate, float /*MaxHealthValue*/);
 

@@ -30,9 +30,10 @@ void UST_PreStartCountdownWidget::NativeConstruct()
 
 	UISoundsComponent = UGameplayStatics::SpawnSound2D(World, CountdownSound);
 
+	GameState->OnPreStartCountdownStartedDelegate.AddUObject(this, &ThisClass::OnPrePreGameCountdownStarted);
+
 	if (GameState->GetInternalGameState() == EInternalGameState::WaitingToInitialize)
 	{
-		GameState->OnGameStateInitializedDelegate.AddUObject(this, &ThisClass::OnPrePreGameCountdownStarted);
 		PreStartTimeBlock->SetText(FText::FromString("Waiting..."));
 	}
 	else if (GameState->GetInternalGameState() == EInternalGameState::PreGameCountdown)

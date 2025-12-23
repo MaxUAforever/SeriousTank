@@ -2,6 +2,7 @@
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "GameFramework/Gameplay/ST_GameplayGameState.h"
 #include "QuestSubsystem/Public/QuestSubsystem.h"
 #include "QuestSubsystem/Public/Components/QuestProvider.h"
 
@@ -10,8 +11,21 @@ AST_QuestsCompletingGameMode::AST_QuestsCompletingGameMode()
 	QuestProvider = CreateDefaultSubobject<UQuestProvider>(TEXT("QuestProvider"));
 }
 
+void AST_QuestsCompletingGameMode::OnPreStartCountdownStarted()
+{
+	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
+	{
+		GameplayGameState->OnPreStartCountdownStartedDelegate.RemoveAll(this);
+	}
+}
+
 void AST_QuestsCompletingGameMode::OnPreStartCountdownEneded()
 {
+	if (AST_GameplayGameState* GameplayGameState = Cast<AST_GameplayGameState>(GameState))
+	{
+		GameplayGameState->OnPreStartCountdownEndedDelegate.RemoveAll(this);
+	}
+
 	StartQuests();
 }
 
@@ -58,6 +72,8 @@ void AST_QuestsCompletingGameMode::StartQuests()
 	{
 		TackedQuestTask->OnQuestTaskCompletedDelegate.AddUObject(this, &ThisClass::OnQuestTaskCompleted);
 	}
+
+	OnQuestsStarted();
 }
 
 void AST_QuestsCompletingGameMode::OnQuestTaskCompleted(FTaskID TaskID, EQuestCompleteRelust TaskCompleteResult)

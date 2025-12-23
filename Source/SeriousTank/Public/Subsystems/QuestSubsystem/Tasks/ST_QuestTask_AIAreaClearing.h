@@ -3,6 +3,7 @@
 #include "QuestSubsystem/Public/Tasks/BaseQuestTask.h"
 #include "ST_QuestTask_AIAreaClearing.generated.h"
 
+class ABaseObjectSpawner;
 class UST_HealthComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAreaClearingWaveChangedDelegate, int32);
@@ -30,7 +31,7 @@ protected:
 private:
     void StartWave(int32 WaveIndex);
 
-    void OnEnemySpawned(AActor* InTargetActor);
+    void OnEnemySpawned(ABaseObjectSpawner* ObjectSpawner, AActor* InTargetActor);
     void OnEnemyDestroyed();
 
     void SpawnEnemy();

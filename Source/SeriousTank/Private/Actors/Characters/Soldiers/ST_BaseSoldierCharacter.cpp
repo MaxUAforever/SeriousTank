@@ -1,6 +1,6 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 
-#include "AIController.h"
+
 #include "Actors/Characters/Soldiers/ST_BaseSoldierAnimInstance.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
 #include "Camera/CameraComponent.h"
@@ -13,6 +13,7 @@
 #include "Engine/LocalPlayer.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/AI/ST_AIController.h"
 #include "GameFramework/PlayerController.h"
 #include "Inputs/Data/CommonInputsDataAsset.h"
 #include "Inputs/Data/SoldierInputsDataAsset.h"
@@ -21,7 +22,8 @@
 #include "Perception/AISense_Sight.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
 #include "PlayerInteractionSubsystem/Public/Data/InteractionSubsystemSettings.h"
-#include "Subsystems/HealthSubsystem/ST_HealthComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthBarWidgetComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "UObject/UObjectGlobals.h"
 
 AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& ObjectInitializer)
@@ -37,6 +39,9 @@ AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& Obj
 	CameraViewAreaComponent = CreateDefaultSubobject<UST_ViewAreaBoxComponent>("CameraViewAreaComponent");
 	CameraViewAreaComponent->SetupAttachment(CameraSceneComponent);
 	
+	HealthBarWidgetComponent = CreateDefaultSubobject<UST_HealthBarWidgetComponent>("HealthBarWidgetComponent");
+	HealthBarWidgetComponent->SetupAttachment(RootComponent);
+
 	WeaponManagerComponent = CreateDefaultSubobject<UST_SoldierWeaponManagerComponent>("WeaponManagerComponent");
 	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
 	InteractingComponent = CreateDefaultSubobject<UInteractingComponent>("InteractingComponent");
@@ -68,22 +73,6 @@ void AST_BaseSoldierCharacter::BeginPlay()
 
 	PerceptionStimuliSourceComponent->RegisterForSense(UAISense_Sight::StaticClass());
 	PerceptionStimuliSourceComponent->RegisterWithPerceptionSystem();
-}
-
-void AST_BaseSoldierCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (AAIController* AIController = Cast<AAIController>(NewController))
-	{
-		bUseControllerRotationYaw = false;
-		if (UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(GetMovementComponent()))
-		{
-			MovementComp->bUseControllerDesiredRotation = true;
-		}
-
-		CameraSceneComponent->SetUsingAbsoluteRotation(false);
-	}
 }
 
 void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -138,76 +127,20 @@ void AST_BaseSoldierCharacter::SetupPlayerInputComponent(UInputComponent* Player
 
 void AST_BaseSoldierCharacter::NotifyControllerChanged()
 {
-	const bool bIsUnPossessed = Controller == nullptr;
-	APlayerController* PC = Cast<APlayerController>(bIsUnPossessed ? PreviousController : Controller);
-	if (!PC)
-	{
-		return;
-	}
-
 	Super::NotifyControllerChanged();
 
-	const UInteractionSubsystemSettings* InteractionSettings = GetDefault<UInteractionSubsystemSettings>();
-	UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
-	if (!EnhancedSubsystem)
+	AController* HandledController = Controller == nullptr ? CachedPreviousController : Controller;
+	
+	if (Cast<AAIController>(HandledController))
 	{
-		return;
+		OnAIControllerChanged(Cast<AAIController>(CachedPreviousController), Cast<AAIController>(Controller));
+	}
+	else if (Cast<APlayerController>(HandledController))
+	{
+		OnPlayerControllerChanged(Cast<APlayerController>(CachedPreviousController), Cast<APlayerController>(Controller));
 	}
 
-	if (bIsUnPossessed)
-	{
-		if (SoldierInputsDataAsset)
-		{
-			EnhancedSubsystem->RemoveMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext);
-		}
-
-		if (WeaponInputsDataAsset)
-		{
-			EnhancedSubsystem->RemoveMappingContext(WeaponInputsDataAsset->WeaponsInputContext);
-		}
-
-		
-		if (InteractionSettings->InteractionInputContext.IsValid())
-		{
-			EnhancedSubsystem->RemoveMappingContext(InteractionSettings->InteractionInputContext.Get());
-		}
-	}
-	else
-	{
-		if (CommonInputsDataAsset && !EnhancedSubsystem->HasMappingContext(CommonInputsDataAsset->CommonGameplayInputContext))
-		{
-			EnhancedSubsystem->AddMappingContext(CommonInputsDataAsset->CommonGameplayInputContext, 0);
-		}
-
-		if (WeaponInputsDataAsset && !EnhancedSubsystem->HasMappingContext(WeaponInputsDataAsset->WeaponsInputContext))
-		{
-			EnhancedSubsystem->AddMappingContext(WeaponInputsDataAsset->WeaponsInputContext, 0);
-		}
-
-		if (SoldierInputsDataAsset && !EnhancedSubsystem->HasMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext))
-		{
-			EnhancedSubsystem->AddMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext, 0);
-		}
-
-		auto AddInteractionMappingContext = [this, EnhancedSubsystem]()
-		{
-			const UInteractionSubsystemSettings* InteractionSettings = GetDefault<UInteractionSubsystemSettings>();
-			if (InteractionSettings->InteractionInputContext.IsValid())
-			{
-				FModifyContextOptions ModifyContextOptions;
-				ModifyContextOptions.bForceImmediately = true;
-				EnhancedSubsystem->AddMappingContext(InteractionSettings->InteractionInputContext.Get(), 0, ModifyContextOptions);
-				return true;
-			}
-
-			return false;
-		};
-
-		if (!AddInteractionMappingContext())
-		{
-			InteractingComponent->OnInteractionActionBoundDelegate.AddLambda([AddInteractionMappingContext]() { AddInteractionMappingContext(); });
-		}
-	}
+	CachedPreviousController = Controller;
 }
 
 float AST_BaseSoldierCharacter::GetCameraYawAngle() const
@@ -439,10 +372,144 @@ void AST_BaseSoldierCharacter::OnHealthChanged(float CurrentHealthValue, EHealth
 	}
 }
 
+void AST_BaseSoldierCharacter::OnTeamWasChanged(const AController* InController, uint8 TeamId)
+{
+	if (!IsValid(HealthBarWidgetComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s::%s: HealthBarWidgetComponent is not valid."), *GetClass()->GetName(), TEXT("OnTeamWasChanged"));
+		return;
+	}
+
+	IGenericTeamAgentInterface* PlayerTeamAgentInterface = Cast<IGenericTeamAgentInterface>(GetWorld()->GetFirstPlayerController());
+	if (PlayerTeamAgentInterface != nullptr)
+	{
+		const uint8 PlayerTeamId = PlayerTeamAgentInterface->GetGenericTeamId().GetId();
+
+		ETeamRelationType PlayerRelation;
+		if (TeamId == FGenericTeamId::NoTeam)
+		{
+			PlayerRelation = ETeamRelationType::Neutral;
+		}
+		else if (TeamId == PlayerTeamId)
+		{
+			PlayerRelation = ETeamRelationType::Ally;
+		}
+		else
+		{
+			PlayerRelation = ETeamRelationType::Enemy;
+		}
+
+		HealthBarWidgetComponent->SetupColor(PlayerRelation);
+	}
+}
+
 void AST_BaseSoldierCharacter::OnInteractionStopped()
 {
 	if (CurrentActionState == ESoldierActionState::Interacting)
 	{
 		SwitchToActionState(ESoldierActionState::None);
+	}
+}
+
+void AST_BaseSoldierCharacter::OnAIControllerChanged(AAIController* OldAIController, AAIController* NewAIController)
+{
+	if (IsValid(NewAIController))
+	{
+		bUseControllerRotationYaw = false;
+		if (UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(GetMovementComponent()))
+		{
+			MovementComp->bUseControllerDesiredRotation = true;
+		}
+
+		CameraSceneComponent->SetUsingAbsoluteRotation(false);
+	}
+
+	if (AST_AIController* NewSoldierAIController = Cast<AST_AIController>(NewAIController))
+	{
+		NewSoldierAIController->OnAITeamWasChangedDelegate.AddUObject(this, &ThisClass::OnTeamWasChanged);
+		OnTeamWasChanged(NewAIController, NewAIController->GetGenericTeamId().GetId());
+	}
+	else if (AST_AIController* OldSoldierAIController = Cast<AST_AIController>(OldAIController))
+	{
+		OldSoldierAIController->OnAITeamWasChangedDelegate.RemoveAll(this);
+	}
+}
+
+void AST_BaseSoldierCharacter::OnPlayerControllerChanged(APlayerController* OldPlayerController, APlayerController* NewPlayerController)
+{
+	if (!IsValid(OldPlayerController) && !IsValid(NewPlayerController))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s::%s: Both OldPlayerController and NewPlayerController are invalid."), *GetClass()->GetName(), TEXT("OnPlayerControllerChanged"))
+		return;
+	}
+
+	bool bIsUnpossessed = !IsValid(NewPlayerController);
+	APlayerController* HandledController = bIsUnpossessed ? OldPlayerController : NewPlayerController;
+
+	const UInteractionSubsystemSettings* InteractionSettings = GetDefault<UInteractionSubsystemSettings>();
+	UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(HandledController->GetLocalPlayer());
+	if (!EnhancedSubsystem)
+	{
+		return;
+	}
+
+	if (bIsUnpossessed)
+	{
+		if (SoldierInputsDataAsset)
+		{
+			EnhancedSubsystem->RemoveMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext);
+		}
+
+		if (WeaponInputsDataAsset)
+		{
+			EnhancedSubsystem->RemoveMappingContext(WeaponInputsDataAsset->WeaponsInputContext);
+		}
+
+
+		if (InteractionSettings->InteractionInputContext.IsValid())
+		{
+			EnhancedSubsystem->RemoveMappingContext(InteractionSettings->InteractionInputContext.Get());
+		}
+	}
+	else
+	{
+		if (CommonInputsDataAsset && !EnhancedSubsystem->HasMappingContext(CommonInputsDataAsset->CommonGameplayInputContext))
+		{
+			EnhancedSubsystem->AddMappingContext(CommonInputsDataAsset->CommonGameplayInputContext, 0);
+		}
+
+		if (WeaponInputsDataAsset && !EnhancedSubsystem->HasMappingContext(WeaponInputsDataAsset->WeaponsInputContext))
+		{
+			EnhancedSubsystem->AddMappingContext(WeaponInputsDataAsset->WeaponsInputContext, 0);
+		}
+
+		if (SoldierInputsDataAsset && !EnhancedSubsystem->HasMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext))
+		{
+			EnhancedSubsystem->AddMappingContext(SoldierInputsDataAsset->SoldierGameplayInputContext, 0);
+		}
+
+		auto AddInteractionMappingContext = [this, EnhancedSubsystem]()
+		{
+			const UInteractionSubsystemSettings* InteractionSettings = GetDefault<UInteractionSubsystemSettings>();
+			if (InteractionSettings->InteractionInputContext.IsValid())
+			{
+				FModifyContextOptions ModifyContextOptions;
+				ModifyContextOptions.bForceImmediately = true;
+				EnhancedSubsystem->AddMappingContext(InteractionSettings->InteractionInputContext.Get(), 0, ModifyContextOptions);
+				return true;
+			}
+
+			return false;
+		};
+
+		if (!AddInteractionMappingContext())
+		{
+			InteractingComponent->OnInteractionActionBoundDelegate.AddLambda([AddInteractionMappingContext]() { AddInteractionMappingContext(); });
+		}
+	}
+
+	if (IsValid(HealthBarWidgetComponent) && GetWorld()->GetFirstPlayerController() == NewPlayerController)
+	{
+		HealthBarWidgetComponent->SetVisibility(bIsUnpossessed);
 	}
 }

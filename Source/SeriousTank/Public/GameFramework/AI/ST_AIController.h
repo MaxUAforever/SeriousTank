@@ -9,11 +9,28 @@ class UAIPatrollingComponent;
 class UAIPerceptionComponent;
 enum class EHealthChangingType : uint8;
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAITeamWasChangedDelegate, const AController*, uint8);
+
 UENUM(BlueprintType)
 enum class EViewPerceptionType : uint8
 {
 	PlayerView,
 	AIPerception
+};
+
+UENUM(BlueprintType)
+enum class EEnemyType : uint8
+{
+	Player,
+	Team
+};
+
+UENUM(BlueprintType)
+enum class ETeamRelationType : uint8
+{
+	Neutral,
+	Ally,
+	Enemy
 };
 
 UCLASS()
@@ -22,7 +39,14 @@ class SERIOUSTANK_API AST_AIController : public AAIController
 	GENERATED_BODY()
 	
 public:
+	FOnAITeamWasChangedDelegate OnAITeamWasChangedDelegate;
+
+public:
 	AST_AIController();
+
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
+
+	inline void SetEnemyType(EEnemyType NewEnemyType) { EnemyType = NewEnemyType; };
 
 protected:
 	virtual void BeginPlay() override;
@@ -57,7 +81,10 @@ private:
 
 	void OnTargetDetected(AActor* Target);
 	void OnTargetLost(AActor* OtherActor);
+	void UpdateTargetDetection();
+
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
+	void OnAttackTargetHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
 
 	void OnAttackTargetChanged(AActor* Target);
 	void AimToTarget();
@@ -65,12 +92,15 @@ private:
 	UFUNCTION()
 	void OnTargetVehicleTaken(APawn* InPawn, AController* OldController, AController* NewController);
 
+	void StartBehaviourTree();
+	void StopBehaviourTree();
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* DefaultBehaviourTree;
+	UBehaviorTree* DefaultBehaviourTree = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBehaviorTree* TankBehaviourTree;
+	UBehaviorTree* TankBehaviourTree = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
 	UAIPerceptionComponent* PerceptionComp;
@@ -83,6 +113,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ViewPerceptionType==EViewPerceptionType::AIPerception", ClampMin = "0.0"))
 	float PerceptionSightRadiusScale = 1.f;
+
+	UPROPERTY(EditAnywhere)
+	EEnemyType EnemyType = EEnemyType::Player;
 
 	UPROPERTY(EditAnywhere)
 	bool bCanPossessVehicles = true;

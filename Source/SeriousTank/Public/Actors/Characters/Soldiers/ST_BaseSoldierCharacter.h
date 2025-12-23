@@ -3,6 +3,7 @@
 #include "GameFramework/Character.h"
 #include "ST_BaseSoldierCharacter.generated.h"
 
+class AAIController;
 class AST_BaseWeapon;
 class UCameraComponent;
 class UCommonInputsDataAsset;
@@ -12,6 +13,7 @@ class UST_HealthComponent;
 class UST_SoldierWeaponManagerComponent;
 class UST_ViewAreaBoxComponent;
 class UWeaponInputsDataAsset;
+class UST_HealthBarWidgetComponent;
 
 class UAIPerceptionStimuliSourceComponent;
 enum class EHealthChangingType : uint8;
@@ -22,62 +24,6 @@ UCLASS()
 class SERIOUSTANK_API AST_BaseSoldierCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-protected:
-	UPROPERTY(EditAnywhere)
-	USceneComponent* CameraSceneComponent;
-
-	UPROPERTY(EditAnywhere)
-	UCameraComponent* CameraComponent;
-
-	UPROPERTY(VisibleAnywhere)
-	UST_ViewAreaBoxComponent* CameraViewAreaComponent;
-
-	UPROPERTY(EditDefaultsOnly)
-	UST_SoldierWeaponManagerComponent* WeaponManagerComponent;
-
-	UPROPERTY(EditDefaultsOnly)
-	UST_HealthComponent* HealthComponent;
-
-	UPROPERTY(EditDefaultsOnly)
-	UInteractingComponent* InteractingComponent;
-
-	UPROPERTY()
-	UAIPerceptionStimuliSourceComponent* PerceptionStimuliSourceComponent;
-
-	/**
-	 * Common gameplay and weapon inputs
-	 */
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-	UCommonInputsDataAsset* CommonInputsDataAsset;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-	UWeaponInputsDataAsset* WeaponInputsDataAsset;
-
-	UPROPERTY(Category = "Input",  EditDefaultsOnly)
-	USoldierInputsDataAsset* SoldierInputsDataAsset;
-
-	/**
-	 * Skeleton information
-	 */
-
-	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
-	FName RightHandSocketName;
-
-	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
-	FName LeftHandSocketName;
-
-	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
-	FName SecondWeaponSocketName;
-	
-private:
-	ESoldierActionState CurrentActionState;
-
-protected:
-	virtual void BeginPlay() override;
-
-	virtual void PossessedBy(AController* NewController) override;
 
 public:	
 	AST_BaseSoldierCharacter(const class FObjectInitializer& ObjectInitializer);
@@ -92,6 +38,8 @@ public:
 	FName GetSecondWeaponSocketName() const { return SecondWeaponSocketName; };
 	
 protected:
+	virtual void BeginPlay() override;
+
 	void MoveForward(const FInputActionValue& ActionValue);
 	void MoveRight(const FInputActionValue& ActionValue);
 	
@@ -125,5 +73,66 @@ private:
 	void MoveByAxis(const FInputActionValue& ActionValue, EAxis::Type Axis);
 
 	void OnHealthChanged(float CurrentHealthValue, EHealthChangingType HealthChangingType);
+	void OnTeamWasChanged(const AController* InController, uint8 TeamId);
 	void OnInteractionStopped();
+
+	void OnAIControllerChanged(AAIController* OldAIController, AAIController* NewAIController);
+	void OnPlayerControllerChanged(APlayerController* OldPlayerController, APlayerController* NewPlayerController);
+
+protected:
+	UPROPERTY(EditAnywhere)
+	USceneComponent* CameraSceneComponent;
+
+	UPROPERTY(EditAnywhere)
+	UCameraComponent* CameraComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UST_ViewAreaBoxComponent* CameraViewAreaComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UST_SoldierWeaponManagerComponent* WeaponManagerComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UST_HealthBarWidgetComponent* HealthBarWidgetComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UST_HealthComponent* HealthComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UInteractingComponent* InteractingComponent;
+
+	UPROPERTY()
+	UAIPerceptionStimuliSourceComponent* PerceptionStimuliSourceComponent;
+
+	/**
+	 * Common gameplay and weapon inputs
+	 */
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UCommonInputsDataAsset* CommonInputsDataAsset;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	UWeaponInputsDataAsset* WeaponInputsDataAsset;
+
+	UPROPERTY(Category = "Input", EditDefaultsOnly)
+	USoldierInputsDataAsset* SoldierInputsDataAsset;
+
+	/**
+	 * Skeleton information
+	 */
+
+	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
+	FName RightHandSocketName;
+
+	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
+	FName LeftHandSocketName;
+
+	UPROPERTY(Category = "Skeleton", EditDefaultsOnly)
+	FName SecondWeaponSocketName;
+
+private:
+	ESoldierActionState CurrentActionState;
+
+	// It's needed to store it because PreviousController is already nullptr when NotifyControllerChanged is called.
+	TObjectPtr<AController> CachedPreviousController = nullptr;
 };

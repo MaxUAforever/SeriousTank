@@ -3,6 +3,8 @@
 #include "QuestSubsystem/Public/Tasks/TimeLimitedQuestTask.h"
 #include "ST_QuestTask_TargetShooting.generated.h"
 
+class ABaseObjectSpawner;
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FTargetShotingScoreChangedDelegate, int32)
 
 UCLASS()
@@ -23,7 +25,7 @@ public:
 private:
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);
-	void OnTargetSpawned(AActor* InTargetActor);
+	void OnTargetSpawned(ABaseObjectSpawner* ObjectSpawner, AActor* InTargetActor);
 
 private:
 	float AddedTimeForTarget;

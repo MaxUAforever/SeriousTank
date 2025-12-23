@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameFramework/PlayerController.h"
+#include "GenericTeamAgentInterface.h"
 #include "ST_GameplayPlayerController.generated.h"
 
 class UInputAction;
@@ -10,7 +11,7 @@ enum class EHealthChangingType : uint8;
 DECLARE_MULTICAST_DELEGATE(FOnMainCharacterDiedDelegate);
 
 UCLASS()
-class SERIOUSTANK_API AST_GameplayPlayerController : public APlayerController
+class SERIOUSTANK_API AST_GameplayPlayerController : public APlayerController, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -25,6 +26,9 @@ protected:
     UInputAction* PauseInputAction;
 
 private:
+	FGenericTeamId TeamID;
+
+private:
 	APawn* PreviousPawn;
 	APawn* MainGameplayPawn;
 
@@ -35,6 +39,9 @@ public:
 	void OnPauseGameClicked();
 
 	APawn* GetPreviousPawn() const { return PreviousPawn; }
+
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override { TeamID = NewTeamID; };
+	virtual FGenericTeamId GetGenericTeamId() const override { return TeamID; }
 
 protected:
 	virtual void BeginPlay() override;

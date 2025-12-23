@@ -19,8 +19,9 @@ struct FBaseGameData;
 
 DECLARE_MULTICAST_DELEGATE(FOnGameStateInitializedDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnGameIsOver);
-DECLARE_DELEGATE_OneParam(FCountdownChanged, int32);
-DECLARE_MULTICAST_DELEGATE(FOnCountdownEnded);
+DECLARE_MULTICAST_DELEGATE(FOnCountdownStartedDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnCountdownEndedDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnInternalGameStateChangedDelegate, EInternalGameState);
 
 UCLASS()
 class SERIOUSTANK_API AST_GameplayGameState : public AGameStateBase
@@ -29,8 +30,11 @@ class SERIOUSTANK_API AST_GameplayGameState : public AGameStateBase
 
 public:
 	FOnGameStateInitializedDelegate OnGameStateInitializedDelegate;
+	FOnInternalGameStateChangedDelegate OnInternalGameStateChangedDelegate;
+
+	FOnCountdownStartedDelegate OnPreStartCountdownStartedDelegate;
+	FOnCountdownEndedDelegate OnPreStartCountdownEndedDelegate;
 	FOnGameIsOver OnGameIsOver;
-	FOnCountdownEnded OnPreStartCountdownEndedDelegate;
 
 public:
 	AST_GameplayGameState();
@@ -49,6 +53,7 @@ public:
 	float GetTotalPlayTime() const { return TotalPlayTime; };
 	
 	void SwitchToNextState();
+	void SwitchToSpecificState(EInternalGameState NewState);
 
 private:
 	void OnStateWaitingToInitializeStarted();

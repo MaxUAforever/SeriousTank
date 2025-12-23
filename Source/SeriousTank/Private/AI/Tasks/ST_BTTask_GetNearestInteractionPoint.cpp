@@ -1,6 +1,6 @@
 #include "AI/Tasks/ST_BTTask_GetNearestInteractionPoint.h"
 
-#include "Subsystems/AIManagerSubsystem/ST_AIManagerSubsystem.h"
+#include "Subsystems/AIManagerSubsystem/ST_AIInteractionsManagerSubsystem.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -66,7 +66,7 @@ const AActor* UST_BTTask_GetNearestInteractionPoint::FindNearestInteractionActor
 		return nullptr;
 	}
 
-	const UST_AIManagerSubsystem* AIManagerSubsystem = World->GetSubsystem<UST_AIManagerSubsystem>();
+	const UST_AIInteractionsManagerSubsystem* AIManagerSubsystem = World->GetSubsystem<UST_AIInteractionsManagerSubsystem>();
 	if (!IsValid(AIManagerSubsystem))
 	{
 		return nullptr;

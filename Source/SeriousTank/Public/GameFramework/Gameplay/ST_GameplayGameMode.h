@@ -36,6 +36,7 @@ protected:
 
 	virtual void InitGameState() override;
 
+	virtual void OnPreStartCountdownStarted() {};
 	virtual void OnPreStartCountdownEneded() {};
 
 	void TriggerGameFinish();
