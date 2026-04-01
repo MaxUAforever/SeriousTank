@@ -71,18 +71,27 @@ void AST_BaseWeapon::StopFire()
 
 void AST_BaseWeapon::AttachToParentComponent(USceneComponent* InParentComponent, FName SocketName, bool bInShouldBeDestroyedWithActor)
 {
-	if (InParentComponent)
+	if (!IsValid(InParentComponent))
 	{
-		AttachToComponent(InParentComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketName);
-		AddActorLocalOffset(AttachmentOffset.GetLocation());
-		AddActorLocalRotation(AttachmentOffset.GetRotation());
-
-		AActor* OwnerActor = InParentComponent->GetOwner();
-		SetOwner(OwnerActor);
-
-		OwnerActor->OnDestroyed.AddDynamic(this, &ThisClass::OnParentDestroyed);
-		bShouldBeDestroyedWithActor = bInShouldBeDestroyedWithActor;
+		UE_LOG(LogTemp, Warning, TEXT("%s: Failed to get valid Parent conponent"), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
 	}
+		
+	AActor* OwnerActor = InParentComponent->GetOwner();
+	if (!IsValid(OwnerActor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: Failed to get valid owner."), ANSI_TO_TCHAR(__FUNCTION__));
+		return;
+	}
+
+	AttachToComponent(InParentComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+	AddActorLocalOffset(AttachmentOffset.GetLocation());
+	AddActorLocalRotation(AttachmentOffset.GetRotation());
+
+	SetOwner(OwnerActor);
+
+	OwnerActor->OnDestroyed.AddDynamic(this, &ThisClass::OnParentDestroyed);
+	bShouldBeDestroyedWithActor = bInShouldBeDestroyedWithActor;
 }
 
 void AST_BaseWeapon::DetachFromParentComponent()
