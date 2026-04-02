@@ -1,5 +1,6 @@
 #include "Actors/Pawns/ST_BaseVehicle.h"
 
+#include "Components/Armor/ST_ArmorComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/InputComponent.h"
@@ -32,6 +33,7 @@ AST_BaseVehicle::AST_BaseVehicle()
 	HealthBarWidgetComponent->SetupAttachment(RootComponent);
 	HealthBarWidgetComponent->SetVisibility(true);
 
+	ArmorComponent = CreateDefaultSubobject<UST_ArmorComponent>("ArmorComponent");
 	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
 }
 

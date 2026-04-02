@@ -10,6 +10,7 @@ class UVehicleInputsDataAsset;
 class UWeaponInputsDataAsset;
 class UInputAction;
 class UInputMappingContext;
+class UST_ArmorComponent;
 class UST_HealthComponent;
 class UST_HealthBarWidgetComponent;
 struct FInputActionValue;
@@ -47,16 +48,19 @@ private:
 
 protected:
 	UPROPERTY(EditAnywhere)
-	UBoxComponent* BaseCollisionComponent;
+	TObjectPtr<UBoxComponent> BaseCollisionComponent;
 
 	UPROPERTY(EditAnywhere)
-	UInteractionComponent* InteractionComponent;
+	TObjectPtr<UInteractionComponent> InteractionComponent;
 
 	UPROPERTY(EditDefaultsOnly)
-	UST_HealthComponent* HealthComponent;
+	TObjectPtr<UST_ArmorComponent> ArmorComponent;
 
 	UPROPERTY(EditDefaultsOnly)
-	UST_HealthBarWidgetComponent* HealthBarWidgetComponent;
+	TObjectPtr<UST_HealthComponent> HealthComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UST_HealthBarWidgetComponent> HealthBarWidgetComponent;
 
 	/**
 	 * Gameplay information
@@ -73,11 +77,11 @@ protected:
 	 */
 
 	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UCommonInputsDataAsset* CommonInputsDataAsset;
+	TObjectPtr<UCommonInputsDataAsset> CommonInputsDataAsset;
 
 	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UVehicleInputsDataAsset* VehicleInputsDataAsset;
+	TObjectPtr<UVehicleInputsDataAsset> VehicleInputsDataAsset;
 
 	UPROPERTY(Category = "Input", EditDefaultsOnly)
-	UWeaponInputsDataAsset* WeaponInputsDataAsset;
+	TObjectPtr<UWeaponInputsDataAsset> WeaponInputsDataAsset;
 };

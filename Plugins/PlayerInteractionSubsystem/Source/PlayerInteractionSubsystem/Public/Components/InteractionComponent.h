@@ -30,6 +30,9 @@ public:
 	FOnInteractionActionStartedDelegate OnInteractionActionStartedDelegate;
 	FOnInteractionActionStoppedDelegate OnInteractionActionStoppedDelegate;
 
+public:
+	UInteractionComponent();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;

@@ -21,7 +21,7 @@ public:
 
 	void RegisterHealthActor(AActor* Actor);
 
-	void DealDamage(UST_DamageDealingComponent* DamageDealingComponent, AController* DamageDealer, AActor* DamageReciever, const FVector& DealingLocation);
+	bool DealDamage(AController* DamageDealer, AActor* DamageReciever, float DamageValue);
 
 private:
 	TSet<TWeakObjectPtr<AActor>> RegisteredHealthActors;

@@ -9,6 +9,13 @@
 #include "PlayerInteractionSubsystem.h"
 #include "UI/InteractionUserWidget.h"
 
+UInteractionComponent::UInteractionComponent()
+{
+	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	SetCollisionResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Overlap);
+}
+
 void UInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -38,6 +45,7 @@ void UInteractionComponent::BeginPlay()
 			InteractionWidgetComponent->RegisterComponent();
 
 			InteractionWidgetComponent->SetVisibility(false);
+			InteractionWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 			InteractionWidgetComponent->SetWidgetClass(InteractionWidgetClass);
 			InteractionWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);

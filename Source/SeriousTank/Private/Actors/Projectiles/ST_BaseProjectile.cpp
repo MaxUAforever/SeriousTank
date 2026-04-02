@@ -50,11 +50,6 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
         return;
     }
     
-	if (OtherActor == this || OtherActor == GetOwner() || ActorsToIgnore.Contains(OtherActor->GetClass()))
-	{
-		return;
-	}
-	
 	AController* OwningController = Cast<AController>(GetOwner());
 	if (!IsValid(OwningController))
 	{
@@ -62,14 +57,25 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		return;
 	}
 
+	if (OtherActor == this || OtherActor == GetOwner() || OtherActor == OwningController->GetPawn() || ActorsToIgnore.Contains(OtherActor->GetClass()))
+	{
+		return;
+	}
+
+	FST_DamageDealingParameters DamageDealingInfo;
+	DamageDealingInfo.ImpactedComponent = OtherComp;
+	DamageDealingInfo.DealingLocation = SweepResult.ImpactPoint;
+	DamageDealingInfo.DamageDealerDirection = ProjectileMovementComponent->Velocity.GetSafeNormal();
+	DamageDealingInfo.ImpactNormal = SweepResult.ImpactNormal;
+
+	DamageDealingComponent->TryToDealDamage(OwningController, OtherActor, DamageDealingInfo);
+
 	UObjectPoolSubsystem* ObjectPoolSubsystem = World->GetSubsystem<UObjectPoolSubsystem>();
 	if (IsValid(ObjectPoolSubsystem))
 	{
 		ObjectPoolSubsystem->ReturnToPool(this);
 	}
-
-	DamageDealingComponent->StartDealingDamage(OwningController, OtherActor, SweepResult.ImpactPoint);
-
+	
 	if (ExplosionSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(World, ExplosionSound, GetActorLocation());

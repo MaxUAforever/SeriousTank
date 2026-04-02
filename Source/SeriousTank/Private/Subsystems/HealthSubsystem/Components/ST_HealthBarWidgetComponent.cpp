@@ -17,6 +17,7 @@ void UST_HealthBarWidgetComponent::BeginPlay()
 		return;
 	}
 
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetWidgetClass(HealthBarWidgetClass);
 	SetWidgetSpace(EWidgetSpace::Screen);
 	SetDrawAtDesiredSize(true);
@@ -28,6 +29,9 @@ void UST_HealthBarWidgetComponent::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("UST_HealthBarWidgetComponent::OnHealthValueChanged: failed to get Widget"));
 		return;
 	}
+
+	HealthBarWidget->SetMaxHealthValue(HealthComponent->GetMaxHealth());
+	HealthBarWidget->SetHealthValue(HealthComponent->GetMaxHealth());
 
 	HealthComponent->OnHealthValueChangedDelegate.AddUObject(this, &ThisClass::OnHealthValueChanged);
 }

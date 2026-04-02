@@ -18,33 +18,32 @@ void UST_HealthSubsystem::RegisterHealthActor(AActor* Actor)
 	RegisteredHealthActors.Add(Actor);
 }
 
-void UST_HealthSubsystem::DealDamage(UST_DamageDealingComponent* DamageDealingComponent, AController* DamageDealer, AActor* DamageReciever, const FVector& DealingLocation)
+bool UST_HealthSubsystem::DealDamage(AController* DamageDealer, AActor* DamageReciever, float DamageValue)
 {
-	if (!DamageDealingComponent)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UST_HealthSubsystem::DealDamage: DamageDealingComponent is null"));
-		return;
-	}
-
 	if (!IsValid(DamageReciever) || !IsValid(DamageDealer))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UST_HealthSubsystem::DealDamage: DamageReciever or DamageDealer is invalid"));
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("%s: DamageReciever or DamageDealer is invalid"), ANSI_TO_TCHAR(__FUNCTION__));
+		return false;
 	}
 
 	if (!RegisteredHealthActors.Contains(DamageReciever))
 	{
-		UE_LOG(LogTemp, Display, TEXT("UST_HealthSubsystem::DealDamage: DamageReciever is not registered in the health subsystem"));
-		return;
+		UE_LOG(LogTemp, Display, TEXT("%s: DamageReciever is not registered in the health subsystem"), ANSI_TO_TCHAR(__FUNCTION__));
+		return false;
 	}
 
-	if (UST_HealthComponent* HealthComponent = DamageReciever->GetComponentByClass<UST_HealthComponent>())
+	UST_HealthComponent* HealthComponent = DamageReciever->GetComponentByClass<UST_HealthComponent>();
+	if (!IsValid(HealthComponent))
 	{
-		HealthComponent->AddHealthValue(DamageDealingComponent->GetDamageValue() * -1.f);
-
-		if (FMath::IsNearlyZero(HealthComponent->GetCurrentHealth()))
-		{
-			OnActorEliminatedDelegate.Broadcast(DamageDealer, DamageReciever);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("%s: HealthComponent is not valid on the DamageReciever"), ANSI_TO_TCHAR(__FUNCTION__));
+		return false;
 	}
+	
+	HealthComponent->AddHealthValue(DamageValue * -1.f);
+	if (FMath::IsNearlyZero(HealthComponent->GetCurrentHealth()))
+	{
+		OnActorEliminatedDelegate.Broadcast(DamageDealer, DamageReciever);
+	}
+	
+	return true;
 }

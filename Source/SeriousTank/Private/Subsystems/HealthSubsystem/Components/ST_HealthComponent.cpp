@@ -12,7 +12,7 @@ void UST_HealthComponent::BeginPlay()
 		HealthSubsystem->RegisterHealthActor(GetOwner());
 	}
 
-	CurrentHealthValue = MaxHealthvalue;
+	AddHealthValue(MaxHealthvalue);
 }
 
 void UST_HealthComponent::AddHealthValue(float DeltaHealthValue)
