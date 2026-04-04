@@ -16,7 +16,7 @@ struct QUESTSUBSYSTEM_API FTableRowQuestTaskInfo : public FTableRowBase
 	FTableRowQuestTaskInfo() { static_assert(std::is_same_v<FQuestID, int32>, "ParentQuestID should have a type of FTaskID!"); };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 ParentQuestID;
+	int32 ParentQuestID = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText TaskName;

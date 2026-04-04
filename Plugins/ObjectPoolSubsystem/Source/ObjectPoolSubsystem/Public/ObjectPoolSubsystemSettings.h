@@ -12,7 +12,7 @@ struct FObjectPoolInfo
 	TSubclassOf<AActor> ObjectClass;
 
 	UPROPERTY(EditDefaultsOnly, Meta = (ClampMin = "0"))
-	int32 ObjectsAmount;
+	int32 ObjectsAmount = 0;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FString> AllowedMaps;

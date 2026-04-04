@@ -27,5 +27,5 @@ struct QUESTSUBSYSTEM_API FTableRowQuestInfo : public FTableRowBase
 	TObjectPtr<UQuestInfoDataAsset> QuestInfoDataAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bIsRepeatable;
+	bool bIsRepeatable = false;
 };

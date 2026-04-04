@@ -18,7 +18,7 @@ struct FPlayerStateSaveData
     TArray<FVehicleInfo> AvailableVehicles;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Basic")
-    int32 CurrentVehicleIndex;
+    int32 CurrentVehicleIndex = 0;
 };
 
 UCLASS()

@@ -14,7 +14,7 @@ struct QUESTSUBSYSTEM_API FTableRowTaskStartConditionInfo : public FTableRowBase
 	FTableRowTaskStartConditionInfo() { static_assert(std::is_same_v<FTaskID, int32>, "ParentTaskID should have a type of FTaskID!"); };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 ParentTaskID;
+	int32 ParentTaskID = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UBaseTaskStartCondition> BaseTaskStartConditionClass;
