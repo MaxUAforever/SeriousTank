@@ -6,6 +6,20 @@
 #include "Subsystems/HealthSubsystem/Components/ST_DamageDealingComponent.h"
 #include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
+void UST_HealthSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+
+	FST_DamageDealingEventHandler::BusConnect(this);
+}
+
+void UST_HealthSubsystem::OnWorldEndPlay(UWorld& InWorld)
+{
+	Super::OnWorldEndPlay(InWorld);
+
+	FST_DamageDealingEventHandler::BusDisconnect();
+}
+
 bool UST_HealthSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
 	UWorld* World = Cast<UWorld>(Outer);
@@ -46,4 +60,9 @@ bool UST_HealthSubsystem::DealDamage(AController* DamageDealer, AActor* DamageRe
 	}
 	
 	return true;
+}
+
+void UST_HealthSubsystem::OnDamageDealingAttempt(AController* DamageDealer, AActor* DamageReciever, const FST_DamageDealingParameters& DamageDealingInfo, float DemageDealt)
+{
+	UE_LOG(LogTemp, Display, TEXT("%s: DamageDealer: %s, DamageReciever: %s, DamageDealingLocation: %s, DamageDealingDirection: %s, ImpactNormal: %s, DamageDealt: %f"), ANSI_TO_TCHAR(__FUNCTION__), *GetNameSafe(DamageDealer), *GetNameSafe(DamageReciever), *DamageDealingInfo.DealingLocation.ToString(), *DamageDealingInfo.DamageDealerDirection.ToString(), *DamageDealingInfo.ImpactNormal.ToString(), DemageDealt);
 }

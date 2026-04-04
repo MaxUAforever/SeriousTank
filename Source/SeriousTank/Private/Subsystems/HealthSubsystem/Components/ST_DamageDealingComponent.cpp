@@ -1,5 +1,6 @@
 #include "Subsystems/HealthSubsystem/Components/ST_DamageDealingComponent.h"
 
+#include "Core/Bus/ST_Bus.h"
 #include "Components/Armor/ST_ArmorComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
@@ -23,6 +24,8 @@ bool UST_DamageDealingComponent::TryToDealDamage(AController* DamageDealer, AAct
 	CurrentDamageValue = DamageValue;
 
 	const bool bCanPenetrateArmor = TryToPenetrateArmor(DamageReciever, DamageDealingInfo);
+	
+	FST_DamageDealingEventBus::Broadcast(&FST_HealthSubsystemEvents::OnDamageDealingAttempt, DamageDealer, DamageReciever, DamageDealingInfo, bCanPenetrateArmor ? CurrentDamageValue : 0.f);
 	if (!bCanPenetrateArmor)
 	{
 		return false;

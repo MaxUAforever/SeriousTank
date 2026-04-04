@@ -2,18 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Subsystems/HealthSubsystem/ST_HealthSubsystemTypes.h"
 #include "ST_DamageDealingComponent.generated.h"
 
 class AController;
-
-// Struct containing necessary information for calculating and applying damage to a damage receiver.
-struct FST_DamageDealingParameters
-{
-	const UPrimitiveComponent* ImpactedComponent;
-	FVector DealingLocation;
-	FVector DamageDealerDirection;
-	FVector ImpactNormal;
-};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SERIOUSTANK_API UST_DamageDealingComponent : public UActorComponent
