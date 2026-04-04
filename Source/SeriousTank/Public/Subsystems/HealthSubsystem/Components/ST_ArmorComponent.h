@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Components/ActorComponent.h"
-#include "Components/Armor/ST_ArmorTypes.h"
+#include "Subsystems/HealthSubsystem/ST_ArmorTypes.h"
 
 #include "ST_ArmorComponent.generated.h"
 

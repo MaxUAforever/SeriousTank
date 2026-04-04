@@ -1,4 +1,4 @@
-#include "Components/Armor/ST_ArmorComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_ArmorComponent.h"
 
 #include "Components/SceneComponent.h"
 #include "Algo/Find.h"

@@ -1,6 +1,5 @@
 #include "Actors/Pawns/ST_BaseVehicle.h"
 
-#include "Components/Armor/ST_ArmorComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/InputComponent.h"
@@ -16,6 +15,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractionComponent.h"
 #include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_ArmorComponent.h"
 #include "Subsystems/HealthSubsystem/Components/ST_HealthBarWidgetComponent.h"
 #include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 
