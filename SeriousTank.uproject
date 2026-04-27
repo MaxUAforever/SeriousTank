@@ -12,13 +12,6 @@
   ],
   "Plugins": [
     {
-      "Name": "OnlineSubsystemGooglePlay",
-      "Enabled": false,
-      "SupportedTargetPlatforms": [
-        "Android"
-      ]
-    },
-    {
       "Name": "Fab",
       "Enabled": false,
       "SupportedTargetPlatforms": [

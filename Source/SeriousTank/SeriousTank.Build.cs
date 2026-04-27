@@ -8,9 +8,31 @@ public class SeriousTank : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.NoPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
+		PublicDependencyModuleNames.AddRange(
+			new string[] 
+			{ 
+				"Core", 
+				"CoreUObject", 
+				"Engine", 
+				"InputCore", 
+				"EnhancedInput", 
+				"UMG" 
+			});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "GameplayTasks", "PlayerInteractionSubsystem", "AIPatrollingSubsystem", "NavigationSystem", "ObjectPoolSubsystem", "QuestSubsystem" });
+		PrivateDependencyModuleNames.AddRange(
+			new string[] 
+			{ 
+				"AIModule", 
+				"GameplayTasks", 
+				"PlayerInteractionSubsystem", 
+				"AIPatrollingSubsystem", 
+				"NavigationSystem", 
+				"ObjectPoolSubsystem",
+                "OnlineSubsystem",
+                "OnlineSubsystemNull",
+                "OnlineSubsystemSteam",
+                "QuestSubsystem" 
+			});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
