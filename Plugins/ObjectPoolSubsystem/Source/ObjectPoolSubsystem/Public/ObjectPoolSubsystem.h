@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Subsystems/WorldSubsystem.h"
+#include "Engine/World.h"
 #include "ObjectPoolSubsystem.generated.h"
 
 

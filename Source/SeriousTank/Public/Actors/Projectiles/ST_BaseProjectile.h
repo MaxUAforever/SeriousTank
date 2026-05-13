@@ -7,6 +7,7 @@ class UProjectileMovementComponent;
 class USphereComponent;
 class USoundCue;
 class UST_DamageDealingComponent;
+class UST_PhysicalImpulseComponent;
 
 UCLASS()
 class SERIOUSTANK_API AST_BaseProjectile : public AActor
@@ -28,6 +29,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UST_DamageDealingComponent> DamageDealingComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UST_PhysicalImpulseComponent> PhysicalImpulseComponent;
 
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<AActor>> ActorsToIgnore;

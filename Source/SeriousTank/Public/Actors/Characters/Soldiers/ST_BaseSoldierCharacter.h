@@ -14,10 +14,12 @@ class UST_SoldierWeaponManagerComponent;
 class UST_ViewAreaBoxComponent;
 class UWeaponInputsDataAsset;
 class UST_HealthBarWidgetComponent;
-
+class UST_PhysicalAnimationComponent;
 class UAIPerceptionStimuliSourceComponent;
+
 enum class EHealthChangingType : uint8;
 enum class ESoldierActionState : uint8;
+
 struct FInputActionValue;
 
 UCLASS()
@@ -100,6 +102,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UInteractingComponent* InteractingComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UST_PhysicalAnimationComponent> PhysicalAnimationComponent;
 
 	UPROPERTY()
 	UAIPerceptionStimuliSourceComponent* PerceptionStimuliSourceComponent;

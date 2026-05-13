@@ -42,9 +42,6 @@ protected:
     bool bIsWeaponFiring;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsDead;
-
-	UPROPERTY(BlueprintReadOnly)
 	float YawWalkOffset;
 
 	UPROPERTY(BlueprintReadOnly)

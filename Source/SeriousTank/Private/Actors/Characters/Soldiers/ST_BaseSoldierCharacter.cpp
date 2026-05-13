@@ -1,30 +1,40 @@
 #include "Actors/Characters/Soldiers/ST_BaseSoldierCharacter.h"
 
-
+// Game includes
 #include "Actors/Characters/Soldiers/ST_BaseSoldierAnimInstance.h"
 #include "Actors/Weapons/ST_BaseWeapon.h"
-#include "Camera/CameraComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/ST_SoldierMovementComponent.h"
 #include "Components/ST_ViewAreaBoxComponent.h"
 #include "Components/Weapons/ST_SoldierWeaponManagerComponent.h"
+#include "GameFramework/AI/ST_AIController.h"
+#include "Inputs/Data/CommonInputsDataAsset.h"
+#include "Inputs/Data/SoldierInputsDataAsset.h"
+#include "Inputs/Data/WeaponInputsDataAsset.h"
+#include "Subsystems/PhysicalImpactSubsystem/Components/ST_PhysicalAnimationComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthBarWidgetComponent.h"
+#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
+
+// Plugin includes
+#include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
+#include "PlayerInteractionSubsystem/Public/Data/InteractionSubsystemSettings.h"
+
+// Engine includes
+#include "Camera/CameraComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Core/ST_CoreTypes.h"
 #include "Engine/LocalPlayer.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/AI/ST_AIController.h"
 #include "GameFramework/PlayerController.h"
-#include "Inputs/Data/CommonInputsDataAsset.h"
-#include "Inputs/Data/SoldierInputsDataAsset.h"
-#include "Inputs/Data/WeaponInputsDataAsset.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
-#include "PlayerInteractionSubsystem/Public/Components/InteractingComponent.h"
-#include "PlayerInteractionSubsystem/Public/Data/InteractionSubsystemSettings.h"
-#include "Subsystems/HealthSubsystem/Components/ST_HealthBarWidgetComponent.h"
-#include "Subsystems/HealthSubsystem/Components/ST_HealthComponent.h"
 #include "UObject/UObjectGlobals.h"
+
+namespace ST_SoldierCharacterHelpers
+{
+	static const FName RagdollCollisionProfileName = FName(TEXT("Ragdoll"));
+} // ST_SoldierCharacterHelpers
 
 AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UST_SoldierMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -45,6 +55,7 @@ AST_BaseSoldierCharacter::AST_BaseSoldierCharacter(const FObjectInitializer& Obj
 	WeaponManagerComponent = CreateDefaultSubobject<UST_SoldierWeaponManagerComponent>("WeaponManagerComponent");
 	HealthComponent = CreateDefaultSubobject<UST_HealthComponent>("HealthComponent");
 	InteractingComponent = CreateDefaultSubobject<UInteractingComponent>("InteractingComponent");
+	PhysicalAnimationComponent = CreateDefaultSubobject<UST_PhysicalAnimationComponent>("PhysicalAnimationComponent");
 	PerceptionStimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("PerceptionStimuliSourceComponent");
 }
 
@@ -368,7 +379,12 @@ void AST_BaseSoldierCharacter::OnHealthChanged(float CurrentHealthValue, EHealth
 {
 	if (FMath::IsNearlyZero(CurrentHealthValue))
 	{
+		PhysicalAnimationComponent->SetEnabled(false);
+
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		GetMesh()->SetCollisionProfileName(ST_SoldierCharacterHelpers::RagdollCollisionProfileName);
+		GetMesh()->SetSimulatePhysics(true);
 	}
 }
 

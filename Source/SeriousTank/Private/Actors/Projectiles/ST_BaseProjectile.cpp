@@ -1,5 +1,11 @@
 #include "Actors/Projectiles/ST_BaseProjectile.h"
 
+// Game includes
+#include "ObjectPoolSubsystem/Public/ObjectPoolSubsystem.h"
+#include "Subsystems/HealthSubsystem/Components/ST_DamageDealingComponent.h"
+#include "Subsystems/PhysicalImpactSubsystem/Components/ST_PhysicalImpulseComponent.h"
+
+// Engine includes
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "DrawDebugHelpers.h" 
@@ -8,9 +14,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
-#include "ObjectPoolSubsystem/Public/ObjectPoolSubsystem.h"
 #include "Sound/SoundCue.h"
-#include "Subsystems/HealthSubsystem/Components/ST_DamageDealingComponent.h"
 #include "TimerManager.h"
 
 AST_BaseProjectile::AST_BaseProjectile()
@@ -23,6 +27,7 @@ AST_BaseProjectile::AST_BaseProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComponent");
 	DamageDealingComponent = CreateDefaultSubobject<UST_DamageDealingComponent>("DamageDealingComponent");
+	PhysicalImpulseComponent = CreateDefaultSubobject<UST_PhysicalImpulseComponent>("PhysicalImpulseComponent");
 }
 
 void AST_BaseProjectile::BeginPlay()
@@ -67,8 +72,12 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	DamageDealingInfo.DealingLocation = SweepResult.ImpactPoint;
 	DamageDealingInfo.DamageDealerDirection = ProjectileMovementComponent->Velocity.GetSafeNormal();
 	DamageDealingInfo.ImpactNormal = SweepResult.ImpactNormal;
-
 	DamageDealingComponent->TryToDealDamage(OwningController, OtherActor, DamageDealingInfo);
+	
+	FST_PhysicalImpactParameters PhysicalImpactInfo;
+	PhysicalImpactInfo.ImpactLocation = SweepResult.ImpactPoint;
+	PhysicalImpactInfo.ImpactForceDirection = ProjectileMovementComponent->Velocity.GetSafeNormal();
+	PhysicalImpulseComponent->ApplyPhysicalImpulse(OtherActor, PhysicalImpactInfo);
 
 	UObjectPoolSubsystem* ObjectPoolSubsystem = World->GetSubsystem<UObjectPoolSubsystem>();
 	if (IsValid(ObjectPoolSubsystem))

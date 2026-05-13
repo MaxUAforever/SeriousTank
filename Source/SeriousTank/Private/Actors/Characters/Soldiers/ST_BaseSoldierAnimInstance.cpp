@@ -341,7 +341,7 @@ void UST_BaseSoldierAnimInstance::OnDamageDealed(float CurrentHealthValue, EHeal
 
 	if (FMath::IsNearlyZero(CurrentHealthValue))
 	{
-		bIsDead = true;
+		EnableUpdateAnimation(false);
 	}
 	else if (!Montage_IsPlaying(MontagesDataAsset->HitReactionMontage) && CurrentHealthValue > 0)
 	{
