@@ -32,5 +32,11 @@ void UST_PhysicalImpactSubsystem::ApplyPhysicalImpact(UST_PhysicalImpulseCompone
 		return;
 	}
 
-	PhysicalAnimationComponent->ApplyPhysicalImpact(ImpactParameters, PhysicalImpulseComponent->GetImpulseStrength());
+	FST_PhysicalImpactParameters AppliedImpactParameters = ImpactParameters;
+	AppliedImpactParameters.ImpactForceStrength = PhysicalImpulseComponent->GetImpulseStrength();
+
+	const EST_PhysicalReactionType CurrentReactionType = PhysicalAnimationComponent->GetCurrentReactionType();
+	AppliedImpactParameters.ExpectedReactionType = CurrentReactionType == EST_PhysicalReactionType::None ? ImpactParameters.ExpectedReactionType : CurrentReactionType;
+
+	PhysicalAnimationComponent->ApplyPhysicalImpact(AppliedImpactParameters);
 }

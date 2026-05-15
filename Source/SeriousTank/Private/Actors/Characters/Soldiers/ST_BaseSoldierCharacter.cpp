@@ -379,12 +379,12 @@ void AST_BaseSoldierCharacter::OnHealthChanged(float CurrentHealthValue, EHealth
 {
 	if (FMath::IsNearlyZero(CurrentHealthValue))
 	{
-		PhysicalAnimationComponent->SetEnabled(false);
-
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+		
 		GetMesh()->SetCollisionProfileName(ST_SoldierCharacterHelpers::RagdollCollisionProfileName);
-		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+		PhysicalAnimationComponent->SetReactionType(EST_PhysicalReactionType::Ragdoll);
 	}
 }
 

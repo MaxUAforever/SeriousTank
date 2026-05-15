@@ -15,30 +15,37 @@ public:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	bool IsEnabled() const { return bIsEnabled; }
-	void SetEnabled(bool bInIsEnabled);
+	void SetReactionType(EST_PhysicalReactionType ReactionType);
+	void ApplyPhysicalImpact(const FST_PhysicalImpactParameters& ImpactParameters);
 
-public:
-	void UpdateAnimationProperties(const FST_PhysicalAnimationProperties& AnimationProperties);
-	void ApplyPhysicalImpact(const FST_PhysicalImpactParameters& ImpactParameters, float ImpactForce);
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName DefaultProfileName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName DefaultImpactBoneName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bDefaultIncludeBone = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float DefaultImpactReactionTime = 2.f;
+	EST_PhysicalReactionType GetCurrentReactionType() const { return CurrentReactionType; }
 
 private:
-	FST_PhysicalAnimationProperties CurrentAnimationProperties;
+	void InitializePhysicalReactionPropertiesMap();
+	void InitializeCurrentImpactProperties();
 
-	float RemainingImpactReactionTime;
+	void StopCurrentPhysicalReaction();
+	bool HasActivePhysicalReaction() const;
+	
+protected:
+	/** 
+	 * Array of physical reaction settings that define how the component should respond to different types of physical impacts.
+	 * Should be populated in the editor, so it can be used to initialize the PhysicalReactionPropertiesMap for quick access during gameplay.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FST_PhysicalReactionSettings> PhysicalReactionSettingsArray;
 
-	bool bIsEnabled = true;
+private:
+	TMap<EST_PhysicalReactionType, FST_PhysicalAnimationProperties> PhysicalReactionPropertiesMap;
+
+	EST_PhysicalReactionType CurrentReactionType;
+
+	/** Current force curve parameters, that are initialized when a timed physical impact is applied. */
+	float ImpactCurveMinTime;
+	float ImpactCurveMaxTime;
+	float ImpactCurveDuration;
+
+	float CurrentImpactCurveTime;
+
+	bool bIsInitialized = false;
 };

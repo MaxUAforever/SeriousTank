@@ -77,6 +77,7 @@ void AST_BaseProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	FST_PhysicalImpactParameters PhysicalImpactInfo;
 	PhysicalImpactInfo.ImpactLocation = SweepResult.ImpactPoint;
 	PhysicalImpactInfo.ImpactForceDirection = ProjectileMovementComponent->Velocity.GetSafeNormal();
+	PhysicalImpactInfo.ExpectedReactionType = EST_PhysicalReactionType::Hit;
 	PhysicalImpulseComponent->ApplyPhysicalImpulse(OtherActor, PhysicalImpactInfo);
 
 	UObjectPoolSubsystem* ObjectPoolSubsystem = World->GetSubsystem<UObjectPoolSubsystem>();
